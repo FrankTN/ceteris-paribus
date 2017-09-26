@@ -10,13 +10,15 @@ def generic_exp_function(a,b,c,x):
 def parse_f_vector(db_result: dict, par_name: str):
     if not db_result:
         return lambda x: x
-    parameter = db_result[0]['function_vector'][par_name]
-    function_type = parameter['type']
+    function_type = db_result['type']
     result = {
         'linear':       generic_linear_function,
         'exponential':  generic_exp_function,
     }[function_type]
     print(result)
-    function_coeffs = parameter['coeffs']
+    function_coeffs = db_result['coeffs']
     specific_function = partial(result, *function_coeffs)
     return specific_function
+
+def create_functions(function_vector_list: dict):
+    return {k: parse_f_vector(v,k) for k, v in function_vector_list.items()}
