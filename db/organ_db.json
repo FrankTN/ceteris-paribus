@@ -1,0 +1,1 @@
+{"OrganParameters": {"1": {"function_vector": {"VO2": {"coeffs": [1, 200], "type": "linear"}, "VCO2": {"coeffs": [1, 200], "type": "linear"}}, "name": "lungs"}, "2": {"function_vector": {"VO2": {"coeffs": [1, -200], "type": "linear"}, "VCO2": {"coeffs": [1, -200], "type": "linear"}}, "name": "other"}}, "_default": {}}
