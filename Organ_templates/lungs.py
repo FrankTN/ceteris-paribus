@@ -4,7 +4,6 @@ from Organ_templates.organ import Organ
 
 class Lungs(Organ):
     def __init__(self):
-        super(Lungs, self).__init__("lungs")
+        super(Lungs, self).__init__("lungs", "PulmonaryParameters")
         organ = Query()
         initvals = self._organ_parameters.search(organ.name == "lungs")
-        print(initvals)

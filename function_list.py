@@ -7,7 +7,7 @@ def generic_linear_function(a,b,x):
 def generic_exp_function(a,b,c,x):
     return c*(b**x) + a
 
-def parse_f_vector(db_result: dict, par_name: str):
+def parse_f_vector(db_result: dict):
     if not db_result:
         return lambda x: x
     function_type = db_result['type']
@@ -15,10 +15,9 @@ def parse_f_vector(db_result: dict, par_name: str):
         'linear':       generic_linear_function,
         'exponential':  generic_exp_function,
     }[function_type]
-    print(result)
     function_coeffs = db_result['coeffs']
     specific_function = partial(result, *function_coeffs)
     return specific_function
 
 def create_functions(function_vector_list: dict):
-    return {k: parse_f_vector(v,k) for k, v in function_vector_list.items()}
+    return {k: parse_f_vector(v) for k, v in function_vector_list.items()}
