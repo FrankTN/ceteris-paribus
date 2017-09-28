@@ -21,3 +21,12 @@ def parse_f_vector(db_result: dict):
 
 def create_functions(function_vector_list: dict):
     return {k: parse_f_vector(v) for k, v in function_vector_list.items()}
+
+
+def parse_type(param: partial):
+    func_name = str(param.func)[10:].split()[0]
+    type = {
+        'generic_linear_function':  'linear',
+        'generic_exp_function':     'exponential',
+    }[func_name]
+    return type

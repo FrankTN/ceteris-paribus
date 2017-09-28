@@ -16,6 +16,8 @@ class Organ:
         initialization_values = self._organ_parameters.search(organ.name == name)
         self._function_vector = create_functions(initialization_values[0]['function_vector'])
 
+    def get_function_vector(self):
+        return self._function_vector
 
     def __str__(self):
         return self.name
