@@ -1,12 +1,16 @@
+""" This module contains functions for serializing the data in the program to a database.
+"""
+
 import os
-import json
 
 from tinydb import TinyDB
 
-import function_list
+import organ_functions
 
 
 def dump_model(model, db_name: str = "organ_db.json"):
+    """Serialize a model as a JSON file in such a way that it can be reopened at any moment for later use."""
+    #TODO remove duplicate code.
     target_db = TinyDB(os.getcwd() + "/db/" + db_name)
     global_params = target_db.table("GlobalParameters")
     global_params.insert(model.get_global())
@@ -21,7 +25,7 @@ def dump_model(model, db_name: str = "organ_db.json"):
         f_dict = {}
         for func in f_vec:
             coeffs = list(f_vec[func].args)
-            type = function_list.parse_type(f_vec[func])
+            type = organ_functions.parse_type(f_vec[func])
             inner_dict = {}
             inner_dict["coeffs"] = coeffs
             inner_dict["type"] = type
@@ -37,13 +41,9 @@ def dump_model(model, db_name: str = "organ_db.json"):
         f_dict = {}
         for func in f_vec:
             coeffs = list(f_vec[func].args)
-            type = function_list.parse_type(f_vec[func])
+            type = organ_functions.parse_type(f_vec[func])
             inner_dict = {}
             inner_dict["coeffs"] = coeffs
             inner_dict["type"] = type
             f_dict[func] = inner_dict
         pulmonary_params.insert({"name": name, "frac": frac, "function_vector": f_dict})
-
-
-
-    #pulmonary_params.insert(model.get_pulmonary())

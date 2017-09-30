@@ -1,6 +1,6 @@
-''' Module defining a graph and vertex class. The graph class is taken from
+""" Module defining a graph and vertex class. The graph class is taken from
     https://www.python-course.eu/graphs_python.php
-'''
+"""
 
 class Graph(object):
     def __init__(self, graph_dict=None):

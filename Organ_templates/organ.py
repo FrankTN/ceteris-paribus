@@ -1,7 +1,7 @@
 import os
 from tinydb import TinyDB, Query
 
-from function_list import create_functions
+from organ_functions import create_functions
 
 
 class Organ:
@@ -22,8 +22,5 @@ class Organ:
     def __str__(self):
         return self.name
 
-    def calculate(self, v_in: dict) -> dict:
-        out = dict()
-        for element in v_in:
-            out[element] = self._function_vector[element](v_in[element])
-        return out
+    def calculate(self, in_value, param_name: str) -> float:
+        return self._function_vector[param_name](in_value)
