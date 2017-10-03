@@ -22,7 +22,7 @@ pulmonary_function_table.insert({"name": "lungs", "weight": "1.2", "frac": 1, "f
 
 organ_db.purge_table("GlobalParameters")
 global_param_table = organ_db.table("GlobalParameters")
-global_param_table.insert({"name": "global_values", "input_vector_types":{"VO2": "abs","VCO2": "abs"}})
+global_param_table.insert({"name": "global_values", "input_vector_types":{"VO2": "abs","VCO2": "abs"}, "blood_vol": 5000})
 
 # This is just used for testing
 organ = Query()

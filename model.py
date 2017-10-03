@@ -12,17 +12,17 @@ class Model(object):
         It contains two graphs representing the systemic and pulmonary circulation.
         To initialize, a JSON-database is loaded using the TinyDB framework.
     """
-    def __init__(self):
+    def __init__(self, db_path: str):
         super().__init__()
-        db_path = os.getcwd()
-        self._database = TinyDB(db_path + '/db/organ_db.json')
+        self._database = TinyDB(db_path)
         # From the database, get the input parameters.
         global_values = Query()
-        self._global_parameters = self._database.table("GlobalParameters").search(global_values.name == "global_values")[0]
+        self._global_parameters = \
+        self._database.table("GlobalParameters").search(global_values.name == "global_values")[0]
         # From the global parameters, retrieve the names of the parameters in the input vector.
-        self._input_vector_names = self._global_parameters['input_vector_types']
+        self._input_vector_types = self._global_parameters['input_vector_types']
+        self._blood_vol = self._global_parameters['blood_vol']
         self.initialize_basic_organs()
-
 
     def initialize_basic_organs(self):
         """ Using the database, this function reads the values for all the organs.
@@ -55,8 +55,12 @@ class Model(object):
             :param partition the dict containing the fractions of the blood volume each organ receives
         """
         v_out = dict()
-        for param in self._input_vector_names:
+        for param in self._input_vector_types:
             v_out[param] = sum({o.calculate(v_in[param], param) for o in graph.vertices()})
+            if self._input_vector_types[param] == 'rel':
+                v_out[param] = v_out[param]/(self._blood_vol/1000)
+                pass
+        print(self._blood_vol)
         # TODO define what to do when param is relative
         return v_out
 
@@ -72,26 +76,23 @@ class Model(object):
     def make_consistent(self):
         pass
 
-    def check_step_consistency(self):
+    def check_step_consistency(self, circulation):
+        print(circulation.vertices())
         pass
 
-    def check_global_consistency(self):
+    def close(self):
+        self._database.close()
+
+    def check_global_consistency(self) -> bool:
+        """ This function checks whether the system as a whole is consistent. This means that the same amount of blood
+            should pass through all organs.
+        """
+        # TODO redo global consistency check
         systemic_sum = sum(self._systemic_partition.values())
-        print(systemic_sum)
         pulmonary_sum = sum(self._pulmonary_partition.values())
-        correct_fractions = systemic_sum + pulmonary_sum == 2
+        correct_fractions = systemic_sum - pulmonary_sum == 0
         return correct_fractions
 
     def get_global(self):
         return self._global_parameters
 
-
-# Start of the main script, this will be replaced by a GUI
-
-model = Model()
-print(model.calculate_out({"VCO2" : 5000, "VO2" : 5000}, *model.get_pulmonary()))
-print(model.calculate_out({"VCO2" : 5000, "VO2" : 5000}, *model.get_systemic()))
-model.add_organ(Organ("heart", "SystemicParameters"),0.04,*model.get_systemic())
-print(model.calculate_out({"VCO2" : 5000, "VO2" : 5000}, *model.get_systemic()))
-dump_model(model, "test.json")
-print(model.check_global_consistency())
