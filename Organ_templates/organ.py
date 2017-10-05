@@ -4,7 +4,7 @@ from tinydb import TinyDB, Query
 from organ_functions import create_functions
 
 
-class Organ:
+class Organ(object):
     """The class which represents all organs"""
 
     def __init__(self, name = "Default organ", category = "SystemicParameters"):

@@ -1,15 +1,15 @@
+import os
 import sys
 
-import os
 from PyQt5 import QtCore
 from PyQt5.QtCore import QDir
-from PyQt5.QtWidgets import QMainWindow, QWidget, QFileSystemModel, QTreeView, QSplitter, QHBoxLayout, \
+from PyQt5.QtWidgets import QMainWindow, QWidget, QFileSystemModel, QTreeView, QHBoxLayout, \
     QApplication
 
 import main_script
 
 
-class MainWindow(QMainWindow):
+class FileChooserWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    main = MainWindow()
+    main = FileChooserWindow()
     main.show()
     main.set_path(os.getcwd())
 
