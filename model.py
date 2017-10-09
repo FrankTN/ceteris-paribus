@@ -29,24 +29,23 @@ class Model(object):
             Currently, the lungs are created, and an other compartment is added to
             simulate the systemic circulation in its entirety.
         """
-        # Create pulmonary circulation as a graph.
-        self._pulmonary_circulation = Graph()
-        self._pulmonary_circulation.add_vertex(Lungs())
-        self._pulmonary_partition = {}
-        for element in self._database.table("PulmonaryParameters").all():
-            self._pulmonary_partition[element['name']] = element['frac']
-        # Create systemic circulation graph, add organs using the database.
+        # Create systemic circulation as a graph.
         self._systemic_circulation = Graph()
-        self._systemic_circulation.add_vertex(Other())
-        self._systemic_partition = {}
-        for element in self._database.table("SystemicParameters").all():
-            self._systemic_partition[element['name']] = element['frac']
+        # Add all organs in the database
+        for organ_info in self._database.table("SystemicParameters"):
+            self._systemic_circulation.add_vertex(Organ(organ_info))
+
+        # Create pulmonary graph
+        self._pulmonary_circulation = Graph()
+        # Add all organs which should be linked
+        for pulm_info in self._database.table("PulmonaryParameters"):
+            self._pulmonary_circulation.add_vertex(Organ(pulm_info))
 
     def get_pulmonary(self):
-        return (self._pulmonary_circulation, self._pulmonary_partition)
+        return (self._pulmonary_circulation)
 
     def get_systemic(self):
-        return (self._systemic_circulation, self._systemic_partition)
+        return (self._systemic_circulation)
 
     def calculate_out(self, v_in: dict, graph: Graph, partition: dict) -> dict:
         """ This function calculates the output of a graph system based on an input vector.
@@ -65,11 +64,7 @@ class Model(object):
         return v_out
 
     def add_organ(self, organ: Organ, CO_frac, organ_graph, partition: dict):
-        divided_frac = CO_frac / len(organ_graph.vertices())
-        organ_graph.add_vertex(organ)
-        for element in partition:
-            partition[element] = partition[element] - divided_frac
-        partition[organ.name] = CO_frac
+        pass
 
 
 
@@ -83,16 +78,7 @@ class Model(object):
     def close(self):
         self._database.close()
 
-    def check_global_consistency(self) -> bool:
-        """ This function checks whether the system as a whole is consistent. This means that the same amount of blood
-            should pass through all organs.
-        """
-        # TODO redo global consistency check
-        systemic_sum = sum(self._systemic_partition.values())
-        pulmonary_sum = sum(self._pulmonary_partition.values())
-        correct_fractions = systemic_sum - pulmonary_sum == 0
-        return correct_fractions
-
     def get_global(self):
         return self._global_parameters
 
+Model(os.getcwd() + "/db/organ_db.json")
