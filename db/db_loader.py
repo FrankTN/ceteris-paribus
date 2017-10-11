@@ -16,7 +16,7 @@ systemic_function_table.insert({"state": "rest", "name": "thyroid", "volume": 0.
 systemic_function_table.insert({"state": "rest", "name": "muscles", "volume": 30, "BF": 0.5, "CMRO2": 0.18, "VO2": 54, "RQ": 0.85, "VCO2": 45.9})
 systemic_function_table.insert({"state": "rest", "name": "diaphragm", "volume": 0.3})
 systemic_function_table.insert({"state": "rest", "name": "adipose", "volume": 15})
-systemic_function_table.insert({"state": "rest", "name": "skin", "volume": 10})
+systemic_function_table.insert({"state": "rest", "name": "skin", "volume": 10, "VO2": 38, "VCO2": 34.2})
 systemic_function_table.insert({"state": "rest", "name": "blood", "volume": 5})
 systemic_function_table.insert({"state": "rest", "name": "bones", "volume": 9})
 

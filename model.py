@@ -1,15 +1,15 @@
+import math
+
 from tinydb import Query
 
-from Organ_templates.lungs import Lungs
 from Organ_templates.organ import Organ
-from Organ_templates.other import Other
 from db.db_dumper import *
 from graph import Graph
 
 
 class Model(object):
     """ This class represents the model in the Model-View-Controller architecture.
-        It contains two graphs representing the systemic and pulmonary circulation.
+        It contains two lists of organs representing the systemic and pulmonary circulation.
         To initialize, a JSON-database is loaded using the TinyDB framework.
     """
     def __init__(self, db_path: str):
@@ -66,12 +66,25 @@ class Model(object):
     def add_organ(self, organ: Organ, CO_frac, organ_graph, partition: dict):
         pass
 
-
+    def check_global_consistency(self):
+        """ This function will validate the model after each change"""
+        total_VO2 = 0
+        total_VCO2 = 0
+        for organ in self._systemic_circulation.vertices():
+            total_VO2 += float(organ.get_VO2())
+            total_VCO2 += float(organ.get_VCO2())
+        for organ in self._pulmonary_circulation.vertices():
+            total_VO2 += organ.get_VO2()
+            total_VCO2 += organ.get_VCO2()
+        VO2_consistent = math.isclose(total_VCO2, 0, abs_tol=0.00001)
+        VCO2_consistent = math.isclose(total_VO2, 0, abs_tol=0.00001)
+        return VO2_consistent and VCO2_consistent
 
     def make_consistent(self):
         pass
 
     def check_step_consistency(self, circulation):
+        """ This function will validate the model at each step."""
         print(circulation.vertices())
         pass
 
@@ -81,4 +94,25 @@ class Model(object):
     def get_global(self):
         return self._global_parameters
 
-Model(os.getcwd() + "/db/organ_db.json")
+    def calculate_total_VO2(self):
+        """ Return the oxygen consumption for the whole body in mL/min """
+        total_VO2 = 0
+        for organ in self._systemic_circulation.vertices():
+            total_VO2 += float(organ.get_VO2())
+        return total_VO2
+
+    def calculate_total_VCO2(self):
+        """ Return the CO2 consumption in mL/min"""
+        total_VCO2 = 0
+        for organ in self._systemic_circulation.vertices():
+            total_VCO2 += float(organ.get_VCO2())
+        return total_VCO2
+
+    def calculate_total_RQ(self):
+        """ Calculates the Respiratory Quotient of the entire body"""
+        return self.calculate_total_VCO2()/self.calculate_total_VO2()
+
+m = Model(os.getcwd() + "/db/organ_db.json")
+for o in m.get_systemic().vertices():
+    print(o.calculate_VO2())
+print("Model consistency: " + str(m.check_global_consistency()))
