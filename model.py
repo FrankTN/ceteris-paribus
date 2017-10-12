@@ -2,8 +2,7 @@ import math
 
 from tinydb import Query
 
-from Organ_templates.organ import Organ
-from db.db_dumper import *
+from organ_templates.organ import Organ
 from graph import Graph
 
 
@@ -12,9 +11,11 @@ class Model(object):
         It contains two lists of organs representing the systemic and pulmonary circulation.
         To initialize, a JSON-database is loaded using the TinyDB framework.
     """
-    def __init__(self, db_path: str):
+    def __init__(self, controller):
         super().__init__()
-        self._database = TinyDB(db_path)
+        self.controller = controller
+        # Since we only create a model after we know that the db has been loaded, we know that getdb() works
+        self._database = controller.getdb()
         # From the database, get the input parameters.
         global_values = Query()
         self._global_parameters = \
@@ -112,7 +113,11 @@ class Model(object):
         """ Calculates the Respiratory Quotient of the entire body"""
         return self.calculate_total_VCO2()/self.calculate_total_VO2()
 
-m = Model(os.getcwd() + "/db/organ_db.json")
-for o in m.get_systemic().vertices():
-    print(o.calculate_VO2())
-print("Model consistency: " + str(m.check_global_consistency()))
+    def globalChanged(self, changeSender):
+        self.setGlobal(changeSender.objectName, changeSender.value)
+        self.make_consistent()
+        pass
+
+    def setGlobal(self, objectName, value):
+        #Todo implement
+        pass

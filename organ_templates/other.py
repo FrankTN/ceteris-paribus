@@ -1,5 +1,5 @@
 from tinydb import Query
-from Organ_templates.organ import Organ
+from organ_templates.organ import Organ
 
 class Other(Organ):
     def __init__(self):

@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtCore import QFileSelector
 from PyQt5.QtWidgets import QApplication
 
-from Organ_templates.organ import Organ
+from organ_templates.organ import Organ
 from db.db_dumper import dump_model
 from model import Model, os
 

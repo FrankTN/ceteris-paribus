@@ -1,6 +1,6 @@
 import unittest
 
-from Organ_templates.organ import Organ
+from organ_templates.organ import Organ
 from model import Model, os
 
 
