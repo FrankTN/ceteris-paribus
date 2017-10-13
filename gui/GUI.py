@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QFrame, QDockWidget, QToolBar, QListWidget, QAction, \
-    QFileDialog, QBoxLayout, QHBoxLayout, QWidget, QGridLayout, QSlider, QSizePolicy, QFormLayout, QPushButton
+    QFileDialog, QHBoxLayout, QWidget, QGridLayout, QSlider, QPushButton
 
 
 class modelWindow(QMainWindow):
@@ -13,7 +13,10 @@ class modelWindow(QMainWindow):
         qfd.setNameFilter("*.json")
         qfd.exec_()
         # We can only select a single file, therefore, we can always look at [0] without missing anything
-        self.controller.setdb(qfd.selectedFiles()[0])
+        if self.controller.setdb(qfd.selectedFiles()[0]):
+            self.statusBar().showMessage("Successfully loaded " + qfd.selectedFiles()[0])
+        else:
+            self.statusBar().showMessage("Problems loading " + qfd.selectedFiles()[0])
 
     def __init__(self, controller):
         super(modelWindow, self).__init__()
@@ -56,26 +59,36 @@ class modelWindow(QMainWindow):
         GLUlab = QLabel("Arterial Glucose Concentration")
         self.controls.addWidget(GLUlab, 1, 0)
         self.controls.addWidget(GLUsld, 1, 1)
+        GLUsld.setObjectName("GluConArt")
+        GLUsld.valueChanged.connect(self.globalSliderChange)
 
         LACsld = QSlider(Qt.Horizontal)
         LAClab = QLabel("Arterial Lactate Concentration")
         self.controls.addWidget(LAClab, 2, 0)
         self.controls.addWidget(LACsld, 2, 1)
+        LACsld.setObjectName("LacConArt")
+        LACsld.valueChanged.connect(self.globalSliderChange)
 
         O2sld = QSlider(Qt.Horizontal)
         O2lab = QLabel("Arterial Oxygen Concentration")
         self.controls.addWidget(O2lab, 3, 0)
         self.controls.addWidget(O2sld, 3, 1)
+        O2sld.setObjectName("OxConArt")
+        O2sld.valueChanged.connect(self.globalSliderChange)
 
         CO2sld = QSlider(Qt.Horizontal)
         CO2lab = QLabel("Arterial Carbon Dioxide Concentration")
         self.controls.addWidget(CO2lab, 4, 0)
         self.controls.addWidget(CO2sld, 4, 1)
+        CO2sld.setObjectName("CO2ConArt")
+        CO2sld.valueChanged.connect(self.globalSliderChange)
 
         FFAsld = QSlider(Qt.Horizontal)
         FFAlab = QLabel("Arterial FFA Concentration")
         self.controls.addWidget(FFAlab, 5, 0)
         self.controls.addWidget(FFAsld, 5, 1)
+        FFAsld.setObjectName("FFAConArt")
+        FFAsld.valueChanged.connect(self.globalSliderChange)
 
         organLayout = QGridLayout()
 
@@ -93,6 +106,7 @@ class modelWindow(QMainWindow):
         centralWindow = QWidget()
         centralWindow.setLayout(centralLayout)
 
+        self.opendb()
         self.setCentralWidget(centralWindow)
         self.setWindowState(Qt.WindowMaximized)
         self.showFullScreen()

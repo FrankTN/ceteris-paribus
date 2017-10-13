@@ -1,6 +1,6 @@
 import os
 from tinydb import TinyDB, Query
-import organ_functions
+import ast2json
 
 organ_db = TinyDB(os.getcwd() + "/organ_db.json")
 organ_db.purge_table("SystemicParameters")
