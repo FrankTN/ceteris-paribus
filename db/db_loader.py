@@ -1,6 +1,5 @@
 import os
 from tinydb import TinyDB, Query
-import ast2json
 
 organ_db = TinyDB(os.getcwd() + "/organ_db.json")
 organ_db.purge_table("SystemicParameters")
@@ -30,7 +29,8 @@ pulmonary_function_table.insert({"state": "rest", "name": "lung", "volume": 0.8,
 
 organ_db.purge_table("GlobalParameters")
 global_param_table = organ_db.table("GlobalParameters")
-global_param_table.insert({"name": "global_values", "input_vector_types":{"VO2": "abs","VCO2": "abs"}, "blood_vol": 5000})
+global_param_table.insert({"name": "global_values", "input_vector_types":{"VO2": "abs","VCO2": "abs"}, "blood_vol": 5000,
+                              "glu_art_conc": 5, "lac_art_conc": 1, "ox_art_conc": 10, "co2_art_conc": 25})
 
 # This is just used for testing
 organ = Query()

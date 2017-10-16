@@ -15,11 +15,15 @@ class Model(object):
         super().__init__()
         self.controller = controller
         # Since we only create a model after we know that the db has been loaded, we know that getdb() works
-        self._database = controller.getdb()
+        self._database = controller.get_db()
         # From the database, get the input parameters.
         global_values = Query()
         self._global_parameters = \
         self._database.table("GlobalParameters").search(global_values.name == "global_values")[0]
+        self.glu_art_conc = self._global_parameters["glu_art_conc"]
+        self.lac_art_conc = self._global_parameters["lac_art_conc"]
+        self.ox_art_conc = self._global_parameters["ox_art_conc"]
+        self.co2_art_conc = self._global_parameters["co2_art_conc"]
         # From the global parameters, retrieve the names of the parameters in the input vector.
         self._input_vector_types = self._global_parameters['input_vector_types']
         self._blood_vol = self._global_parameters['blood_vol']
@@ -34,19 +38,19 @@ class Model(object):
         self._systemic_circulation = Graph()
         # Add all organs in the database
         for organ_info in self._database.table("SystemicParameters"):
-            self._systemic_circulation.add_vertex(Organ(organ_info))
+            self._systemic_circulation.add_vertex(Organ(organ_info, self))
 
         # Create pulmonary graph
         self._pulmonary_circulation = Graph()
         # Add all organs which should be linked
         for pulm_info in self._database.table("PulmonaryParameters"):
-            self._pulmonary_circulation.add_vertex(Organ(pulm_info))
+            self._pulmonary_circulation.add_vertex(Organ(pulm_info, self))
 
     def get_pulmonary(self):
-        return (self._pulmonary_circulation)
+        return self._pulmonary_circulation
 
     def get_systemic(self):
-        return (self._systemic_circulation)
+        return self._systemic_circulation
 
     def calculate_out(self, v_in: dict, graph: Graph, partition: dict) -> dict:
         """ This function calculates the output of a graph system based on an input vector.
@@ -116,8 +120,24 @@ class Model(object):
     def globalChanged(self, changeSender):
         self.setGlobal(changeSender.objectName, changeSender.value)
         self.make_consistent()
-        pass
 
     def setGlobal(self, objectName, value):
         #Todo implement
         pass
+
+    def get_art_glu(self):
+        return self.glu_art_conc
+
+    def get_art_O2(self):
+        return self.ox_art_conc
+
+    def get_art_CO2(self):
+        return self.co2_art_conc
+
+    def get_art_lac(self):
+        return self.lac_art_conc
+
+    def get_organ(self, index):
+        return self.get_systemic().vertices()[index]
+
+

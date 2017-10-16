@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QFrame, QDockWidget, QToolBar, QListWidget, QAction, \
-    QFileDialog, QHBoxLayout, QWidget, QGridLayout, QSlider, QPushButton
+    QFileDialog, QHBoxLayout, QWidget, QGridLayout, QSlider, QPushButton, QSizePolicy, QComboBox, QPlainTextEdit
 
 
 class modelWindow(QMainWindow):
@@ -13,7 +13,7 @@ class modelWindow(QMainWindow):
         qfd.setNameFilter("*.json")
         qfd.exec_()
         # We can only select a single file, therefore, we can always look at [0] without missing anything
-        if self.controller.setdb(qfd.selectedFiles()[0]):
+        if self.controller.set_db(qfd.selectedFiles()[0]):
             self.statusBar().showMessage("Successfully loaded " + qfd.selectedFiles()[0])
         else:
             self.statusBar().showMessage("Problems loading " + qfd.selectedFiles()[0])
@@ -21,6 +21,7 @@ class modelWindow(QMainWindow):
     def __init__(self, controller):
         super(modelWindow, self).__init__()
         self.controller = controller
+        self.opendb()
         tb = QToolBar()
         tb.addAction(self.createAction("Load DB file", self.opendb))
         self.addToolBar(tb)
@@ -90,15 +91,49 @@ class modelWindow(QMainWindow):
         FFAsld.setObjectName("FFAConArt")
         FFAsld.valueChanged.connect(self.globalSliderChange)
 
-        organLayout = QGridLayout()
+        oxconlbl = QLabel("Whole body oxygen consumption")
+        self.oxconval = QLabel("0.0")
+        self.oxconval.setStyleSheet("background: white")
+
+        co2prodlbl = QLabel("Whole body carbon dioxide production")
+        self.co2prodval = QLabel("0.0")
+        self.co2prodval.setStyleSheet("background: white")
+
+        rqprodlbl = QLabel("Whole body respiratory quotient")
+        self.rqprodval = QLabel("0.0")
+        self.rqprodval.setStyleSheet("background: white")
+
+        global_val_layout = QGridLayout()
+        global_val_layout.addWidget(oxconlbl, 0, 0)
+        global_val_layout.addWidget(self.oxconval, 0, 1)
+        global_val_layout.addWidget(co2prodlbl, 1, 0)
+        global_val_layout.addWidget(self.co2prodval, 1, 1)
+        global_val_layout.addWidget(rqprodlbl, 2, 0)
+        global_val_layout.addWidget(self.rqprodval, 2, 1)
+        frame = QFrame()
+        frame.setLayout(global_val_layout)
+
+        self.controls.addWidget(frame, 7, 0)
+        self.controls.setRowStretch(7, 1)
+
+        self.organ_layout = QGridLayout()
 
         Owesld = QSlider(Qt.Horizontal)
         Owslab = QLabel("Organ weight")
-        organLayout.addWidget(Owslab, 0, 0)
-        organLayout.addWidget(Owesld)
+        self.organ_layout.addWidget(Owslab, 0, 0)
+        self.organ_layout.addWidget(Owesld)
 
-        organLayout.addWidget(QPushButton("Testbutton"))
-        self.controls.addLayout(organLayout, 6, 0)
+        self.organ_layout.addWidget(QPushButton("Testbutton"))
+        organ_selector = QComboBox()
+        organ_selector.addItems(self.controller.get_organ_names())
+        organ_selector.currentIndexChanged.connect(self.select_organ)
+        self.organ_layout.addWidget(organ_selector, 3, 0, 2, 1)
+        self.organ_volume = QPlainTextEdit()
+        self.organ_volume.setReadOnly(True)
+        self.organ_layout.addWidget(self.organ_volume)
+        
+        self.controls.addLayout(self.organ_layout, 6, 0, 1, 2)
+        self.controls.setRowStretch(6, 1)
 
         centralLayout = QHBoxLayout()
         centralLayout.addWidget(self.imageLabel)
@@ -106,18 +141,21 @@ class modelWindow(QMainWindow):
         centralWindow = QWidget()
         centralWindow.setLayout(centralLayout)
 
-        self.opendb()
         self.setCentralWidget(centralWindow)
         self.setWindowState(Qt.WindowMaximized)
         self.showFullScreen()
 
     def globalSliderChange(self):
         print(self.sender().objectName() + "::" + str(self.sender().value()))
-        self.controller.globalSliderChanged(self.sender())
+        self.controller.global_slider_changed(self.sender())
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
             self.close()
+
+    def setGlobalVO2(self, newVO2):
+        self.oxconval.setText(str(newVO2))
+
 
     def createAction(self, text, slot=None, shortcut=None, icon=None,
                      tip=None, checkable=False, signal="triggered"):
@@ -135,8 +173,7 @@ class modelWindow(QMainWindow):
             action.setCheckable(True)
         return action
 
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = modelWindow()
-    sys.exit(app.exec_())
+    def select_organ(self, new_organ):
+        organ = self.controller.get_organ(new_organ)
+        self.organ_volume.setPlainText(str(organ.get_volume()))
+        print(organ)

@@ -1,14 +1,19 @@
 import constants
 
+
 class Organ(object):
     """The class which represents all organs"""
 
-    def __init__(self, organ_info: dict):
+    def __init__(self, organ_info: dict, model):
         """ This generic implementation of an organ in the model uses the __setattr__ method to add attributes.
             Adding attributes in this way is necessary since not all attributes are defined for each organ.
         """
+        self.model = model
         for property in organ_info.keys():
             self.__setattr__(property, organ_info[property])
+
+    def get_name(self):
+        return getattr(self, 'name', 'default_organ')
 
     def get_VO2(self):
         return getattr(self, 'VO2', 0)
@@ -64,16 +69,16 @@ class Organ(object):
             return None
 
     def calculate_ven_glu(self):
-        return self.get_art_glu() - (10 * self.getWeight() - (self.getCMR_glu() - self.getCMR_glu_prod()) / self.getBF())
+        return self.model.get_art_glu() - (10 * self.get_volume() - (self.getCMR_glu() - self.getCMR_glu_prod()) / self.getBF())
 
     def calculate_ven_O2(self):
-        return self.get_art_O2() - (10 * self.getWeight() * self.getCMRO2() / self.getBF())
+        return self.model.get_art_O2() - (10 * self.get_volume() * self.getCMRO2() / self.getBF())
 
     def calculate_ven_CO2(self):
-        return self.get_art_CO2() + (10 * self.getWeight() * self.getCMRO2() / self.getBF())
+        return self.model.get_art_CO2() + (10 * self.get_volume() * self.getCMRO2() / self.getBF())
 
     def calculate_ven_lac(self):
-        return self.get_art_lac() + (10 * self.getWeight() * (self.getCMR_lac() - self.getCMR_lac_cons()) / self.getBF())
+        return self.model.get_art_lac() + (10 * self.get_volume() * (self.getCMR_lac() - self.getCMR_lac_conc()) / self.getBF())
 
     def getCMR_glu(self):
         if hasattr(self, "CMR_glu"):
@@ -81,26 +86,14 @@ class Organ(object):
         else:
             return None
 
-    def getWeight(self):
-        return getattr(self, "weight", 0)
+    def get_volume(self):
+        return getattr(self, "volume", 0)
 
     def getBF(self):
         return getattr(self, "BF", 0)
 
-    def get_art_glu(self):
-        return getattr(self, "art_glu", 0)
-
-    def get_art_O2(self):
-        return getattr(self, "art_O2", 0)
-
-    def get_art_CO2(self):
-        return getattr(self, "art_CO2", 0)
-
     def getCMRO2(self):
         return getattr(self, "CMRO2", 0)
-
-    def get_art_lac(self):
-        return getattr(self, "art_lac", 0)
 
     def getCMR_lac(self):
         return getattr(self, "CMR_lac", 0)
@@ -108,7 +101,7 @@ class Organ(object):
     def getCMR_glu_prod(self):
         return getattr(self, "CMR_glu_prod", 0)
 
-    def getCMR_lac_cons(self):
+    def getCMR_lac_conc(self):
         return getattr(self, "CMR_lac_cons", 0)
 
 
