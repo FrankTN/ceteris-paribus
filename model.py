@@ -78,13 +78,6 @@ class Model(object):
         """ Calculates the Respiratory Quotient of the entire body"""
         return self.calculate_total_VCO2()/self.calculate_total_VO2()
 
-    def globalChanged(self, changeSender):
-        self.setGlobal(changeSender.objectName, changeSender.value)
-
-    def setGlobal(self, objectName, value):
-        #Todo implement
-        pass
-
     # TODO update these methods, they should calculate
     def get_art_glu(self):
         return self.glu_art_conc
@@ -114,3 +107,12 @@ class Model(object):
         self.co2_art_conc = self._global_parameters["co2_art_conc"]
         self._blood_vol = self._global_parameters['blood_vol']
         self.initialize_basic_organs()
+
+    def update_model(self, objectName: str, value):
+        self.__setattr__(objectName, value)
+
+    def calculate_spec_VO2(self):
+        return self.calculate_total_VO2()/getattr(self,"BodyWeight", 70)
+
+    def calculate_spec_VCO2(self):
+        return self.calculate_total_VCO2()/getattr(self,"BodyWeight", 70)

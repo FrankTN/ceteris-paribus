@@ -34,12 +34,13 @@ class Controller(object):
         names = list(map(lambda x: x.get_name(), self.model.get_systemic().vertices()))
         return names
 
-    def set_total_VO2(self):
-        self.gui.set_global_VO2(self.model.calculate_total_VO2())
-
     def global_slider_changed(self, changeSender):
-        self.model.globalChanged(changeSender)
-        self.set_total_VO2()
+        self.model.update_model(changeSender.objectName(), changeSender.value())
+        self.gui.set_global_VO2(self.model.calculate_total_VO2())
+        self.gui.set_global_VCO2(self.model.calculate_total_VCO2())
+        self.gui.set_global_RQ(self.model.calculate_total_RQ())
+        self.gui.set_spec_VO2(self.model.calculate_spec_VO2())
+        self.gui.set_spec_VCO2(self.model.calculate_spec_VCO2())
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

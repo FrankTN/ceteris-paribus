@@ -56,7 +56,7 @@ class modelWindow(QMainWindow):
         self.imageLabel.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.imageLabel.setPixmap(QPixmap("img.jpg"))
 
-        # Create controls and add sliders
+        # Create controls and add sliders for the entire body
         self.controls = QGridLayout()
 
         BWsld = QSlider(Qt.Horizontal)
@@ -105,23 +105,42 @@ class modelWindow(QMainWindow):
         global_val_layout = QGridLayout()
 
         oxconlbl = QLabel("Whole body oxygen consumption")
-        self.oxconval = QLabel("0.0")
+        self.oxconval = QLabel("000.00")
+        self.oxconval.setFixedSize(self.oxconval.sizeHint())
         self.oxconval.setStyleSheet("background: white")
 
+        spec_o2_lbl = QLabel("Whole body specific oxygen concentration")
+        self.spec_o2_val = QLabel("000.00")
+        self.spec_o2_val.setFixedSize(self.oxconval.sizeHint())
+        self.spec_o2_val.setStyleSheet("background: white")
+
+        spec_co2_lbl = QLabel("Whole body specific CO2 concentration")
+        self.spec_co2_val = QLabel("000.00")
+        self.spec_co2_val.setFixedSize(self.oxconval.sizeHint())
+        self.spec_co2_val.setStyleSheet("background: white")
+
         co2prodlbl = QLabel("Whole body carbon dioxide production")
-        self.co2prodval = QLabel("0.0")
+        self.co2prodval = QLabel("000.00")
+        self.co2prodval.setFixedSize(self.oxconval.sizeHint())
         self.co2prodval.setStyleSheet("background: white")
 
         rqprodlbl = QLabel("Whole body respiratory quotient")
-        self.rqprodval = QLabel("0.0")
-        self.rqprodval.setStyleSheet("background: white")
+        self.rqval = QLabel("00.00")
+        self.rqval.setFixedSize(self.oxconval.sizeHint())
+        self.rqval.setStyleSheet("background: white")
+
+
 
         global_val_layout.addWidget(oxconlbl, 0, 0)
         global_val_layout.addWidget(self.oxconval, 0, 1)
-        global_val_layout.addWidget(co2prodlbl, 1, 0)
-        global_val_layout.addWidget(self.co2prodval, 1, 1)
-        global_val_layout.addWidget(rqprodlbl, 2, 0)
-        global_val_layout.addWidget(self.rqprodval, 2, 1)
+        global_val_layout.addWidget(spec_o2_lbl, 1, 0)
+        global_val_layout.addWidget(self.spec_o2_val, 1, 1)
+        global_val_layout.addWidget(spec_co2_lbl, 2, 0)
+        global_val_layout.addWidget(self.spec_co2_val, 2, 1)
+        global_val_layout.addWidget(co2prodlbl, 3, 0)
+        global_val_layout.addWidget(self.co2prodval, 3, 1)
+        global_val_layout.addWidget(rqprodlbl, 4, 0)
+        global_val_layout.addWidget(self.rqval, 4, 1)
         frame = QFrame()
         frame.setLayout(global_val_layout)
 
@@ -148,7 +167,6 @@ class modelWindow(QMainWindow):
         self.select_organ(organ_selector.currentIndex())
 
         self.controls.addLayout(self.organ_layout, 6, 0, 1, 2)
-        self.controls.setRowStretch(6, 1)
 
         # Finally, create a HBox and add the other components to it. Then, set it as the central widget.
         centralLayout = QHBoxLayout()
@@ -174,6 +192,17 @@ class modelWindow(QMainWindow):
     def set_global_VO2(self, newVO2):
         self.oxconval.setText(str(newVO2))
 
+    def set_global_VCO2(self, newVCO2):
+        self.co2prodval.setText(str(newVCO2))
+
+    def set_spec_VO2(self, newsVO2):
+        self.spec_o2_val.setText(str(newsVO2))
+
+    def set_spec_VCO2(self, newsVCO2):
+        self.spec_co2_val.setText(str(newsVCO2))
+
+    def set_global_RQ(self, newRQ):
+        self.rqval.setText(str(newRQ))
 
     def create_action(self, text, slot=None, shortcut=None, icon=None,
                       tip=None, checkable=False, signal="triggered"):
