@@ -1,4 +1,5 @@
-import sys
+""" This class represents the main window in the user interface. Through a connection to the controller, it
+    communicates with the model."""
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
@@ -8,7 +9,9 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QFrame, QDockWidg
 
 class modelWindow(QMainWindow):
 
-    def opendb(self):
+    def open_db(self):
+        """ This function, which opens the database and connects it to the model is called before the UI can actually be
+            used. """
         qfd = QFileDialog()
         qfd.setNameFilter("*.json")
         qfd.exec_()
@@ -21,19 +24,24 @@ class modelWindow(QMainWindow):
     def __init__(self, controller):
         super(modelWindow, self).__init__()
         self.controller = controller
-        self.opendb()
+        self.open_db()
+        self.init_UI()
+
+    def init_UI(self):
+        # Create upper toolbar with menu options
         tb = QToolBar()
-        tb.addAction(self.createAction("Load DB file", self.opendb))
+        tb.addAction(self.create_action("Load DB file", self.open_db))
         self.addToolBar(tb)
 
+        # Create log which will eventually show program logging outputs
         logDockWidget = QDockWidget("Log", self)
         logDockWidget.setObjectName("LogDockWidget")
-        logDockWidget.setAllowedAreas(Qt.LeftDockWidgetArea |
-                                      Qt.RightDockWidgetArea)
+        logDockWidget.setAllowedAreas(Qt.BottomDockWidgetArea)
         self.listWidget = QListWidget()
         logDockWidget.setWidget(self.listWidget)
-        self.addDockWidget(Qt.RightDockWidgetArea, logDockWidget)
+        self.addDockWidget(Qt.BottomDockWidgetArea, logDockWidget)
 
+        # Create a statusbar, which will display context-dependent messages
         self.sizeLabel = QLabel()
         self.sizeLabel.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
         status = self.statusBar()
@@ -41,12 +49,14 @@ class modelWindow(QMainWindow):
         status.addPermanentWidget(self.sizeLabel)
         status.showMessage("Ready", 5000)
 
+        # Fill the left region of the screen with a placeholder image TODO replace by actual model view
         self.imageLabel = QLabel()
         self.imageLabel.setMinimumSize(200, 200)
         self.imageLabel.setAlignment(Qt.AlignCenter)
         self.imageLabel.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.imageLabel.setPixmap(QPixmap("img.jpg"))
 
+        # Create controls and add sliders
         self.controls = QGridLayout()
 
         BWsld = QSlider(Qt.Horizontal)
@@ -54,42 +64,45 @@ class modelWindow(QMainWindow):
         self.controls.addWidget(BWlab, 0, 0)
         self.controls.addWidget(BWsld, 0, 1)
         BWsld.setObjectName("BodyWeight")
-        BWsld.valueChanged.connect(self.globalSliderChange)
+        BWsld.valueChanged.connect(self.global_slider_change)
 
         GLUsld = QSlider(Qt.Horizontal)
         GLUlab = QLabel("Arterial Glucose Concentration")
         self.controls.addWidget(GLUlab, 1, 0)
         self.controls.addWidget(GLUsld, 1, 1)
         GLUsld.setObjectName("GluConArt")
-        GLUsld.valueChanged.connect(self.globalSliderChange)
+        GLUsld.valueChanged.connect(self.global_slider_change)
 
         LACsld = QSlider(Qt.Horizontal)
         LAClab = QLabel("Arterial Lactate Concentration")
         self.controls.addWidget(LAClab, 2, 0)
         self.controls.addWidget(LACsld, 2, 1)
         LACsld.setObjectName("LacConArt")
-        LACsld.valueChanged.connect(self.globalSliderChange)
+        LACsld.valueChanged.connect(self.global_slider_change)
 
         O2sld = QSlider(Qt.Horizontal)
         O2lab = QLabel("Arterial Oxygen Concentration")
         self.controls.addWidget(O2lab, 3, 0)
         self.controls.addWidget(O2sld, 3, 1)
         O2sld.setObjectName("OxConArt")
-        O2sld.valueChanged.connect(self.globalSliderChange)
+        O2sld.valueChanged.connect(self.global_slider_change)
 
         CO2sld = QSlider(Qt.Horizontal)
         CO2lab = QLabel("Arterial Carbon Dioxide Concentration")
         self.controls.addWidget(CO2lab, 4, 0)
         self.controls.addWidget(CO2sld, 4, 1)
         CO2sld.setObjectName("CO2ConArt")
-        CO2sld.valueChanged.connect(self.globalSliderChange)
+        CO2sld.valueChanged.connect(self.global_slider_change)
 
         FFAsld = QSlider(Qt.Horizontal)
         FFAlab = QLabel("Arterial FFA Concentration")
         self.controls.addWidget(FFAlab, 5, 0)
         self.controls.addWidget(FFAsld, 5, 1)
         FFAsld.setObjectName("FFAConArt")
-        FFAsld.valueChanged.connect(self.globalSliderChange)
+        FFAsld.valueChanged.connect(self.global_slider_change)
+
+        # Create labels showing global values in the body
+        global_val_layout = QGridLayout()
 
         oxconlbl = QLabel("Whole body oxygen consumption")
         self.oxconval = QLabel("0.0")
@@ -103,7 +116,6 @@ class modelWindow(QMainWindow):
         self.rqprodval = QLabel("0.0")
         self.rqprodval.setStyleSheet("background: white")
 
-        global_val_layout = QGridLayout()
         global_val_layout.addWidget(oxconlbl, 0, 0)
         global_val_layout.addWidget(self.oxconval, 0, 1)
         global_val_layout.addWidget(co2prodlbl, 1, 0)
@@ -114,8 +126,8 @@ class modelWindow(QMainWindow):
         frame.setLayout(global_val_layout)
 
         self.controls.addWidget(frame, 7, 0)
-        self.controls.setRowStretch(7, 1)
 
+        # Create layout with organ controls.
         self.organ_layout = QGridLayout()
 
         Owesld = QSlider(Qt.Horizontal)
@@ -123,7 +135,6 @@ class modelWindow(QMainWindow):
         self.organ_layout.addWidget(Owslab, 0, 0)
         self.organ_layout.addWidget(Owesld)
 
-        self.organ_layout.addWidget(QPushButton("Testbutton"))
         organ_selector = QComboBox()
         organ_selector.addItems(self.controller.get_organ_names())
         organ_selector.currentIndexChanged.connect(self.select_organ)
@@ -131,10 +142,15 @@ class modelWindow(QMainWindow):
         self.organ_volume = QPlainTextEdit()
         self.organ_volume.setReadOnly(True)
         self.organ_layout.addWidget(self.organ_volume)
-        
+
+        # This fills out the other values in the organ selection form. We have to send the signal manually once, as the
+        # index has not yet changed.
+        self.select_organ(organ_selector.currentIndex())
+
         self.controls.addLayout(self.organ_layout, 6, 0, 1, 2)
         self.controls.setRowStretch(6, 1)
 
+        # Finally, create a HBox and add the other components to it. Then, set it as the central widget.
         centralLayout = QHBoxLayout()
         centralLayout.addWidget(self.imageLabel)
         centralLayout.addLayout(self.controls)
@@ -145,20 +161,22 @@ class modelWindow(QMainWindow):
         self.setWindowState(Qt.WindowMaximized)
         self.showFullScreen()
 
-    def globalSliderChange(self):
+    def global_slider_change(self):
+        # This method delegates the changing of a global value to the controller.
         print(self.sender().objectName() + "::" + str(self.sender().value()))
         self.controller.global_slider_changed(self.sender())
 
     def keyPressEvent(self, e):
+        # Currently, we respond to a press of the Escape key by closing the program.
         if e.key() == Qt.Key_Escape:
             self.close()
 
-    def setGlobalVO2(self, newVO2):
+    def set_global_VO2(self, newVO2):
         self.oxconval.setText(str(newVO2))
 
 
-    def createAction(self, text, slot=None, shortcut=None, icon=None,
-                     tip=None, checkable=False, signal="triggered"):
+    def create_action(self, text, slot=None, shortcut=None, icon=None,
+                      tip=None, checkable=False, signal="triggered"):
         action = QAction(text, self)
         if icon is not None:
             action.setIcon(QIcon(":/%s.png" % icon))

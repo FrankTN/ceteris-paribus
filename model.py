@@ -14,20 +14,8 @@ class Model(object):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
-        # Since we only create a model after we know that the db has been loaded, we know that getdb() works
-        self._database = controller.get_db()
-        # From the database, get the input parameters.
-        global_values = Query()
-        self._global_parameters = \
-        self._database.table("GlobalParameters").search(global_values.name == "global_values")[0]
-        self.glu_art_conc = self._global_parameters["glu_art_conc"]
-        self.lac_art_conc = self._global_parameters["lac_art_conc"]
-        self.ox_art_conc = self._global_parameters["ox_art_conc"]
-        self.co2_art_conc = self._global_parameters["co2_art_conc"]
-        # From the global parameters, retrieve the names of the parameters in the input vector.
-        self._input_vector_types = self._global_parameters['input_vector_types']
-        self._blood_vol = self._global_parameters['blood_vol']
-        self.initialize_basic_organs()
+        self.initialize_globals()
+
 
     def initialize_basic_organs(self):
         """ Using the database, this function reads the values for all the organs.
@@ -52,25 +40,6 @@ class Model(object):
     def get_systemic(self):
         return self._systemic_circulation
 
-    def calculate_out(self, v_in: dict, graph: Graph, partition: dict) -> dict:
-        """ This function calculates the output of a graph system based on an input vector.
-            :param v_in the input vector
-            :param graph the list of organs being used
-            :param partition the dict containing the fractions of the blood volume each organ receives
-        """
-        v_out = dict()
-        for param in self._input_vector_types:
-            v_out[param] = sum({o.calculate(v_in[param], param) for o in graph.vertices()})
-            if self._input_vector_types[param] == 'rel':
-                v_out[param] = v_out[param]/(self._blood_vol/1000)
-                pass
-        print(self._blood_vol)
-        # TODO define what to do when param is relative
-        return v_out
-
-    def add_organ(self, organ: Organ, CO_frac, organ_graph, partition: dict):
-        pass
-
     def check_global_consistency(self):
         """ This function will validate the model after each change"""
         total_VO2 = 0
@@ -85,18 +54,10 @@ class Model(object):
         VCO2_consistent = math.isclose(total_VO2, 0, abs_tol=0.00001)
         return VO2_consistent and VCO2_consistent
 
-    def make_consistent(self):
-        pass
-
-    def check_step_consistency(self, circulation):
-        """ This function will validate the model at each step."""
-        print(circulation.vertices())
-        pass
-
     def close(self):
         self._database.close()
 
-    def get_global(self):
+    def get_global_values(self):
         return self._global_parameters
 
     def calculate_total_VO2(self):
@@ -119,12 +80,12 @@ class Model(object):
 
     def globalChanged(self, changeSender):
         self.setGlobal(changeSender.objectName, changeSender.value)
-        self.make_consistent()
 
     def setGlobal(self, objectName, value):
         #Todo implement
         pass
 
+    # TODO update these methods, they should calculate
     def get_art_glu(self):
         return self.glu_art_conc
 
@@ -140,4 +101,16 @@ class Model(object):
     def get_organ(self, index):
         return self.get_systemic().vertices()[index]
 
-
+    def initialize_globals(self):
+        # Since we only create a model after we know that the db has been loaded, we know that getdb() works
+        self._database = self.controller.get_db()
+        # From the database, get the input parameters.
+        global_values = Query()
+        self._global_parameters = \
+            self._database.table("GlobalParameters").search(global_values.name == "global_values")[0]
+        self.glu_art_conc = self._global_parameters["glu_art_conc"]
+        self.lac_art_conc = self._global_parameters["lac_art_conc"]
+        self.ox_art_conc = self._global_parameters["ox_art_conc"]
+        self.co2_art_conc = self._global_parameters["co2_art_conc"]
+        self._blood_vol = self._global_parameters['blood_vol']
+        self.initialize_basic_organs()

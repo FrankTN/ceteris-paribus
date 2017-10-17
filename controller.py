@@ -1,3 +1,4 @@
+""" The controller acts as a layer handling communication between the GUI and the model. """
 import sys
 from PyQt5.QtWidgets import QFileDialog, QApplication
 from tinydb import TinyDB
@@ -11,15 +12,20 @@ class Controller(object):
         self.gui = modelWindow(self)
 
     def get_db(self):
-        return self.db
+        try:
+            return self.db
+        except AttributeError:
+            print("Database not found!")
+            self.gui.open_db()
 
     def set_db(self, dbpath: str):
         try:
             self.db = TinyDB(dbpath)
             self.model = Model(self)
-            return 1
+            return True
         except Exception:
-            return 0
+            print("An exception occurred when opening the database")
+            return False
 
     def get_organ(self, index):
         return self.model.get_organ(index)
@@ -29,7 +35,7 @@ class Controller(object):
         return names
 
     def set_total_VO2(self):
-        self.gui.setGlobalVO2(self.model.calculate_total_VO2())
+        self.gui.set_global_VO2(self.model.calculate_total_VO2())
 
     def global_slider_changed(self, changeSender):
         self.model.globalChanged(changeSender)

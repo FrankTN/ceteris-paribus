@@ -1,3 +1,5 @@
+""" This method fills out a new database from scratch. It is used for testing purposes"""
+
 import os
 from tinydb import TinyDB, Query
 

@@ -10,7 +10,7 @@ import organ_functions
 
 def dump_model(model, db_name: str = "organ_db.json"):
     """Serialize a model as a JSON file in such a way that it can be reopened at any moment for later use."""
-    #TODO remove duplicate code.
+    #TODO remove duplicate code and update.
     target_db = TinyDB(os.getcwd() + "/db/" + db_name)
     global_params = target_db.table("GlobalParameters")
     global_params.insert(model.get_global())
