@@ -1,10 +1,15 @@
 """ This class represents the main window in the user interface. Through a connection to the controller, it
     communicates with the model."""
 
+import sys
+from queue import Queue
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QFrame, QDockWidget, QToolBar, QListWidget, QAction, \
-    QFileDialog, QHBoxLayout, QWidget, QGridLayout, QSlider, QPushButton, QSizePolicy, QComboBox, QPlainTextEdit
+from PyQt5.QtWidgets import QMainWindow, QLabel, QFrame, QDockWidget, QToolBar, QListWidget, QAction, \
+    QFileDialog, QHBoxLayout, QWidget, QGridLayout, QSlider, QComboBox, QPlainTextEdit
+
+from gui.outlog import WriteStream, QThread, Receiver, QTextCursor
 
 
 class modelWindow(QMainWindow):
@@ -37,9 +42,22 @@ class modelWindow(QMainWindow):
         logDockWidget = QDockWidget("Log", self)
         logDockWidget.setObjectName("LogDockWidget")
         logDockWidget.setAllowedAreas(Qt.BottomDockWidgetArea)
-        self.listWidget = QListWidget()
-        logDockWidget.setWidget(self.listWidget)
+        self.logText = QPlainTextEdit()
+        self.logText.setReadOnly(True)
+        logDockWidget.setWidget(self.logText)
         self.addDockWidget(Qt.BottomDockWidgetArea, logDockWidget)
+        # Create Queue and redirect sys.stdout to this queue
+        queue = Queue()
+
+        self.thread = QThread()
+        stdout_receiver = Receiver(queue)
+        stdout_receiver.stdout_signal.connect(self.write_text)
+        stdout_receiver.moveToThread(self.thread)
+        self.thread.started.connect(stdout_receiver.run)
+        self.thread.start()
+
+        sys.stdout = WriteStream(queue)
+        sys.stderr = WriteStream(queue)
 
         # Create a statusbar, which will display context-dependent messages
         self.sizeLabel = QLabel()
@@ -149,28 +167,34 @@ class modelWindow(QMainWindow):
         # Create layout with organ controls.
         self.organ_layout = QGridLayout()
 
-        Owesld = QSlider(Qt.Horizontal)
-        Owslab = QLabel("Organ weight")
-        self.organ_layout.addWidget(Owslab, 0, 0)
-        self.organ_layout.addWidget(Owesld)
-
         organ_selector = QComboBox()
         organ_selector.addItems(self.controller.get_organ_names())
         organ_selector.currentIndexChanged.connect(self.select_organ)
-        self.organ_layout.addWidget(organ_selector, 3, 0, 2, 1)
-        self.organ_volume = QPlainTextEdit()
-        self.organ_volume.setReadOnly(True)
-        self.organ_layout.addWidget(self.organ_volume)
+
+        self.organ_layout.addWidget(organ_selector, 3, 0, 1, 1)
+        organ_volume_lbl = QLabel("Organ volume")
+        self.organ_volume_val = QLabel()
+        self.organ_volume_val.setFixedSize(self.oxconval.sizeHint())
+        self.organ_volume_val.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_volume_lbl, 4, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_volume_val, 4, 1, 1, 1)
+
+        organ_VO2_lbl = QLabel("Organ VO2 consumption")
+        self.organ_VO2 = QLabel()
+        self.organ_VO2.setFixedSize(self.oxconval.sizeHint())
+        self.organ_VO2.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_VO2_lbl, 5, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_VO2, 5, 1, 1, 1)
 
         # This fills out the other values in the organ selection form. We have to send the signal manually once, as the
         # index has not yet changed.
         self.select_organ(organ_selector.currentIndex())
 
-        self.controls.addLayout(self.organ_layout, 6, 0, 1, 2)
+        # self.controls.addLayout(self.organ_layout, 6, 0, 1, 2)
 
         # Finally, create a HBox and add the other components to it. Then, set it as the central widget.
         centralLayout = QHBoxLayout()
-        centralLayout.addWidget(self.imageLabel)
+        centralLayout.addLayout(self.organ_layout)
         centralLayout.addLayout(self.controls)
         centralWindow = QWidget()
         centralWindow.setLayout(centralLayout)
@@ -222,5 +246,10 @@ class modelWindow(QMainWindow):
 
     def select_organ(self, new_organ):
         organ = self.controller.get_organ(new_organ)
-        self.organ_volume.setPlainText(str(organ.get_volume()))
+        self.organ_volume_val.setText(str(organ.get_volume()))
+        self.organ_VO2.setText(str(organ.get_VO2()))
         print(organ)
+
+    def write_text(self, text):
+        self.logText.moveCursor(QTextCursor.End)
+        self.logText.insertPlainText(text)
