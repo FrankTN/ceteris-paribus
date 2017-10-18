@@ -27,82 +27,79 @@ class Organ(object):
         if hasattr(self,"CMRO2") and hasattr(self, "volume"):
             return 10 * constants.mol_to_ml_37_deg * self.CMRO2 * self.volume
         else:
-            return None
+            return 0
 
     def calculate_VCO2(self):
         """ Calculate the production of CO2 by the organ."""
         if hasattr(self, "CMRCO2") and hasattr(self, "volume"):
             return 10 * constants.mol_to_ml_37_deg * self.CMRCO2 * self.volume
         else:
-            return None
+            return 0
 
     def calculate_CMRCO2(self):
-            """ Find the consumption"""
-            return self.calculate_RQ() * self.calculate_CMRO2()
+            """ Calculate the production of CO2"""
+            return self.get_RQ() * self.get_SMR_O2()
 
-    def calculate_CMR_oxidation_glu(self):
-        return self.getWQ() * self.getCMR_glu()
+    def get_SMR_glu_oxidation(self):
+        return self.get_WQ() * self.get_SMR_glu()
 
-    def calculate_CMR_lac(self):
-        return 2 * self.getWQ() * self.getCMR_glu()
+    def get_SMR_lac(self):
+        return 2 * self.get_WQ() * self.get_SMR_glu()
 
     def __str__(self):
         return getattr(self, 'name', 'default_organ')
 
-    def calculate_RQ(self):
+    def get_RQ(self):
         """ Calculate the Respiratory Quotient of the organ"""
-        return self.calculate_VO2() / self.calculate_VCO2()
-
-    def calculate_CMRO2(self):
-        """ Calculates the specific metabolic consumption of oxygen in mmol/min/100g """
-        if hasattr(self, "CMRO2"):
-            return self.CMRO2
+        if self.calculate_VCO2() == 0:
+            return 0
         else:
-            return None
+            return self.calculate_VO2() / self.calculate_VCO2()
 
-    def getWQ(self):
+    def get_WQ(self):
         """ This function returns the Warburg Coefficient of the organ. This coefficient defines the glucose fraction
             being converted to CO2 as opposed to HLa"""
-        if hasattr(self, "WQ"):
-            return self.WQ
-        else:
-            return None
+        return getattr(self, 'WQ', 0)
 
-    def calculate_ven_glu(self):
-        return self.model.get_art_glu() - (10 * self.get_volume() - (self.getCMR_glu() - self.getCMR_glu_prod()) / self.getBF())
+    def get_ven_glu(self):
+        return self.model.get_art_glu() - (10 * self.get_weight() - (self.get_SMR_glu() - self.get_SMR_glu_prod()) / self.get_BF())
 
-    def calculate_ven_O2(self):
-        return self.model.get_art_O2() - (10 * self.get_volume() * self.getCMRO2() / self.getBF())
+    def get_ven_O2(self):
+        return self.model.get_art_O2() - (10 * self.get_weight() * self.get_SMR_O2() / self.get_BF())
 
-    def calculate_ven_CO2(self):
-        return self.model.get_art_CO2() + (10 * self.get_volume() * self.getCMRO2() / self.getBF())
+    def get_ven_CO2(self):
+        return self.model.get_art_CO2() + (10 * self.get_weight() * self.get_SMR_O2() / self.get_BF())
 
-    def calculate_ven_lac(self):
-        return self.model.get_art_lac() + (10 * self.get_volume() * (self.getCMR_lac() - self.getCMR_lac_conc()) / self.getBF())
+    def get_ven_lac(self):
+        return self.model.get_art_lac() + (10 * self.get_weight() * (self.get_SMR_lac() - self.get_SMR_lac_conc()) / self.get_BF())
 
-    def getCMR_glu(self):
-        if hasattr(self, "CMR_glu"):
-            return self.CMR_glu
-        else:
-            return None
+    def get_ven_FFA(self):
+        return self.model.get_art_FFA() - (10 * self.get_weight() * self.get_SMR_FFA()) / self.get_BF()
 
-    def get_volume(self):
-        return getattr(self, "volume", 0)
+    def get_SMR_glu(self):
+        return getattr(self, "CMR_glu", 0)
 
-    def getBF(self):
-        return getattr(self, "BF", 0)
+    def get_weight(self):
+        return getattr(self, "Wfrac", 0) * self.model.get_BW()
 
-    def getCMRO2(self):
+    def get_BF(self):
+        return getattr(self, "BF", 5)
+
+    def get_SMR_O2(self):
+        """ Returns the specific metabolic consumption of oxygen in mmol/min/100g """
         return getattr(self, "CMRO2", 0)
 
-    def getCMR_lac(self):
-        return getattr(self, "CMR_lac", 0)
-
-    def getCMR_glu_prod(self):
+    def get_SMR_glu_prod(self):
         return getattr(self, "CMR_glu_prod", 0)
 
-    def getCMR_lac_conc(self):
+    def get_SMR_lac_conc(self):
         return getattr(self, "CMR_lac_cons", 0)
+
+    def get_SMR_FFA(self):
+        return 6 * (1 - self.get_RQ()) / (27 * self.get_RQ() - 18) * self.get_SMR_glu()
+
+
+
 
 
 

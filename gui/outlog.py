@@ -15,6 +15,9 @@ class WriteStream(object):
     def write(self, text):
         self.queue.put(text)
 
+    def flush(self):
+        pass
+
 # A QObject (to be run in a QThread) which sits waiting for data to come through a Queue.Queue().
 # It blocks until data is available, and one it has got something from the queue, it sends
 # it to the "MainThread" by emitting a Qt Signal

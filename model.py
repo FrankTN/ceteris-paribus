@@ -4,6 +4,7 @@ from tinydb import Query
 
 from organ_templates.organ import Organ
 from graph import Graph
+from constants import SMR_glu_lung
 
 
 class Model(object):
@@ -91,6 +92,9 @@ class Model(object):
     def get_art_lac(self):
         return self.lac_art_conc
 
+    def get_art_FFA(self):
+        return self.ffa_art_conc
+
     def get_organ(self, index):
         return self.get_systemic().vertices()[index]
 
@@ -105,6 +109,7 @@ class Model(object):
         self.lac_art_conc = self._global_parameters["lac_art_conc"]
         self.ox_art_conc = self._global_parameters["ox_art_conc"]
         self.co2_art_conc = self._global_parameters["co2_art_conc"]
+        self.ffa_art_conc = self._global_parameters["lac_art_conc"]
         self._blood_vol = self._global_parameters['blood_vol']
         self.initialize_basic_organs()
 
@@ -112,7 +117,47 @@ class Model(object):
         self.__setattr__(objectName, value)
 
     def calculate_spec_VO2(self):
-        return self.calculate_total_VO2()/getattr(self,"BodyWeight", 70)
+        return self.calculate_total_VO2()/self.get_BW()
 
     def calculate_spec_VCO2(self):
-        return self.calculate_total_VCO2()/getattr(self,"BodyWeight", 70)
+        return self.calculate_total_VCO2()/self.get_BW()
+
+    def calculate_ven_mix(self):
+        total_glu = total_O2 = total_CO2 = total_lac = total_FFA = 0
+        for organ in self.get_systemic().vertices():
+            BF = organ.get_BF()
+            total_glu += organ.get_ven_glu() * BF
+            total_O2 += organ.get_ven_O2() * BF
+            total_CO2 += organ.get_ven_CO2() * BF
+            total_lac += organ.get_ven_lac() * BF
+            total_FFA += organ.get_ven_FFA() * BF
+        glu_c = total_glu / self.get_CardO()
+        O2_c = total_O2 / self.get_CardO()
+        CO2_c = total_CO2 / self.get_CardO()
+        lac_c = total_lac / self.get_CardO()
+        FFA_c = total_FFA / self.get_CardO()
+        return (glu_c, O2_c, CO2_c, lac_c, FFA_c)
+
+    def get_CardO(self):
+        total_CO = 0
+        for organ in self.get_systemic().vertices():
+            total_CO += organ.get_BF()
+        return total_CO
+
+    def get_pulmonary_SMR(self):
+        # TODO it doesnt make sense to iterate over all organs
+        SMR_O2 = SMR_CO2 = SMR_lac = SMR_glu = SMR_FFA = 0
+        for organ in self.get_pulmonary().vertices():
+            # TODO implement volume to weight conversion
+            if organ.get_name() == 'lung':
+                weight = organ.get_weight()
+                SMR_O2 = - self.calculate_total_VO2() / weight
+                SMR_CO2 = - self.calculate_total_VCO2() / weight
+                SMR_glu = SMR_glu_lung
+                SMR_lac = 2 * SMR_glu
+                SMR_FFA = 0
+        return (SMR_glu, SMR_O2, SMR_CO2, SMR_lac, SMR_FFA)
+
+    def get_BW(self):
+        return getattr(self,"BodyWeight", 70)
+

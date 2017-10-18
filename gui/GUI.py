@@ -39,7 +39,7 @@ class modelWindow(QMainWindow):
         self.addToolBar(tb)
 
         # Create log which will eventually show program logging outputs
-        logDockWidget = QDockWidget("Log", self)
+        logDockWidget = QDockWidget("Stdout", self)
         logDockWidget.setObjectName("LogDockWidget")
         logDockWidget.setAllowedAreas(Qt.BottomDockWidgetArea)
         self.logText = QPlainTextEdit()
@@ -57,7 +57,6 @@ class modelWindow(QMainWindow):
         self.thread.start()
 
         sys.stdout = WriteStream(queue)
-        sys.stderr = WriteStream(queue)
 
         # Create a statusbar, which will display context-dependent messages
         self.sizeLabel = QLabel()
@@ -172,12 +171,13 @@ class modelWindow(QMainWindow):
         organ_selector.currentIndexChanged.connect(self.select_organ)
 
         self.organ_layout.addWidget(organ_selector, 3, 0, 1, 1)
-        organ_volume_lbl = QLabel("Organ volume")
-        self.organ_volume_val = QLabel()
-        self.organ_volume_val.setFixedSize(self.oxconval.sizeHint())
-        self.organ_volume_val.setStyleSheet("background: white")
-        self.organ_layout.addWidget(organ_volume_lbl, 4, 0, 1, 1)
-        self.organ_layout.addWidget(self.organ_volume_val, 4, 1, 1, 1)
+
+        organ_weight_lbl = QLabel("Organ weight")
+        self.organ_weight_val = QLabel()
+        self.organ_weight_val.setFixedSize(self.oxconval.sizeHint())
+        self.organ_weight_val.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_weight_lbl, 4, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_weight_val, 4, 1, 1, 1)
 
         organ_VO2_lbl = QLabel("Organ VO2 consumption")
         self.organ_VO2 = QLabel()
@@ -185,6 +185,49 @@ class modelWindow(QMainWindow):
         self.organ_VO2.setStyleSheet("background: white")
         self.organ_layout.addWidget(organ_VO2_lbl, 5, 0, 1, 1)
         self.organ_layout.addWidget(self.organ_VO2, 5, 1, 1, 1)
+
+        organ_VCO2_lbl = QLabel("Organ VCO2 production")
+        self.organ_VCO2 = QLabel()
+        self.organ_VCO2.setFixedSize(self.oxconval.sizeHint())
+        self.organ_VCO2.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_VCO2_lbl, 6, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_VCO2, 6, 1, 1, 1)
+
+        organ_glu_ven_lbl = QLabel("Organ venous glucose concentration")
+        self.organ_glu_ven = QLabel()
+        self.organ_glu_ven.setFixedSize(self.oxconval.sizeHint())
+        self.organ_glu_ven.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_glu_ven_lbl, 7, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_glu_ven, 7, 1, 1, 1)
+
+        organ_O2_ven_lbl = QLabel("Organ venous oxygen concentration")
+        self.organ_O2_ven = QLabel()
+        self.organ_O2_ven.setFixedSize(self.oxconval.sizeHint())
+        self.organ_O2_ven.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_O2_ven_lbl, 8, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_O2_ven, 8, 1, 1, 1)
+
+        organ_CO2_ven_lbl = QLabel("Organ venous CO2 concentration")
+        self.organ_CO2_ven = QLabel()
+        self.organ_CO2_ven.setFixedSize(self.oxconval.sizeHint())
+        self.organ_CO2_ven.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_CO2_ven_lbl, 9, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_CO2_ven, 9, 1, 1, 1)
+
+        organ_lac_ven_lbl = QLabel("Organ venous lactate concentration")
+        self.organ_lac_ven = QLabel()
+        self.organ_lac_ven.setFixedSize(self.oxconval.sizeHint())
+        self.organ_lac_ven.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_lac_ven_lbl, 10, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_lac_ven, 10, 1, 1, 1)
+
+        organ_FFA_ven_lbl = QLabel("Organ venous FFA concentration")
+        self.organ_FFA_ven = QLabel()
+        self.organ_FFA_ven.setFixedSize(self.oxconval.sizeHint())
+        self.organ_FFA_ven.setStyleSheet("background: white")
+        self.organ_layout.addWidget(organ_FFA_ven_lbl, 11, 0, 1, 1)
+        self.organ_layout.addWidget(self.organ_FFA_ven, 11, 1, 1, 1)
+
 
         # This fills out the other values in the organ selection form. We have to send the signal manually once, as the
         # index has not yet changed.
@@ -244,10 +287,17 @@ class modelWindow(QMainWindow):
             action.setCheckable(True)
         return action
 
-    def select_organ(self, new_organ):
-        organ = self.controller.get_organ(new_organ)
-        self.organ_volume_val.setText(str(organ.get_volume()))
+    def select_organ(self, new_organ_index: int):
+        self.organ_index = new_organ_index
+        organ = self.controller.get_organ(new_organ_index)
+        self.organ_weight_val.setText(str(organ.get_weight()))
         self.organ_VO2.setText(str(organ.get_VO2()))
+        self.organ_VCO2.setText(str(organ.get_VCO2()))
+        self.organ_glu_ven.setText(str(organ.get_ven_glu()))
+        self.organ_O2_ven.setText(str(organ.get_ven_O2()))
+        self.organ_CO2_ven.setText(str(organ.get_ven_CO2()))
+        self.organ_lac_ven.setText(str(organ.get_ven_lac()))
+        self.organ_FFA_ven.setText(str(organ.get_ven_FFA()))
         print(organ)
 
     def write_text(self, text):

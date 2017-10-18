@@ -41,7 +41,9 @@ class Controller(object):
         self.gui.set_global_RQ(self.model.calculate_total_RQ())
         self.gui.set_spec_VO2(self.model.calculate_spec_VO2())
         self.gui.set_spec_VCO2(self.model.calculate_spec_VCO2())
-
+        # set dependent organ variables
+        self.gui.select_organ(self.gui.organ_index)
+        
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     controller = Controller()
