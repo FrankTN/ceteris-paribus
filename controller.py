@@ -43,7 +43,7 @@ class Controller(object):
         self.gui.set_spec_VCO2(self.model.calculate_spec_VCO2())
         # set dependent organ variables
         self.gui.select_organ(self.gui.organ_index)
-        
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     controller = Controller()
