@@ -1,16 +1,32 @@
 import constants
+from db.function_parser import EvalWrapper
 
 
 class Organ(object):
     """The class which represents all organs"""
 
-    def __init__(self, organ_info: dict, model):
+    def __init__(self, organ_info: dict, global_values : dict):
         """ This generic implementation of an organ in the model uses the __setattr__ method to add attributes.
             Adding attributes in this way is necessary since not all attributes are defined for each organ.
         """
-        self.model = model
-        for property in organ_info.keys():
-            self.__setattr__(property, organ_info[property])
+        self.global_values = global_values
+        if organ_info:
+            for property in organ_info.keys():
+                self.__setattr__(property, organ_info[property])
+
+        print(self.__dict__)
+        self.defined_variables = {**getattr(self,'vars'), **getattr(self,'global_values')}
+        print(self.defined_variables)
+        self.results = {}
+        self.evaluate()
+
+    def evaluate(self):
+        evaluator = EvalWrapper(self.defined_variables)
+        function_dict = getattr(self, 'functions')
+        for function_name in function_dict:
+            evaluator.set_function(function_dict[function_name])
+            self.results[function_name] = evaluator.evaluate()
+
 
     def get_name(self):
         return getattr(self, 'name', 'default_organ')
@@ -97,16 +113,5 @@ class Organ(object):
 
     def get_SMR_FFA(self):
         return 6 * (1 - self.get_RQ()) / (27 * self.get_RQ() - 18) * self.get_SMR_glu()
-
-
-
-
-
-
-
-
-
-
-
 
 

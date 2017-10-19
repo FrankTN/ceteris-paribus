@@ -1,0 +1,1 @@
+{"GlobalParameters": {"1": {"C2": 25.48657718}}, "SystemicOrgans": {"1": {"name": "Skeletal muscle", "functions": {"calcVO2": "C2 * SMRO2 * Organ_Weight"}, "vars": {"Organ_Weight": 27, "SMRO2": 0.18}}}, "_default": {}}
