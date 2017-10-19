@@ -27,9 +27,11 @@ class Organ(object):
             evaluator.set_function(function_dict[function_name])
             self.results[function_name] = evaluator.evaluate()
 
-
     def get_name(self):
         return getattr(self, 'name', 'default_organ')
+
+    def get_vars(self):
+        return self.defined_variables
 
     def get_VO2(self):
         return getattr(self, 'VO2', 0)
@@ -63,7 +65,7 @@ class Organ(object):
         return 2 * self.get_WQ() * self.get_SMR_glu()
 
     def __str__(self):
-        return getattr(self, 'name', 'default_organ')
+        return str(getattr(self, 'name', 'default_organ')) + ":\n\tFunctions: " + str(getattr(self, 'functions')) + "\n\tVars: " + str(getattr(self, 'vars'))
 
     def get_RQ(self):
         """ Calculate the Respiratory Quotient of the organ"""

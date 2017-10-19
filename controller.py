@@ -3,20 +3,25 @@ import sys
 from PyQt5.QtWidgets import QFileDialog, QApplication
 from tinydb import TinyDB
 
-from gui.GUI import modelWindow
+from gui.dialogs import open_db
+from gui.graph_editor import graphWindow
 from model import Model
 
 class Controller(object):
 
     def __init__(self):
-        self.gui = modelWindow(self)
+        self.db = open_db()
+        self.model = Model(self)
+        self.ui = graphWindow(self.model)
+
+
 
     def get_db(self):
         try:
             return self.db
         except AttributeError:
             print("Database not found!")
-            self.gui.open_db()
+            self.db = open_db()
 
     def set_db(self, dbpath: str):
         try:

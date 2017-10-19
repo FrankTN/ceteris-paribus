@@ -14,18 +14,6 @@ from gui.outlog import WriteStream, QThread, Receiver, QTextCursor
 
 class modelWindow(QMainWindow):
 
-    def open_db(self):
-        """ This function, which opens the database and connects it to the model is called before the UI can actually be
-            used. """
-        qfd = QFileDialog()
-        qfd.setNameFilter("*.json")
-        qfd.exec_()
-        # We can only select a single file, therefore, we can always look at [0] without missing anything
-        if self.controller.set_db(qfd.selectedFiles()[0]):
-            self.statusBar().showMessage("Successfully loaded " + qfd.selectedFiles()[0])
-        else:
-            self.statusBar().showMessage("Problems loading " + qfd.selectedFiles()[0])
-
     def __init__(self, controller):
         super(modelWindow, self).__init__()
         self.controller = controller

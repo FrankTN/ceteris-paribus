@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog
+from tinydb import TinyDB
 
 
 class NewNodeDialog(QDialog):
@@ -31,3 +32,17 @@ class NewNodeDialog(QDialog):
 class OrganSettingsDialog(QDialog):
     def __init__(self):
         super().__init__()
+
+def open_db():
+    """ This function, which opens the database and connects it to the model is called before the UI can actually be
+        used. """
+    qfd = QFileDialog()
+    qfd.setNameFilter("*.json")
+    qfd.exec_()
+    # We can only select a single file, therefore, we can always look at [0] without missing anything
+    potential_db = qfd.selectedFiles()[0]
+
+    try:
+        return TinyDB(potential_db)
+    except:
+        raise ValueError("Unable to load database")

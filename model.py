@@ -15,25 +15,24 @@ class Model(object):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
+        # Since we only create a model after we know that the db has been loaded, we know that getdb() works
+        self._database = self.controller.get_db()
+        print(self.controller.get_db())
         self.initialize_globals()
+        self.initialize_organs()
 
+    def initialize_globals(self):
+        # From the database, get the input parameters.
+        self._global_parameters = self._database.table("GlobalParameters").all()[0]
 
-    def initialize_basic_organs(self):
+    def initialize_organs(self):
         """ Using the database, this function reads the values for all the organs.
             Currently, the lungs are created, and an other compartment is added to
             simulate the systemic circulation in its entirety.
         """
-        # Create systemic circulation as a graph.
-        self._systemic_circulation = Graph()
-        # Add all organs in the database
-        for organ_info in self._database.table("SystemicParameters"):
-            self._systemic_circulation.add_vertex(Organ(organ_info, self))
-
-        # Create pulmonary graph
-        self._pulmonary_circulation = Graph()
-        # Add all organs which should be linked
-        for pulm_info in self._database.table("PulmonaryParameters"):
-            self._pulmonary_circulation.add_vertex(Organ(pulm_info, self))
+        self.organs = []
+        for organ_info in self._database.table("SystemicOrgans").all():
+            self.organs.append(Organ(organ_info, self._global_parameters))
 
     def get_pulmonary(self):
         return self._pulmonary_circulation
@@ -97,21 +96,6 @@ class Model(object):
 
     def get_organ(self, index):
         return self.get_systemic().vertices()[index]
-
-    def initialize_globals(self):
-        # Since we only create a model after we know that the db has been loaded, we know that getdb() works
-        self._database = self.controller.get_db()
-        # From the database, get the input parameters.
-        global_values = Query()
-        self._global_parameters = \
-            self._database.table("GlobalParameters").search(global_values.name == "global_values")[0]
-        self.glu_art_conc = self._global_parameters["glu_art_conc"]
-        self.lac_art_conc = self._global_parameters["lac_art_conc"]
-        self.ox_art_conc = self._global_parameters["ox_art_conc"]
-        self.co2_art_conc = self._global_parameters["co2_art_conc"]
-        self.ffa_art_conc = self._global_parameters["lac_art_conc"]
-        self._blood_vol = self._global_parameters['blood_vol']
-        self.initialize_basic_organs()
 
     def update_model(self, objectName: str, value):
         self.__setattr__(objectName, value)

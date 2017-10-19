@@ -2,15 +2,17 @@ import sys
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QBrush
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QLabel, QGraphicsView, QApplication, QSlider
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QLabel, QGraphicsView, QApplication, QSlider, QFileDialog
+from tinydb import TinyDB
 
 from gui.graph_scene import GraphScene
+from model import Model
 
 
 class graphWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, model: Model):
         super().__init__()
-        self.scene = GraphScene()
+        self.scene = GraphScene(model)
 
         # a grid foreground
         self.scene.setBackgroundBrush(QBrush(Qt.lightGray, Qt.CrossPattern))
