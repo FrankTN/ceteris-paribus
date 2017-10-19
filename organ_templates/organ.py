@@ -16,7 +16,6 @@ class Organ(object):
 
         print(self.__dict__)
         self.defined_variables = {**getattr(self,'vars'), **getattr(self,'global_values')}
-        print(self.defined_variables)
         self.results = {}
         self.evaluate()
 

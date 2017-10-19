@@ -30,8 +30,14 @@ class NewNodeDialog(QDialog):
         self.setLayout(layout)
 
 class OrganSettingsDialog(QDialog):
-    def __init__(self):
+    def __init__(self, organ):
         super().__init__()
+        self.setWindowTitle(organ.get_name())
+        layout = QGridLayout()
+        for val in organ.get_vars():
+            layout.addWidget(QLabel(val))
+        self.setLayout(layout)
+
 
 def open_db():
     """ This function, which opens the database and connects it to the model is called before the UI can actually be
