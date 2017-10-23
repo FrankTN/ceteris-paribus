@@ -5,26 +5,28 @@ from db.function_parser import EvalWrapper
 class Organ(object):
     """The class which represents all organs"""
 
-    def __init__(self, organ_info: dict, global_values : dict):
+    def __init__(self, organ_info: dict, global_params: dict, global_constants: dict):
         """ This generic implementation of an organ in the model uses the __setattr__ method to add attributes.
             Adding attributes in this way is necessary since not all attributes are defined for each organ.
         """
-        self.global_values = global_values
+        self.global_params = global_params
+        self.global_constants = global_constants
         if organ_info:
             for property in organ_info.keys():
                 self.__setattr__(property, organ_info[property])
 
         print(self.__dict__)
-        self.defined_variables = {**getattr(self,'vars'), **getattr(self,'global_values')}
+        self.defined_variables = (getattr(self,'vars'), getattr(self,'global_params'), getattr(self, "global_constants"))
         self.results = {}
         self.evaluate()
 
     def set_globals(self, new_globals):
-        self.global_values = new_globals
-        self.defined_variables = {**getattr(self,'vars'), **getattr(self,'global_values')}
+        self.global_params = new_globals
+        self.defined_variables =(getattr(self,'vars'), getattr(self,'global_params'), getattr(self, "global_constants"))
 
     def evaluate(self):
-        evaluator = EvalWrapper(self.defined_variables)
+        vars, params, consts = self.defined_variables
+        evaluator = EvalWrapper({**vars, **params, **consts})
         function_dict = getattr(self, 'functions')
         for function_name in function_dict:
             evaluator.set_function(function_dict[function_name])
@@ -34,7 +36,11 @@ class Organ(object):
         return getattr(self, 'name', 'default_organ')
 
     def get_vars(self):
-        return self.defined_variables
+        vars, params, consts = self.defined_variables
+        rangeless_params = {}
+        for parameter in params:
+            rangeless_params[parameter] = params[parameter][2]
+        return {**vars, **rangeless_params, **consts}
 
     def get_VO2(self):
         return getattr(self, 'VO2', 0)

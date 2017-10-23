@@ -1,10 +1,4 @@
-import math
-
-from tinydb import Query
-
 from organ_templates.organ import Organ
-from graph import Graph
-from constants import SMR_glu_lung
 
 
 class Model(object):
@@ -17,13 +11,14 @@ class Model(object):
         self.controller = controller
         # Since we only create a model after we know that the db has been loaded, we know that getdb() works
         self._database = self.controller.get_db()
-        print(self.controller.get_db())
         self.initialize_globals()
         self.initialize_organs()
 
     def initialize_globals(self):
         # From the database, get the input parameters.
-        self._global_parameters = self._database.table("GlobalParameters").all()[0]
+        self._params = self._database.table("GlobalParameters").all()[0]
+        self._constants = self._database.table("GlobalConstants").all()[0]
+        self._globals = {**self._params, **self._constants}
 
     def initialize_organs(self):
         """ Using the database, this function reads the values for all the organs.
@@ -32,120 +27,38 @@ class Model(object):
         """
         self.organs = []
         for organ_info in self._database.table("SystemicOrgans").all():
-            self.organs.append(Organ(organ_info, self._global_parameters))
+            self.organs.append(Organ(organ_info, self._params, self._constants))
 
-    def changed_globals(self):
+    def global_changed(self):
         for organ in self.organs:
-            organ.set_globals(self._global_parameters)
+            organ.set_globals(self._globals)
 
-    def get_pulmonary(self):
-        return self._pulmonary_circulation
-
-    def get_systemic(self):
-        return self._systemic_circulation
-
-    def check_global_consistency(self):
-        """ This function will validate the model after each change"""
-        total_VO2 = 0
-        total_VCO2 = 0
-        for organ in self._systemic_circulation.vertices():
-            total_VO2 += float(organ.get_VO2())
-            total_VCO2 += float(organ.get_VCO2())
-        for organ in self._pulmonary_circulation.vertices():
-            total_VO2 += organ.get_VO2()
-            total_VCO2 += organ.get_VCO2()
-        VO2_consistent = math.isclose(total_VCO2, 0, abs_tol=0.00001)
-        VCO2_consistent = math.isclose(total_VO2, 0, abs_tol=0.00001)
-        return VO2_consistent and VCO2_consistent
+    def param_changed(self, name: str, new_value):
+        self._params[name][2] = new_value
+        self.calculate()
+        print(name + ": " + str(new_value))
 
     def close(self):
         self._database.close()
 
     def get_global_values(self):
-        return self._global_parameters
+        return self._globals
 
-    def calculate_total_VO2(self):
-        """ Return the oxygen consumption for the whole body in mL/min """
-        total_VO2 = 0
-        for organ in self._systemic_circulation.vertices():
-            total_VO2 += float(organ.get_VO2())
-        return total_VO2
+    def get_params(self):
+        return self._params
 
-    def calculate_total_VCO2(self):
-        """ Return the CO2 consumption in mL/min"""
-        total_VCO2 = 0
-        for organ in self._systemic_circulation.vertices():
-            total_VCO2 += float(organ.get_VCO2())
-        return total_VCO2
-
-    def calculate_total_RQ(self):
-        """ Calculates the Respiratory Quotient of the entire body"""
-        return self.calculate_total_VCO2()/self.calculate_total_VO2()
-
-    # TODO update these methods, they should calculate
-    def get_art_glu(self):
-        return self.glu_art_conc
-
-    def get_art_O2(self):
-        return self.ox_art_conc
-
-    def get_art_CO2(self):
-        return self.co2_art_conc
-
-    def get_art_lac(self):
-        return self.lac_art_conc
-
-    def get_art_FFA(self):
-        return self.ffa_art_conc
-
-    def get_organ(self, index):
-        return self.get_systemic().vertices()[index]
+    def get_constants(self):
+        return self._constants
 
     def update_model(self, objectName: str, value):
         self.__setattr__(objectName, value)
 
-    def calculate_spec_VO2(self):
-        return self.calculate_total_VO2()/self.get_BW()
+    def calculate(self):
+        self.calculate_organ_values()
+        self.calculate_global_values()
 
-    def calculate_spec_VCO2(self):
-        return self.calculate_total_VCO2()/self.get_BW()
+    def calculate_global_values(self):
+        pass
 
-    def calculate_ven_mix(self):
-        total_glu = total_O2 = total_CO2 = total_lac = total_FFA = 0
-        for organ in self.get_systemic().vertices():
-            BF = organ.get_BF()
-            total_glu += organ.get_ven_glu() * BF
-            total_O2 += organ.get_ven_O2() * BF
-            total_CO2 += organ.get_ven_CO2() * BF
-            total_lac += organ.get_ven_lac() * BF
-            total_FFA += organ.get_ven_FFA() * BF
-        glu_c = total_glu / self.get_CardO()
-        O2_c = total_O2 / self.get_CardO()
-        CO2_c = total_CO2 / self.get_CardO()
-        lac_c = total_lac / self.get_CardO()
-        FFA_c = total_FFA / self.get_CardO()
-        return (glu_c, O2_c, CO2_c, lac_c, FFA_c)
-
-    def get_CardO(self):
-        total_CO = 0
-        for organ in self.get_systemic().vertices():
-            total_CO += organ.get_BF()
-        return total_CO
-
-    def get_pulmonary_SMR(self):
-        # TODO it doesnt make sense to iterate over all organs
-        SMR_O2 = SMR_CO2 = SMR_lac = SMR_glu = SMR_FFA = 0
-        for organ in self.get_pulmonary().vertices():
-            # TODO implement volume to weight conversion
-            if organ.get_name() == 'lung':
-                weight = organ.get_weight()
-                SMR_O2 = - self.calculate_total_VO2() / weight
-                SMR_CO2 = - self.calculate_total_VCO2() / weight
-                SMR_glu = SMR_glu_lung
-                SMR_lac = 2 * SMR_glu
-                SMR_FFA = 0
-        return (SMR_glu, SMR_O2, SMR_CO2, SMR_lac, SMR_FFA)
-
-    def get_BW(self):
-        return getattr(self,"BodyWeight", 70)
-
+    def calculate_organ_values(self):
+        pass

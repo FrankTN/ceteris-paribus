@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider
 from tinydb import TinyDB
 
 
@@ -29,15 +29,34 @@ class NewNodeDialog(QDialog):
         layout.addLayout(buttonLayout, 1, 0, 1, 3)
         self.setLayout(layout)
 
+
+class InputSettingsDialog(QDialog):
+    def __init__(self, model):
+        super().__init__()
+        self.setWindowTitle("Model Input")
+        layout = QGridLayout()
+        for index, val in enumerate(model.get_params()):
+            layout.addWidget(QLabel(val), index, 0)
+            slider = QSlider(Qt.Horizontal)
+            slider.setMinimum(model.get_params()[val][0])
+            slider.setMaximum(model.get_params()[val][1])
+            slider.setValue(model.get_params()[val][2])
+            layout.addWidget(slider, index, 1)
+            slider.valueChanged.connect(lambda: model.param_changed(val, slider.value()))
+        self.setLayout(layout)
+
+
 class OrganSettingsDialog(QDialog):
     def __init__(self, organ):
         super().__init__()
         self.setWindowTitle(organ.get_name())
         layout = QGridLayout()
-        for val in organ.get_vars():
+        for index, val in enumerate(organ.get_vars()):
             #TODO find a more elegant way of dealing with the builtins appearing
             if val != '__builtins__':
-                layout.addWidget(QLabel(val))
+                print("val is " + str(val))
+                layout.addWidget(QLabel(val), index, 0)
+                layout.addWidget(QLabel(str(organ.get_vars()[val])), index, 1)
         self.setLayout(layout)
 
 
