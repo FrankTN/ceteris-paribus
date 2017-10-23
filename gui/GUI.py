@@ -289,5 +289,6 @@ class modelWindow(QMainWindow):
         print(organ)
 
     def write_text(self, text):
+        # Write text from stdout to the log in the UI
         self.logText.moveCursor(QTextCursor.End)
         self.logText.insertPlainText(text)

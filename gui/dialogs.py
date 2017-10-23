@@ -35,7 +35,9 @@ class OrganSettingsDialog(QDialog):
         self.setWindowTitle(organ.get_name())
         layout = QGridLayout()
         for val in organ.get_vars():
-            layout.addWidget(QLabel(val))
+            #TODO find a more elegant way of dealing with the builtins appearing
+            if val != '__builtins__':
+                layout.addWidget(QLabel(val))
         self.setLayout(layout)
 
 

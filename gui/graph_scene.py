@@ -20,5 +20,5 @@ class GraphScene(QGraphicsScene):
 
     def load_from_model(self, model):
         for organ in model.organs:
-            self.addItem(OrganNode(organ, 100, 100))
+            self.addItem(OrganNode(organ))
             print(organ)

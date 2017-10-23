@@ -11,10 +11,8 @@ class GraphNode(QGraphicsRectItem):
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.text = text
-        
+
     def mousePressEvent(self, mouse_event, **kwargs):
-        dialog = OrganSettingsDialog()
-        dialog.exec_()
         print("clicked: " + self.text)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
@@ -26,8 +24,8 @@ class GraphNode(QGraphicsRectItem):
         QPainter.drawText(rect, self.text)
 
 class OrganNode(QGraphicsRectItem):
-    def __init__(self, organ, x, y):
-        super().__init__(x, y, 100, 100)
+    def __init__(self, organ):
+        super().__init__(*organ.pos, 100, 100)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.organ = organ

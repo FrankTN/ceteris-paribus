@@ -34,6 +34,10 @@ class Model(object):
         for organ_info in self._database.table("SystemicOrgans").all():
             self.organs.append(Organ(organ_info, self._global_parameters))
 
+    def changed_globals(self):
+        for organ in self.organs:
+            organ.set_globals(self._global_parameters)
+
     def get_pulmonary(self):
         return self._pulmonary_circulation
 

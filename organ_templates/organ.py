@@ -19,6 +19,10 @@ class Organ(object):
         self.results = {}
         self.evaluate()
 
+    def set_globals(self, new_globals):
+        self.global_values = new_globals
+        self.defined_variables = {**getattr(self,'vars'), **getattr(self,'global_values')}
+
     def evaluate(self):
         evaluator = EvalWrapper(self.defined_variables)
         function_dict = getattr(self, 'functions')
@@ -64,7 +68,7 @@ class Organ(object):
         return 2 * self.get_WQ() * self.get_SMR_glu()
 
     def __str__(self):
-        return str(getattr(self, 'name', 'default_organ')) + ":\n\tFunctions: " + str(getattr(self, 'functions')) + "\n\tVars: " + str(getattr(self, 'vars'))
+        return str(getattr(self, 'name', 'default_organ')) + ":\n\tFunctions: " + str(getattr(self, 'functions')) + "\n\t\tVars: " + str(getattr(self, 'vars'))
 
     def get_RQ(self):
         """ Calculate the Respiratory Quotient of the organ"""
