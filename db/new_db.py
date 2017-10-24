@@ -8,8 +8,8 @@ organ_db = TinyDB(os.getcwd() + "/new_organ_db.json")
 
 organ_db.purge_table("GlobalParameters")
 global_param_table = organ_db.table("GlobalParameters")
-global_param_table.insert({"BF": [0, 10000, 5000]})
-global_param_table.insert({"VO2": [0, 400, 250]})
+global_param_table.insert({"BodyCO": [0, 10000, 5000]})
+global_param_table.insert({"BodyVO2": [0, 400, 250]})
 
 organ_db.purge_table("GlobalConstants")
 global_constant_table = organ_db.table("GlobalConstants")

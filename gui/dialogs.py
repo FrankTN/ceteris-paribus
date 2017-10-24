@@ -1,3 +1,5 @@
+from functools import partial
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider
 from tinydb import TinyDB
@@ -35,15 +37,18 @@ class InputSettingsDialog(QDialog):
         super().__init__()
         self.setWindowTitle("Model Input")
         layout = QGridLayout()
-        for index, val in enumerate(model.get_params()):
-            layout.addWidget(QLabel(val), index, 0)
+        for index, param_name in enumerate(model.get_params()):
+            layout.addWidget(QLabel(param_name), index, 0)
             slider = QSlider(Qt.Horizontal)
-            slider.setMinimum(model.get_params()[val][0])
-            slider.setMaximum(model.get_params()[val][1])
-            slider.setValue(model.get_params()[val][2])
+            slider.setMinimum(model.get_params()[param_name][0])
+            slider.setMaximum(model.get_params()[param_name][1])
+            slider.setValue(model.get_params()[param_name][2])
+            slider.valueChanged.connect(partial(model.param_changed, param_name, slider))
             layout.addWidget(slider, index, 1)
-            slider.valueChanged.connect(lambda: model.param_changed(val, slider.value()))
         self.setLayout(layout)
+
+    def propagate_change(self):
+        sender = self.sender()
 
 
 class OrganSettingsDialog(QDialog):

@@ -40,12 +40,15 @@ class Model(object):
                 rangeless_params[parameter] = self._params[parameter][2]
             self.organs.append(Organ(organ_info, rangeless_params, self._constants))
 
-    def global_changed(self):
-        for organ in self.organs:
-            organ.set_globals(self._globals)
-
-    def param_changed(self, name: str, new_value):
+    def param_changed(self, name: str, slider):
+        new_value = slider.value()
         self._params[name][2] = new_value
+        rangeless_params = {}
+        for parameter in self._params:
+            rangeless_params[parameter] = self._params[parameter][2]
+
+        for organ in self.organs:
+            organ.set_globals({**rangeless_params, **self._constants})
         self.calculate()
         print(name + ": " + str(new_value))
 
