@@ -16,8 +16,13 @@ class Model(object):
 
     def initialize_globals(self):
         # From the database, get the input parameters.
-        self._params = self._database.table("GlobalParameters").all()[0]
-        self._constants = self._database.table("GlobalConstants").all()[0]
+        self._params = {}
+        for param in self._database.table("GlobalParameters").all():
+            self._params.update(param)
+        self._constants = {}
+        for const in self._database.table("GlobalConstants").all():
+            self._constants.update(const)
+
         self._globals = {**self._params, **self._constants}
 
     def initialize_organs(self):
@@ -27,7 +32,13 @@ class Model(object):
         """
         self.organs = []
         for organ_info in self._database.table("SystemicOrgans").all():
-            self.organs.append(Organ(organ_info, self._params, self._constants))
+            # Params in this object are defined as a list, where the first two values are the range and the third value
+            # is its current value. An organ is not concerned with the allowed range of the params, and thus only
+            # receives this value.
+            rangeless_params = {}
+            for parameter in self._params:
+                rangeless_params[parameter] = self._params[parameter][2]
+            self.organs.append(Organ(organ_info, rangeless_params, self._constants))
 
     def global_changed(self):
         for organ in self.organs:

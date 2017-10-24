@@ -1,4 +1,3 @@
-import constants
 from db.function_parser import EvalWrapper
 
 
@@ -16,17 +15,16 @@ class Organ(object):
                 self.__setattr__(property, organ_info[property])
 
         print(self.__dict__)
-        self.defined_variables = (getattr(self,'vars'), getattr(self,'global_params'), getattr(self, "global_constants"))
+        self.defined_variables = {**getattr(self,'vars'), **self.global_params, **self.global_constants}
         self.results = {}
         self.evaluate()
 
     def set_globals(self, new_globals):
         self.global_params = new_globals
-        self.defined_variables =(getattr(self,'vars'), getattr(self,'global_params'), getattr(self, "global_constants"))
+        self.defined_variables = {**getattr(self,'vars'), **self.global_params, **self.global_constants}
 
     def evaluate(self):
-        vars, params, consts = self.defined_variables
-        evaluator = EvalWrapper({**vars, **params, **consts})
+        evaluator = EvalWrapper(self.defined_variables)
         function_dict = getattr(self, 'functions')
         for function_name in function_dict:
             evaluator.set_function(function_dict[function_name])
@@ -36,11 +34,10 @@ class Organ(object):
         return getattr(self, 'name', 'default_organ')
 
     def get_vars(self):
-        vars, params, consts = self.defined_variables
-        rangeless_params = {}
-        for parameter in params:
-            rangeless_params[parameter] = params[parameter][2]
-        return {**vars, **rangeless_params, **consts}
+        # Returns all variables defined for this organ and their values in a single dict
+        return self.defined_variables
+
+        return {**self.va, **rangeless_params, **consts}
 
     def get_VO2(self):
         return getattr(self, 'VO2', 0)
