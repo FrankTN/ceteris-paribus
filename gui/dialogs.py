@@ -1,7 +1,8 @@
 from functools import partial
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider, \
+    QVBoxLayout
 from tinydb import TinyDB
 
 
@@ -55,15 +56,57 @@ class OrganSettingsDialog(QDialog):
     def __init__(self, organ):
         super().__init__()
         self.setWindowTitle(organ.get_name())
+        self.organ = organ
+
+        layout = QVBoxLayout()
+
+        var_button = QPushButton("Variables")
+        var_button.clicked.connect(self.show_vars)
+        layout.addWidget(var_button)
+
+        func_button = QPushButton("Functions")
+        func_button.clicked.connect(self.show_funcs)
+        layout.addWidget(func_button)
+
+        out_button = QPushButton("Outputs")
+        out_button.clicked.connect(self.show_outs)
+        layout.addWidget(out_button)
+
+        self.setLayout(layout)
+
+
+    def show_vars(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Variables")
         layout = QGridLayout()
-        for index, val in enumerate(organ.get_vars()):
+        for index, val in enumerate(self.organ.get_vars()):
             #TODO find a more elegant way of dealing with the builtins appearing
             if val != '__builtins__':
                 print("val is " + str(val))
                 layout.addWidget(QLabel(val), index, 0)
-                layout.addWidget(QLabel(str(organ.get_vars()[val])), index, 1)
-        self.setLayout(layout)
+                layout.addWidget(QLabel(str(self.organ.get_vars()[val])), index, 1)
+        dialog.setLayout(layout)
+        dialog.exec_()
 
+    def show_funcs(self):
+        dialog = QDialog()
+        layout = QGridLayout()
+        dialog.setWindowTitle("Functions")
+        for index, func in enumerate(self.organ.get_funcs()):
+            layout.addWidget(QLabel(func + ":"), index, 0)
+            layout.addWidget(QLabel(str(self.organ.get_funcs()[func])), index, 1)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def show_outs(self):
+        dialog = QDialog()
+        layout = QGridLayout()
+        dialog.setWindowTitle("Outputs")
+        for index, func in enumerate(self.organ.get_funcs()):
+            layout.addWidget(QLabel(func + ":"), index, 0)
+            layout.addWidget(QLabel(str(self.organ.results[func])), index, 1)
+        dialog.setLayout(layout)
+        dialog.exec_()
 
 def open_db():
     """ This function, which opens the database and connects it to the model is called before the UI can actually be

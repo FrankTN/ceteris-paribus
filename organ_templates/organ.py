@@ -37,6 +37,9 @@ class Organ(object):
         # Returns all variables defined for this organ and their values in a single dict
         return self.defined_variables
 
+    def get_funcs(self):
+        return getattr(self, 'functions')
+
     def __str__(self):
         return str(getattr(self, 'name', 'default_organ')) + ":\n\tFunctions: " + str(
             getattr(self, 'functions')) + "\n\t\tVars: " + str(getattr(self, 'vars'))

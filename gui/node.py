@@ -7,10 +7,14 @@ from gui.dialogs import OrganSettingsDialog, InputSettingsDialog
 
 class GraphNode(QGraphicsRectItem):
     def __init__(self, x, y):
-        super().__init__(x, y, 100, 100)
+        super().__init__(0, 0, 100, 100)
+        self.setPos(x,y)
+        self.edge_list = []
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
+        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        self.setZValue(1)
         self.name = ""
 
     def itemChange(self, change, value):
@@ -18,7 +22,12 @@ class GraphNode(QGraphicsRectItem):
             pass
         return QGraphicsRectItem.itemChange(self, change, value)
 
+    def add_edge(self, edge):
+        self.edge_list.append(edge)
+        edge.adjust()
 
+    def edges(self):
+        return self.edge_list
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         rect = self.boundingRect()
@@ -27,6 +36,12 @@ class GraphNode(QGraphicsRectItem):
 
         QPainter.fillRect(rect, QBrush(Qt.lightGray))
         QPainter.drawText(rect, self.name)
+
+        for edge in self.edge_list:
+            edge.paint(QPainter, QStyleOptionGraphicsItem)
+            edge.adjust()
+
+
 
 class InNode(GraphNode):
     def __init__(self, x, y, model):
@@ -51,17 +66,4 @@ class OrganNode(GraphNode):
         dialog.exec_()
         print("clicked: " + self.organ.get_name())
 
-class Path(QGraphicsPathItem):
-    def __init__(self, path, scene):
-        super(Path, self).__init__(path)
-        for i in range(path.elementCount()):
-            node = GraphNode(self, i)
-            node.setPos(QPointF(path.elementAt(i)))
-            scene.addItem(node)
-        self.setPen(QPen(Qt.red, 1.75))
-
-    def updateElement(self, index, pos):
-        path = self.path()
-        path.setElementPositionAt(index, pos.x(), pos.y())
-        self.setPath(path)
 

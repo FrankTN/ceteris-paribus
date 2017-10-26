@@ -15,9 +15,25 @@ organ_db.purge_table("GlobalConstants")
 global_constant_table = organ_db.table("GlobalConstants")
 global_constant_table.insert({"mol_to_ml_37_deg" : 25.48657718})
 global_constant_table.insert({"SMR_glu_lung" : 0.4})
+global_constant_table.insert({"glu_art" : 5.0})
+global_constant_table.insert({"lac_art" : 1.0})
+global_constant_table.insert({"O2_art" : 10.0})
+global_constant_table.insert({"CO2_art" : 25.0})
+global_constant_table.insert({"FFA_art" : 0.0})
 
 
 # definitions of all the functions
+f_global_VO2 = "sum(VO2)"
+f_global_VCO2 = "sum(VCO2)"
+f_global_RQ = "avg(RQ)"
+f_global_sVO2 = "sum(VO2) / BW"
+f_global_sVCO2 = "sum(VCO2) / BW"
+f_art_PO2 = "udef"
+f_art_sO2 = "udef"
+f_art_PCO2 = "udef"
+
+
+
 f_VO2 = "mol_to_ml_37_deg * SMRO2 * Organ_Weight"
 f_VCO2 = "mol_to_ml_37_deg * SMRCO2 * Organ_Weight"
 f_SMRCO2 = "RQ * SMRO2"
@@ -28,6 +44,7 @@ f_ven_glu = "glu_art - Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 f_ven_O2 = "O2_art - Organ_Weight * SMRO2 / BF"
 f_ven_CO2 = "CO2_art + Organ_Weight * SMRCO2 / BF"
 f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
+
 
 organ_db.purge_table("SystemicOrgans")
 systemic_organ_table = organ_db.table("SystemicOrgans")
