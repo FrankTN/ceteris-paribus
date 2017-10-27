@@ -59,7 +59,6 @@ class OrganNode(GraphNode):
         super().__init__(*organ.pos)
         self.organ = organ
         self.name = organ.get_name()
-        print(organ)
 
     def mouseDoubleClickEvent(self, QGraphicsSceneMouseEvent, **kwargs):
         dialog = OrganSettingsDialog(self.organ)

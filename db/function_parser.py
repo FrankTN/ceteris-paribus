@@ -10,6 +10,9 @@ class EvalWrapper(object):
 
     def evaluate(self):
         if self.function:
-            return eval(self.function, self.variables)
+            try:
+                return eval(self.function, self.variables)
+            except NameError:
+                return None
         else:
             raise NameError("Cannot evaluate: no function is defined")

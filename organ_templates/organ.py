@@ -1,3 +1,5 @@
+from PyQt5.QtWidgets import QDialog, QErrorMessage, QMessageBox
+
 from db.function_parser import EvalWrapper
 
 
@@ -14,7 +16,6 @@ class Organ(object):
             for property in organ_info.keys():
                 self.__setattr__(property, organ_info[property])
 
-        print(self.__dict__)
         self.defined_variables = {**getattr(self,'vars'), **self.global_params, **self.global_constants}
         self.results = {}
         self.evaluate()
@@ -24,11 +25,29 @@ class Organ(object):
         self.defined_variables = {**getattr(self,'vars'), **self.global_params, **self.global_constants}
 
     def evaluate(self):
-        evaluator = EvalWrapper(self.defined_variables)
-        function_dict = getattr(self, 'functions')
-        for function_name in function_dict:
-            evaluator.set_function(function_dict[function_name])
-            self.results[function_name] = evaluator.evaluate()
+        """
+        Evaluate all functions defined for the organ.
+        :return:
+        """
+        unresolved_funcs = getattr(self, 'functions').copy()
+        changed = 1
+        while changed:
+            changed = 0
+            for function_name in list(unresolved_funcs):
+                evaluator = EvalWrapper(self.defined_variables)
+                evaluator.set_function(unresolved_funcs[function_name])
+                result = evaluator.evaluate()
+                if result:
+                    changed = 1
+                    self.defined_variables[function_name] = result
+                    unresolved_funcs.pop(function_name)
+        if unresolved_funcs:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            unresolved_string = {str(x) + ": " + unresolved_funcs[x] + "\n" for x in unresolved_funcs.keys()}
+            msg.setText("The specified database cannot be read, please look at the following functions: \n" + "".join(unresolved_string))
+            msg.exec_()
+            quit(-1)
 
     def get_name(self):
         return getattr(self, 'name', 'default_organ')

@@ -104,7 +104,7 @@ class OrganSettingsDialog(QDialog):
         dialog.setWindowTitle("Outputs")
         for index, func in enumerate(self.organ.get_funcs()):
             layout.addWidget(QLabel(func + ":"), index, 0)
-            layout.addWidget(QLabel(str(self.organ.results[func])), index, 1)
+            layout.addWidget(QLabel(str(self.organ.defined_variables[func])), index, 1)
         dialog.setLayout(layout)
         dialog.exec_()
 
