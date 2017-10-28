@@ -46,7 +46,7 @@ f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 
 organ_db.purge_table("SystemicOrgans")
 systemic_organ_table = organ_db.table("SystemicOrgans")
-systemic_organ_table.insert({"name": "Skeletal muscle", "functions": {"VO2": f_VO2, "VCO2": f_VCO2, "SMRCO2": f_SMRCO2, "Venous Glucose": f_ven_glu}, "vars" : {"BF": 0.6, "SMRO2": 0.18, "Organ_Weight" : 27, "VO2": 48.6, "RQ": 0.85, "VCO2": 41.31}, "pos": [200,200]})
+systemic_organ_table.insert({"name": "Skeletal muscle", "functions": {"VO2": f_VO2, "VCO2": f_VCO2, "SMRCO2": f_SMRCO2, "Venous Glucose": f_ven_glu}, "vars" : {"BF": 0.6, "SMRO2": 0.18, "Organ_Weight" : 27, "VO2": 48.6, "RQ": 0.85, "VCO2": 41.31, "SMRglu": 0, "SMRglu_prod": 0}, "pos": [200,200]})
 systemic_organ_table.insert({"name": "Adipose tissue", "functions": {"calcVO2": f_VO2}, "vars" : {"BF": 0.2, "SMRO2": 0.07, "Organ_Weight" : 18, "VO2": 12.6}, "pos": [200,300]})
 systemic_organ_table.insert({"name": "Skin", "functions": {"calcVO2": f_VO2}, "vars" : {"BF": 0.5, "SMRO2": 0.3, "Organ_Weight" : 10, "VO2": 30, "RQ": 0.9, "VCO2": 27}, "pos": [200,100]})
 systemic_organ_table.insert({"name": "Bones", "functions": {"calcVO2": f_VO2}, "vars" : {"BF": 0.1, "SMRO2": 0.02, "Organ_Weight" : 8, "VO2": 1.6}, "pos": [200,0]})

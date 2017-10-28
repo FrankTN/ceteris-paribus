@@ -37,7 +37,7 @@ class Organ(object):
                 evaluator = EvalWrapper(self.defined_variables)
                 evaluator.set_function(unresolved_funcs[function_name])
                 result = evaluator.evaluate()
-                if result:
+                if result is not None:
                     changed = 1
                     self.defined_variables[function_name] = result
                     unresolved_funcs.pop(function_name)
@@ -45,7 +45,7 @@ class Organ(object):
             msg = QMessageBox()
             msg.setWindowTitle("Error")
             unresolved_string = {str(x) + ": " + unresolved_funcs[x] + "\n" for x in unresolved_funcs.keys()}
-            msg.setText("The specified database cannot be read, please look at the following functions: \n" + "".join(unresolved_string))
+            msg.setText("The specified database cannot create the organ " + self.get_name() + ",\nplease look at the following unresolvable functions: \n" + "".join(unresolved_string))
             msg.exec_()
             quit(-1)
 
