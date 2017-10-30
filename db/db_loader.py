@@ -21,9 +21,8 @@ global_constant_table.insert({"O2_art" : 10.0})
 global_constant_table.insert({"CO2_art" : 25.0})
 global_constant_table.insert({"FFA_art" : 0.0})
 
-
 # definitions of all the functions
-f_global_VO2 = "sum(VO2)"
+f_global_VO2 = "VO2)"
 f_global_VCO2 = "sum(VCO2)"
 f_global_RQ = "avg(RQ)"
 f_global_sVO2 = "sum(VO2) / BW"
@@ -44,7 +43,9 @@ f_ven_CO2 = "CO2_art + Organ_Weight * SMRCO2 / BF"
 f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 # TODO convert to fractional weight :: f_Weight_Organ = "Organ_Weight "
 
-
+organ_db.purge_table("GlobalFunctions")
+global_function_table = organ_db.table("GlobalFunctions")
+global_function_table.insert({"tVCO2": "Heart.vars.VCO2 + Brain.vars.VCO2"})
 
 organ_db.purge_table("SystemicOrgans")
 systemic_organ_table = organ_db.table("SystemicOrgans")

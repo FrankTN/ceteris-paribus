@@ -41,8 +41,6 @@ class GraphNode(QGraphicsRectItem):
             edge.paint(QPainter, QStyleOptionGraphicsItem)
             edge.adjust()
 
-
-
 class InNode(GraphNode):
     def __init__(self, x, y, model):
         super().__init__(x, y)

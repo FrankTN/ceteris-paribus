@@ -56,6 +56,12 @@ class Organ(object):
         # Returns all variables defined for this organ and their values in a single dict
         return self.defined_variables
 
+    def get_globals(self):
+        return self.global_params
+
+    def get_locals(self):
+        return getattr(self, 'vars')
+
     def get_funcs(self):
         return getattr(self, 'functions')
 

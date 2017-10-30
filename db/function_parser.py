@@ -27,5 +27,7 @@ class EvalWrapper(object):
                 msg.setText("Division by zero, set result of " + self.function + " to 0\n" + "".join(variables))
                 msg.exec_()
                 return 0
+            except AttributeError:
+                pass
         else:
             raise NameError("Cannot evaluate: no function is defined")

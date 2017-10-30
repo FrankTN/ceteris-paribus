@@ -12,9 +12,13 @@ class Controller(object):
     def __init__(self):
         self.db = open_db()
         self.model = Model(self)
-        self.ui = graphWindow(self.model)
+        self.ui = graphWindow(self)
 
+    def open_new_db(self):
+        self.db = open_db()
 
+    def get_model(self):
+        return self.model
 
     def get_db(self):
         try:
@@ -31,23 +35,6 @@ class Controller(object):
         except Exception:
             print("An exception occurred when opening the database")
             return False
-
-    def get_organ(self, index):
-        return self.model.get_organ(index)
-
-    def get_organ_names(self):
-        names = list(map(lambda x: x.get_name(), self.model.get_systemic().vertices()))
-        return names
-
-    def global_slider_changed(self, changeSender):
-        self.model.update_model(changeSender.objectName(), changeSender.value())
-        self.gui.set_global_VO2(self.model.calculate_total_VO2())
-        self.gui.set_global_VCO2(self.model.calculate_total_VCO2())
-        self.gui.set_global_RQ(self.model.calculate_total_RQ())
-        self.gui.set_spec_VO2(self.model.calculate_spec_VO2())
-        self.gui.set_spec_VCO2(self.model.calculate_spec_VCO2())
-        # set dependent organ variables
-        self.gui.select_organ(self.gui.organ_index)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -60,9 +60,13 @@ class OrganSettingsDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        var_button = QPushButton("Variables")
-        var_button.clicked.connect(self.show_vars)
+        var_button = QPushButton("Local values")
+        var_button.clicked.connect(self.show_locals)
         layout.addWidget(var_button)
+
+        glob_button = QPushButton("Global values")
+        glob_button.clicked.connect(self.show_globals)
+        layout.addWidget(glob_button)
 
         func_button = QPushButton("Functions")
         func_button.clicked.connect(self.show_funcs)
@@ -75,16 +79,27 @@ class OrganSettingsDialog(QDialog):
         self.setLayout(layout)
 
 
-    def show_vars(self):
+    def show_locals(self):
         dialog = QDialog()
-        dialog.setWindowTitle("Variables")
+        dialog.setWindowTitle("Local values")
         layout = QGridLayout()
-        for index, val in enumerate(self.organ.get_vars()):
+        for index, val in enumerate(self.organ.get_locals()):
             #TODO find a more elegant way of dealing with the builtins appearing
+            #TODO make into sliders with values
             if val != '__builtins__':
                 print("val is " + str(val))
                 layout.addWidget(QLabel(val), index, 0)
-                layout.addWidget(QLabel(str(self.organ.get_vars()[val])), index, 1)
+                layout.addWidget(QLabel(str(self.organ.get_locals()[val])), index, 1)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def show_globals(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Globals")
+        layout = QGridLayout()
+        for index, val in enumerate(self.organ.get_globals()):
+            layout.addWidget(QLabel(val), index, 0)
+            layout.addWidget(QLabel(str(self.organ.get_globals()[val])), index, 1)
         dialog.setLayout(layout)
         dialog.exec_()
 

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsScene
+from PyQt5.QtWidgets import QGraphicsScene, QWidget, QGridLayout, QLabel
 
 from gui.dialogs import NewNodeDialog
 from gui.edge import Edge
@@ -14,7 +14,19 @@ class GraphScene(QGraphicsScene):
         self.load_from_model(model)
 
     def load_from_model(self, model):
-        for organ in model.organs:
+        for organ in model.organs.values():
             node = OrganNode(organ)
             self.addItem(node)
             self.addItem(Edge(self.input_node, node))
+
+class ResultPane(QWidget):
+    def __init__(self, model):
+        super().__init__()
+        layout = QGridLayout()
+        self.model = model
+        for index, varname in enumerate(self.model.get_outputs()):
+            print(varname, self.model.get_outputs[varname])
+            layout.addWidget(QLabel(varname), index, 0)
+            layout.addWidget(QLabel(str(self.model.get_outputs[varname])), index, 1)
+        self.setLayout(layout)
+
