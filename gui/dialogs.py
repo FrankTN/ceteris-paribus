@@ -88,9 +88,10 @@ class OrganSettingsDialog(QDialog):
         layout = QGridLayout()
         for index, val in enumerate(self.organ.get_locals()):
             #TODO make into sliders with values
-            print("val is " + str(val))
-            layout.addWidget(QLabel(val), index, 0)
-            layout.addWidget(QLabel(str(self.organ.get_locals()[val])), index, 1)
+            if val != '__builtins__':
+                print("val is " + str(val))
+                layout.addWidget(QLabel(val), index, 0)
+                layout.addWidget(QLabel(str(self.organ.get_locals()[val])), index, 1)
         dialog.setLayout(layout)
         dialog.exec_()
 

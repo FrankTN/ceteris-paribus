@@ -45,7 +45,7 @@ f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 
 organ_db.purge_table("GlobalFunctions")
 global_function_table = organ_db.table("GlobalFunctions")
-global_function_table.insert({"tVCO2": "Heart.variables.VCO2 + Brain.variables.VCO2"})
+global_function_table.insert({"tVCO2": "Heart.variables[\'VCO2\'] + Brain.variables[\'VCO2\']"})
 
 organ_db.purge_table("SystemicOrgans")
 systemic_organ_table = organ_db.table("SystemicOrgans")

@@ -99,7 +99,7 @@ class GlobalModel(object):
             msg.setWindowTitle("Error")
             unresolved_string = {str(x) + ": " + unresolved_global_funcs[x] + "\n" for x in unresolved_global_funcs.keys()}
             msg.setText(
-                "The specified database cannot create the organ " + self.get_name() + ",\nplease look at the following unresolvable functions: \n" + "".join(
+                "The specified database cannot create the model,\nplease look at the following unresolvable functions: \n" + "".join(
                     unresolved_string))
             msg.exec_()
             quit(-1)

@@ -44,8 +44,6 @@ class Organ(object):
         while changed:
             changed = False
             for function_name in list(unresolved_funcs):
-                if '__builtins__' in self.defined_variables:
-                    print("Error, builtins in variables")
                 evaluator = EvalWrapper(self.defined_variables)
                 evaluator.set_function(unresolved_funcs[function_name])
                 result = evaluator.evaluate()

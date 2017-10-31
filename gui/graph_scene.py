@@ -23,9 +23,10 @@ class ResultPane(QWidget):
         super().__init__()
         layout = QGridLayout()
         self.model = model
-        for index, varname in enumerate(self.model.get_outputs()):
-            print(varname, self.model.get_outputs[varname])
+        outputs = self.model.get_outputs()
+        for index, varname in enumerate(outputs):
+            print(varname, outputs[varname])
             layout.addWidget(QLabel(varname), index, 0)
-            layout.addWidget(QLabel(str(self.model.get_outputs[varname])), index, 1)
+            layout.addWidget(QLabel(str(outputs[varname])), index, 1)
         self.setLayout(layout)
 

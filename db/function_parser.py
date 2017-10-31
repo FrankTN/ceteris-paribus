@@ -21,6 +21,7 @@ class EvalWrapper(object):
                 # On division by zero we will simply return 0 as an answer
                 msg = QMessageBox()
                 msg.setWindowTitle("Error")
+                self.variables.pop("__builtins__", None)
                 printable_vars = self.variables
                 variables = {str(x) + ": " + str(self.variables[x]) + "\n" for x in printable_vars.keys()}
                 msg.setText("Division by zero, set result of " + self.function + " to 0\n" + "".join(variables))
