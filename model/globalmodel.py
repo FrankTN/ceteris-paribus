@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMessageBox
 
 from db.function_parser import EvalWrapper
-from organ_templates.organ import Organ
+from model.organ import Organ
 
 
 class Model(object):

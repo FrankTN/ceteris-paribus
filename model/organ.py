@@ -16,13 +16,13 @@ class Organ(object):
             for property in organ_info.keys():
                 self.__setattr__(property, organ_info[property])
 
-        self.defined_variables = {**getattr(self,'vars'), **self.global_params, **self.global_constants}
+        self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
         self.results = {}
         self.evaluate()
 
     def set_globals(self, new_globals):
         self.global_params = new_globals
-        self.defined_variables = {**getattr(self,'vars'), **self.global_params, **self.global_constants}
+        self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
 
     def evaluate(self):
         """
@@ -34,6 +34,8 @@ class Organ(object):
         while changed:
             changed = 0
             for function_name in list(unresolved_funcs):
+                if '__builtins__' in self.defined_variables:
+                    print("Error, builtins in variables")
                 evaluator = EvalWrapper(self.defined_variables)
                 evaluator.set_function(unresolved_funcs[function_name])
                 result = evaluator.evaluate()
@@ -60,11 +62,11 @@ class Organ(object):
         return self.global_params
 
     def get_locals(self):
-        return getattr(self, 'vars')
+        return getattr(self, 'variables')
 
     def get_funcs(self):
         return getattr(self, 'functions')
 
     def __str__(self):
         return str(getattr(self, 'name', 'default_organ')) + ":\n\tFunctions: " + str(
-            getattr(self, 'functions')) + "\n\t\tVars: " + str(getattr(self, 'vars'))
+            getattr(self, 'functions')) + "\n\t\tVars: " + str(getattr(self, 'variables'))
