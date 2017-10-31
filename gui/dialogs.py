@@ -2,7 +2,7 @@ from functools import partial
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider, \
-    QVBoxLayout
+    QVBoxLayout, QMessageBox
 from tinydb import TinyDB
 
 
@@ -34,17 +34,20 @@ class NewNodeDialog(QDialog):
 
 
 class InputSettingsDialog(QDialog):
-    def __init__(self, model):
+    """ This dialog is linked to the special Input node. It contains widgets to change input values.
+        Note that all communication with the model occurs through the controller."""
+    def __init__(self, controller):
         super().__init__()
         self.setWindowTitle("Model Input")
         layout = QGridLayout()
-        for index, param_name in enumerate(model.get_params()):
+        global_params = controller.get_global_params()
+        for index, param_name in enumerate(global_params):
             layout.addWidget(QLabel(param_name), index, 0)
             slider = QSlider(Qt.Horizontal)
-            slider.setMinimum(model.get_params()[param_name][0])
-            slider.setMaximum(model.get_params()[param_name][1])
-            slider.setValue(model.get_params()[param_name][2])
-            slider.valueChanged.connect(partial(model.param_changed, param_name, slider))
+            slider.setMinimum(global_params[param_name][0])
+            slider.setMaximum(global_params[param_name][1])
+            slider.setValue(global_params[param_name][2])
+            slider.valueChanged.connect(partial(controller.param_changed, param_name, slider))
             layout.addWidget(slider, index, 1)
         self.setLayout(layout)
 
@@ -84,12 +87,10 @@ class OrganSettingsDialog(QDialog):
         dialog.setWindowTitle("Local values")
         layout = QGridLayout()
         for index, val in enumerate(self.organ.get_locals()):
-            #TODO find a more elegant way of dealing with the builtins appearing
             #TODO make into sliders with values
-            if val != '__builtins__':
-                print("val is " + str(val))
-                layout.addWidget(QLabel(val), index, 0)
-                layout.addWidget(QLabel(str(self.organ.get_locals()[val])), index, 1)
+            print("val is " + str(val))
+            layout.addWidget(QLabel(val), index, 0)
+            layout.addWidget(QLabel(str(self.organ.get_locals()[val])), index, 1)
         dialog.setLayout(layout)
         dialog.exec_()
 
@@ -123,16 +124,21 @@ class OrganSettingsDialog(QDialog):
         dialog.setLayout(layout)
         dialog.exec_()
 
-def open_db():
+def select_db_dialog():
     """ This function, which opens the database and connects it to the model is called before the UI can actually be
         used. """
     qfd = QFileDialog()
     qfd.setNameFilter("*.json")
+    # A lambda is needed here so exit() is not called directly
+    qfd.rejected.connect(lambda : exit())
     qfd.exec_()
     # We can only select a single file, therefore, we can always look at [0] without missing anything
     potential_db = qfd.selectedFiles()[0]
-
     try:
         return TinyDB(potential_db)
     except:
-        raise ValueError("Unable to load database")
+        # If we were unable to open the database for whatever reason we give the user another chance.
+        msg = QMessageBox()
+        msg.setText("Unable to load database, the file might be corrupted\nPlease try again")
+        msg.exec_()
+        select_db_dialog()

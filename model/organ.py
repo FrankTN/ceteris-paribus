@@ -16,23 +16,33 @@ class Organ(object):
             for property in organ_info.keys():
                 self.__setattr__(property, organ_info[property])
 
+        # The defined variables dict is a combination of all the variables and their values available to this organ
+        # It will be used by the evaluator to resolve all functions and their values
         self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
         self.results = {}
         self.evaluate()
 
-    def set_globals(self, new_globals):
+    def set_globals(self, new_globals: dict):
+        """
+        This functions swaps the global variables of the organ. As a side-effect, the defined_variables are also changed
+        :param new_globals: a dict containing the new global variables
+        :return: None
+        """
         self.global_params = new_globals
         self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
 
     def evaluate(self):
         """
-        Evaluate all functions defined for the organ.
-        :return:
+        Evaluate all functions defined for the organ. This function naively keeps trying to solve for all variables
+        until no new changes occur. If all variables have been resolved execution was successful, otherwise we display
+        an error message.
+        :return: None
         """
+        #TODO combine this function with the one in the global model
         unresolved_funcs = getattr(self, 'functions').copy()
-        changed = 1
+        changed = True
         while changed:
-            changed = 0
+            changed = False
             for function_name in list(unresolved_funcs):
                 if '__builtins__' in self.defined_variables:
                     print("Error, builtins in variables")
@@ -40,7 +50,7 @@ class Organ(object):
                 evaluator.set_function(unresolved_funcs[function_name])
                 result = evaluator.evaluate()
                 if result is not None:
-                    changed = 1
+                    changed = True
                     self.defined_variables[function_name] = result
                     unresolved_funcs.pop(function_name)
         if unresolved_funcs:
@@ -54,19 +64,21 @@ class Organ(object):
     def get_name(self):
         return getattr(self, 'name', 'default_organ')
 
-    def get_vars(self):
+    def get_defined_variables(self) -> dict:
         # Returns all variables defined for this organ and their values in a single dict
         return self.defined_variables
 
-    def get_globals(self):
+    def get_globals(self) -> dict:
+        # Returns the global values as known to this organ in a single dict
         return self.global_params
 
-    def get_locals(self):
+    def get_locals(self) -> dict:
+        # Returns only the locally defined variables
         return getattr(self, 'variables')
 
-    def get_funcs(self):
+    def get_funcs(self) -> dict:
         return getattr(self, 'functions')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(getattr(self, 'name', 'default_organ')) + ":\n\tFunctions: " + str(
             getattr(self, 'functions')) + "\n\t\tVars: " + str(getattr(self, 'variables'))

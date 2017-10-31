@@ -1,7 +1,7 @@
 """ Test cases used to test for consistency"""
 import unittest
 
-from organ_templates.organ import Organ
+from model.organ import Organ
 from model import Model, os
 
 

@@ -4,76 +4,78 @@ from db.function_parser import EvalWrapper
 from model.organ import Organ
 
 
-class Model(object):
+class GlobalModel(object):
     """ This class represents the model in the Model-View-Controller architecture.
-        It contains two lists of organs representing the systemic and pulmonary circulation.
         To initialize, a JSON-database is loaded using the TinyDB framework.
     """
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
-        # Since we only create a model after we know that the db has been loaded, we know that getdb() works
+        # Since we only create a model after we know that the db has been loaded, we know that get_db() works
         self._database = self.controller.get_db()
         self.initialize_globals()
         self.initialize_organs()
 
     def initialize_globals(self):
-        # From the database, get the input parameters.
-        self._params = {}
+        """ This function retrieves all globally defined values from the database."""
+        # From the database, get the global input parameters.
+        self._global_params = {}
         for param in self._database.table("GlobalParameters").all():
-            self._params.update(param)
-        self._constants = {}
+            self._global_params.update(param)
+        # The globally defined constants are also retrieved from the database
+        self._global_constants = {}
         for const in self._database.table("GlobalConstants").all():
-            self._constants.update(const)
-
+            self._global_constants.update(const)
+        # Finally, the global functions are retrieved
         self._global_funcs = {}
         for func in self._database.table("GlobalFunctions").all():
             self._global_funcs.update(func)
-
-        self._globals = {**self._params, **self._constants}
+        # _globals is defined as the dictionary containing all globally accessible values, constant or variable
+        self._globals = {**self._global_params, **self._global_constants}
 
     def initialize_organs(self):
-        """ Using the database, this function reads the values for all the organs.
-            Currently, the lungs are created, and an other compartment is added to
-            simulate the systemic circulation in its entirety.
-        """
+        """ Using the database, this function creates all the organs and adds them to the list of organs maintained by
+            the model."""
         self.organs = {}
+        rangeless_params = self.make_rangeless_params()
         for organ_info in self._database.table("SystemicOrgans").all():
-            # Params in this object are defined as a list, where the first two values are the range and the third value
+            # An organ_info key gives us access to all the information required to instantiate a single organ.
+            self.organs[organ_info['name']] = Organ(organ_info, rangeless_params, self._global_constants)
+
+    def make_rangeless_params(self):
+        """ This function removes redundant information from the global values"""
+        rangeless_params = {}
+        for parameter in self._global_params:
+            # The global parameters are defined as a list, where the first two values are the range and the third
             # is its current value. An organ is not concerned with the allowed range of the params, and thus only
-            # receives this value.
-            rangeless_params = {}
-            for parameter in self._params:
-                rangeless_params[parameter] = self._params[parameter][2]
-            self.organs[organ_info['name']] = Organ(organ_info, rangeless_params, self._constants)
+            # receives the third value.
+            rangeless_params[parameter] = self._global_params[parameter][2]
+        return rangeless_params
 
     def param_changed(self, name: str, slider):
+        """This function handles the updating of a parameter in response to the user interacting with the UI"""
         new_value = slider.value()
-        self._params[name][2] = new_value
-        rangeless_params = {}
-        for parameter in self._params:
-            rangeless_params[parameter] = self._params[parameter][2]
-
+        # Set the new value in the global params
+        self._global_params[name][2] = new_value
+        rangeless_params = self.make_rangeless_params()
+        # We update each organ by explicitly resetting its globals
         for organ in self.organs.values():
-            organ.set_globals({**rangeless_params, **self._constants})
-        print(name + ": " + str(new_value))
+            organ.set_globals({**rangeless_params, **self._global_constants})
 
-    def close(self):
-        self._database.close()
-
-    def get_global_values(self):
+    def get_all_globals(self):
         return self._globals
 
-    def get_params(self):
-        return self._params
+    def get_global_params(self):
+        return self._global_params
 
-    def get_constants(self):
-        return self._constants
-
-    def update_model(self, objectName: str, value):
-        self.__setattr__(objectName, value)
+    def get_global_constants(self):
+        return self._global_constants
 
     def get_outputs(self):
+        """
+        This function calculates the global outputs of the model
+        :return: a dictionary containing the names of the outputs and their calculated values.
+        """
         # Make a shallow copy of the global function dict, so that we can freely modify it
         unresolved_global_funcs = self._global_funcs.copy()
         changed = True
@@ -81,20 +83,25 @@ class Model(object):
         while changed:
             changed = False
             for function_name in list(unresolved_global_funcs):
+                # For every unresolved functions, we create an evaluator object
                 evaluator = EvalWrapper(self.organs)
                 evaluator.set_function(unresolved_global_funcs[function_name])
+                # The result of the evaluation is stored in the result variable if it exists
                 result = evaluator.evaluate()
                 if result is not None:
+                    # We have found a new result, therefore, we set changed to True and we store the result
                     changed = True
                     output[function_name] = result
+                    # Finally, we remove the function we just resolved from the globals so that we don't loop infinitely
                     unresolved_global_funcs.pop(function_name)
-            return output
-        # if unresolved_global_funcs:
-        #     msg = QMessageBox()
-        #     msg.setWindowTitle("Error")
-        #     unresolved_string = {str(x) + ": " + unresolved_funcs[x] + "\n" for x in unresolved_funcs.keys()}
-        #     msg.setText(
-        #         "The specified database cannot create the organ " + self.get_name() + ",\nplease look at the following unresolvable functions: \n" + "".join(
-        #             unresolved_string))
-        #     msg.exec_()
-        #     quit(-1)
+        if unresolved_global_funcs:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            unresolved_string = {str(x) + ": " + unresolved_global_funcs[x] + "\n" for x in unresolved_global_funcs.keys()}
+            msg.setText(
+                "The specified database cannot create the organ " + self.get_name() + ",\nplease look at the following unresolvable functions: \n" + "".join(
+                    unresolved_string))
+            msg.exec_()
+            quit(-1)
+        return output
+
