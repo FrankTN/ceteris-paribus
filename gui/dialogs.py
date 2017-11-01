@@ -54,6 +54,11 @@ class InputSettingsDialog(QDialog):
     def propagate_change(self):
         sender = self.sender()
 
+class OutputSettingsDialog(QDialog):
+    def __init__(self, model):
+        super().__init__()
+        self.setWindowTitle("Model Output")
+
 
 class OrganSettingsDialog(QDialog):
     def __init__(self, organ):

@@ -75,6 +75,7 @@ class Organ(object):
         return getattr(self, 'variables')
 
     def get_funcs(self) -> dict:
+        # Returns the local functions defined for this organ
         return getattr(self, 'functions')
 
     def __str__(self) -> str:
