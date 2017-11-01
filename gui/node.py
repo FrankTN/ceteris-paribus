@@ -15,10 +15,9 @@ class GraphNode(QGraphicsRectItem):
         self.setPos(x,y)
         # Node has a list of connected edges
         self.edge_list = []
-        self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
-        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        # self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
         # This specific ZValue is used so the nodes are rendered on top of the edges
         self.setZValue(1)
         self.name = ""
@@ -26,7 +25,7 @@ class GraphNode(QGraphicsRectItem):
     def get_center(self):
         offset_x = self.rect().x() + self.rect().width() / 2
         offset_y = self.rect().y() + self.rect().height() / 2
-        new_center = (self.pos().x() + offset_x, self.pos().y() + offset_y)
+        new_center = QPointF(self.pos().x() + offset_x, self.pos().y() + offset_y)
         return new_center
 
     def itemChange(self, change, value):
@@ -51,7 +50,7 @@ class GraphNode(QGraphicsRectItem):
     def moveEdges(self, new_pos):
         offset_x = self.rect().x() + self.rect().width()/2
         offset_y = self.rect().y() + self.rect().height()/2
-        new_center = (new_pos.x() + offset_x, new_pos.y() + offset_y)
+        new_center = QPointF(new_pos.x() + offset_x, new_pos.y() + offset_y)
         for edge, isSource in self.edge_list:
             if isSource:
                 # set source position to new center
@@ -84,6 +83,7 @@ class OutNode(GraphNode):
 class OrganNode(GraphNode):
     def __init__(self, organ):
         super().__init__(*organ.pos)
+        self.setFlag(QGraphicsItem.ItemIsMovable)
         self.organ = organ
         self.name = organ.get_name()
 

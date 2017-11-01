@@ -9,8 +9,9 @@ class GraphScene(QGraphicsScene):
     def __init__(self, model: GlobalModel, *__args):
         super().__init__(*__args)
         self.input_node = InNode(0, 400, model)
-        self.output_node = OutNode(600, 400, model)
         self.addItem(self.input_node)
+        self.output_node = OutNode(600, 400, model)
+        self.addItem(self.output_node)
         self.load_from_model(model)
 
     def load_from_model(self, model):
@@ -18,6 +19,7 @@ class GraphScene(QGraphicsScene):
             node = OrganNode(organ)
             self.addItem(node)
             self.addItem(Edge(self.input_node, node))
+            self.addItem(Edge(node, self.output_node))
 
 class ResultPane(QWidget):
     def __init__(self, model):
