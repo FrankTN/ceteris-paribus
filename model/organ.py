@@ -19,6 +19,7 @@ class Organ(object):
         # The defined variables dict is a combination of all the variables and their values available to this organ
         # It will be used by the evaluator to resolve all functions and their values
         self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
+        assert '__builtins__' not in self.defined_variables
         self.results = {}
         self.evaluate()
 
@@ -64,6 +65,7 @@ class Organ(object):
 
     def get_defined_variables(self) -> dict:
         # Returns all variables defined for this organ and their values in a single dict
+        assert '__builtins__' not in self.defined_variables
         return self.defined_variables
 
     def get_globals(self) -> dict:
@@ -72,6 +74,7 @@ class Organ(object):
 
     def get_locals(self) -> dict:
         # Returns only the locally defined variables
+        assert '__builtins__' not in getattr(self, 'variables')
         return getattr(self, 'variables')
 
     def get_funcs(self) -> dict:

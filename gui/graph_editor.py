@@ -4,13 +4,14 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush
 from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QApplication, QDockWidget, QToolBar, QAction, QMenu
 
+from gui.dialogs import NewNodeDialog
 from gui.graph_scene import GraphScene, ResultPane
 
 
 class graphWindow(QMainWindow):
     def __init__(self, controller):
         super().__init__()
-        self.scene = GraphScene(controller.get_model())
+        self.scene = GraphScene(controller)
         self.controller = controller
 
         # a grid foreground
@@ -56,8 +57,3 @@ class graphWindow(QMainWindow):
     def open_new_db(self):
         self.controller.open_new_db()
         self.setCentralWidget(GraphScene(self.controller.get_model()))
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    graph = graphWindow()
-    sys.exit(app.exec_())

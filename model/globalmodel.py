@@ -71,6 +71,9 @@ class GlobalModel(object):
     def get_global_constants(self):
         return self._global_constants
 
+    def get_organs(self):
+        return self.organs
+
     def get_outputs(self):
         """
         This function calculates the global outputs of the model
