@@ -57,7 +57,7 @@ class NewNodeDialog(QDialog):
         self.src_dialog.setWindowTitle("Select sources")
         layout = QGridLayout()
         self.list_view = QListWidget()
-        self.list_view.setSelectionMode(PyQt5.QtWidgets.QAbstractItemView.ExtendedSelection)
+        #self.list_view.setSelectionMode(PyQt5.QtWidgets.QAbstractItemView.ExtendedSelection)
         self.list_view.itemSelectionChanged.connect(self.validate_list)
 
         # We manually add an item for the global inputs
@@ -90,6 +90,7 @@ class NewNodeDialog(QDialog):
 
     def validate_list(self):
         if self.list_view.selectedItems():
+            self.src_edge_item = self.list_view.selectedItems()
             self.nextButton.setEnabled(True)
         else:
             self.nextButton.setEnabled(False)
@@ -171,6 +172,9 @@ class NewNodeDialog(QDialog):
         self.fnc_dialog.accept()
         self.src_dialog.accept()
         self.accept()
+
+    def get_edge_item(self):
+        return self.src_edge_item
 
     def get_name(self):
         return self.name

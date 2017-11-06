@@ -16,6 +16,7 @@ class GraphScene(QGraphicsScene):
         self.addItem(self.output_node)
         # Items is used as a dict to keep internal references to the items.
         self.items = {}
+        self.items['Global Input'] = self.input_node
         self.edges = []
         self.load_from_model(controller.get_model())
 
@@ -31,12 +32,17 @@ class GraphScene(QGraphicsScene):
             self.edges.append(in_edge)
             self.edges.append(out_edge)
 
-    def add_organ(self, organ):
+    def add_organ(self, organ, edge_src_list):
         node = OrganNode(organ, self.controller)
         self.items[organ.get_name()] = node
         self.addItem(node)
         out_edge = Edge(node, self.output_node)
         self.addItem(out_edge)
+        for source in edge_src_list:
+            source_node = self.items[source.text()]
+            in_edge = Edge(source_node, node)
+            self.edges.append(in_edge)
+            self.addItem(in_edge)
         self.edges.append(out_edge)
 
     def remove_organ(self, organ):
@@ -57,7 +63,7 @@ class GraphScene(QGraphicsScene):
         dialog = NewNodeDialog(self.controller)
         if dialog.exec_():
             organ = self.controller.add_organ(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs())
-            self.add_organ(organ)
+            self.add_organ(organ, dialog.get_edge_item())
 
 class ResultPane(QWidget):
     def __init__(self, model):

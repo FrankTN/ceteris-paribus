@@ -1,7 +1,7 @@
 """ Module containing the definitions of different node types. Currently, the Input and Output nodes are special, the
     other nodes should all contain Organ data."""
-from PyQt5.QtCore import Qt, QPointF
-from PyQt5.QtGui import QBrush, QPen
+from PyQt5.QtCore import Qt, QPointF, QRect
+from PyQt5.QtGui import QBrush, QPen, QLinearGradient, QFontMetrics, QFont
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsPathItem
 
 from gui.dialogs import OrganSettingsDialog, InputSettingsDialog, OutputSettingsDialog
@@ -11,7 +11,7 @@ from gui.edge import Edge
 class GraphNode(QGraphicsRectItem):
     """Contains the basic definition of a node. All other nodes share this baseclass."""
     def __init__(self, x, y):
-        super().__init__(0, 0, 100, 100)
+        super().__init__(0, 0, 50, 50)
         self.setPos(x,y)
         # Node has a list of connected edges
         self.edge_list = []
@@ -40,12 +40,24 @@ class GraphNode(QGraphicsRectItem):
         return self.edge_list
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
+        QPainter.setFont(QFont("Arial", 11))
+        fm = QPainter.fontMetrics()
+        text_size = fm.boundingRect(self.name)
         rect = self.boundingRect()
-        if self.isSelected():
-            QPainter.drawRect(rect)
+        # if text_size.width() > rect.width() - 10:
+        #     width = text_size.width() + 10
+        #     #rect.setWidth(width)
+        # if text_size.height() > rect.height() - 10:
+        #     height = text_size.height() + 10
+        self.prepareGeometryChange()
+        #rect.setHeight(height)
+        gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
+        gradient.setColorAt(0, Qt.red)
+        gradient.setColorAt(1, Qt.white)
 
-        QPainter.fillRect(rect, QBrush(Qt.lightGray))
-        QPainter.drawText(rect, self.name)
+        QPainter.fillRect(rect, gradient)
+        QPainter.drawText(rect, Qt.AlignCenter, self.name)
+
 
     def moveEdges(self, new_pos):
         offset_x = self.rect().x() + self.rect().width()/2
