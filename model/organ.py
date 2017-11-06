@@ -19,7 +19,7 @@ class Organ(object):
         # The defined variables dict is a combination of all the variables and their values available to this organ
         # It will be used by the evaluator to resolve all functions and their values
         self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
-        assert '__builtins__' not in self.defined_variables
+        #assert '__builtins__' not in self.defined_variables
         self.results = {}
         self.evaluate()
 

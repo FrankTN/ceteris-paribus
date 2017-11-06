@@ -36,9 +36,24 @@ class Controller(object):
         # model
         return self.model.get_global_params()
 
+    def get_global_param_values(self):
+        return self.model.get_global_param_values()
+
     def param_changed(self, name: str, slider):
         # Another relay method to ensure the model is only used by the controller
         self.model.param_changed(name, slider)
+
+    def add_organ(self, pos, organ_name: str, variables: dict, funcs: dict):
+        organ_info = {}
+        organ_info['pos'] = [pos.x(), pos.y()]
+        organ_info['name'] = organ_name
+        organ_info['variables'] = variables
+        organ_info['functions'] = funcs
+        return self.model.add(organ_info)
+
+    def remove_organ(self, organ):
+        self.model.remove(organ)
+        self.ui.get_scene().remove_organ(organ)
 
 if __name__ == "__main__":
     # The starting point for the entire program, creates a QApplication and runs the controller.

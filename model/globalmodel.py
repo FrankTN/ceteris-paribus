@@ -59,11 +59,15 @@ class GlobalModel(object):
         self._global_params[name][2] = new_value
         rangeless_params = self.make_rangeless_params()
         # We update each organ by explicitly resetting its globals
-        for organ in self.organs.values():
-            organ.set_globals({**rangeless_params, **self._global_constants})
+        for organ in self.organs:
+            if organ != '__builtins__':
+                self.organs[organ].set_globals({**rangeless_params, **self._global_constants})
 
     def get_all_globals(self):
         return self._globals
+
+    def get_global_param_values(self):
+        return {k : v[2] for k,v in self._global_params.items()}
 
     def get_global_params(self):
         return self._global_params
@@ -107,4 +111,12 @@ class GlobalModel(object):
             msg.exec_()
             quit(-1)
         return output
+
+    def remove(self, organ):
+        self.organs.pop(organ.get_name())
+
+    def add(self, organ_info):
+        organ = Organ(organ_info, self.get_global_param_values(), self.get_global_constants())
+        self.organs[organ.get_name()] = organ
+        return organ
 

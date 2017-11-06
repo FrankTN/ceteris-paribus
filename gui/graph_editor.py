@@ -41,6 +41,9 @@ class graphWindow(QMainWindow):
         self.setCentralWidget(graphics)
         self.showFullScreen()
 
+    def get_scene(self):
+        return self.scene
+
     def toggleGrid(self):
         if self.grid:
             self.scene.setBackgroundBrush(QBrush(Qt.white))

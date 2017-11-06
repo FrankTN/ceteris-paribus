@@ -14,26 +14,50 @@ class GraphScene(QGraphicsScene):
         self.addItem(self.input_node)
         self.output_node = OutNode(600, 400, controller)
         self.addItem(self.output_node)
+        # Items is used as a dict to keep internal references to the items.
+        self.items = {}
+        self.edges = []
         self.load_from_model(controller.get_model())
 
     def load_from_model(self, model):
         for organ in model.organs.values():
-            node = OrganNode(organ)
+            node = OrganNode(organ, self.controller)
+            self.items[organ.get_name()] = node
             self.addItem(node)
-            self.addItem(Edge(self.input_node, node))
-            self.addItem(Edge(node, self.output_node))
+            in_edge = Edge(self.input_node, node)
+            self.addItem(in_edge)
+            out_edge = Edge(node, self.output_node)
+            self.addItem(out_edge)
+            self.edges.append(in_edge)
+            self.edges.append(out_edge)
+
+    def add_organ(self, organ):
+        node = OrganNode(organ, self.controller)
+        self.items[organ.get_name()] = node
+        self.addItem(node)
+        out_edge = Edge(node, self.output_node)
+        self.addItem(out_edge)
+        self.edges.append(out_edge)
+
+    def remove_organ(self, organ):
+        to_be_removed = self.items[organ.get_name()]
+        for edge in self.edges:
+            if edge.get_source() is to_be_removed or edge.get_dest() is to_be_removed:
+                self.removeItem(edge)
+        self.removeItem(to_be_removed)
 
     def mouseDoubleClickEvent(self, event):
         item = self.itemAt(event.scenePos().x(), event.scenePos().y(), QTransform())
         if item:
             item.mouseDoubleClickEvent(event)
         else:
-            self.create_new_node()
+            self.create_new_node(event.scenePos())
 
-    def create_new_node(self):
+    def create_new_node(self, pos):
         dialog = NewNodeDialog(self.controller)
         if dialog.exec_():
-            pass
+            organ = self.controller.add_organ(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs())
+            self.add_organ(organ)
 
 class ResultPane(QWidget):
     def __init__(self, model):

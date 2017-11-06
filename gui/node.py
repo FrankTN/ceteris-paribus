@@ -81,14 +81,15 @@ class OutNode(GraphNode):
         dialog.exec_()
 
 class OrganNode(GraphNode):
-    def __init__(self, organ):
+    def __init__(self, organ, controller):
         super().__init__(*organ.pos)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.organ = organ
+        self.controller = controller
         self.name = organ.get_name()
 
     def mouseDoubleClickEvent(self, QGraphicsSceneMouseEvent, **kwargs):
-        dialog = OrganSettingsDialog(self.organ)
+        dialog = OrganSettingsDialog(self.organ, self.controller)
         dialog.exec_()
         print("clicked: " + self.organ.get_name())
 
