@@ -44,6 +44,7 @@ class Controller(object):
         self.model.param_changed(name, slider)
 
     def add_organ(self, pos, organ_name: str, variables: dict, funcs: dict):
+        # Adds an organ to the model object
         organ_info = {}
         organ_info['pos'] = [pos.x(), pos.y()]
         organ_info['name'] = organ_name
@@ -52,6 +53,7 @@ class Controller(object):
         return self.model.add(organ_info)
 
     def remove_organ(self, organ):
+        # Removes an organ from the model and the UI
         self.model.remove(organ)
         self.ui.get_scene().remove_organ(organ)
 

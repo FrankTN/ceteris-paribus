@@ -1,3 +1,4 @@
+""" This module contains the definition of an edge in the graph."""
 from PyQt5.QtCore import Qt, QPointF
 from PyQt5.QtWidgets import QGraphicsLineItem
 

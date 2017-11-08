@@ -1,11 +1,11 @@
-import sys
+from functools import partial
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush
-from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QApplication, QDockWidget, QToolBar, QAction, QMenu
+from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget, QToolBar, QAction, QGridLayout, QLabel, QSlider
 
-from gui.dialogs import NewNodeDialog
-from gui.graph_scene import GraphScene, ResultPane
+from gui.graph_scene import GraphScene
+from gui.sidepane import ContextPane
 
 
 class graphWindow(QMainWindow):
@@ -29,13 +29,13 @@ class graphWindow(QMainWindow):
 
         self.statusBar().showMessage("Ready")
 
-        result_pane = QDockWidget()
-        result_pane.setWidget(ResultPane(controller.get_model()))
-        result_pane.setAllowedAreas(Qt.RightDockWidgetArea)
+        context_pane = QDockWidget()
+        context_pane.setWidget(ContextPane(controller))
+        context_pane.setAllowedAreas(Qt.RightDockWidgetArea)
 
         # Demonstrate the results from the input.
 
-        self.addDockWidget(Qt.RightDockWidgetArea, result_pane)
+        self.addDockWidget(Qt.RightDockWidgetArea, context_pane)
 
         graphics = QGraphicsView(self.scene)
         self.setCentralWidget(graphics)

@@ -37,10 +37,19 @@ class GlobalModel(object):
         """ Using the database, this function creates all the organs and adds them to the list of organs maintained by
             the model."""
         self.organs = {}
+        pos = [0, 0]
+        count = 0
         rangeless_params = self.make_rangeless_params()
         for organ_info in self._database.table("SystemicOrgans").all():
+            # In the default UI we stack the organs on top of eachother by generating a pos for each
+            if count % 2 == 0:
+                pos[1] *= -1
+            else:
+                pos[1] *= -1
+                pos[1] += 100
             # An organ_info key gives us access to all the information required to instantiate a single organ.
-            self.organs[organ_info['name']] = Organ(organ_info, rangeless_params, self._global_constants)
+            self.organs[organ_info['name']] = Organ(organ_info, rangeless_params, self._global_constants, pos[:])
+            count += 1
 
     def make_rangeless_params(self):
         """ This function removes redundant information from the global values"""
@@ -63,7 +72,7 @@ class GlobalModel(object):
             if organ != '__builtins__':
                 self.organs[organ].set_globals({**rangeless_params, **self._global_constants})
 
-    def get_all_globals(self):
+    def get_all_variables(self):
         return self._globals
 
     def get_global_param_values(self):

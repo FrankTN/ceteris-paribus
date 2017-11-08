@@ -10,9 +10,9 @@ class GraphScene(QGraphicsScene):
     def __init__(self, controller, *__args):
         super().__init__(*__args)
         self.controller = controller
-        self.input_node = InNode(0, 400, controller)
+        self.input_node = InNode(-600, 0, controller)
         self.addItem(self.input_node)
-        self.output_node = OutNode(600, 400, controller)
+        self.output_node = OutNode(600, 0, controller)
         self.addItem(self.output_node)
         # Items is used as a dict to keep internal references to the items.
         self.items = {}
@@ -64,16 +64,3 @@ class GraphScene(QGraphicsScene):
         if dialog.exec_():
             organ = self.controller.add_organ(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs())
             self.add_organ(organ, dialog.get_edge_item())
-
-class ResultPane(QWidget):
-    def __init__(self, model):
-        super().__init__()
-        layout = QGridLayout()
-        self.model = model
-        outputs = self.model.get_outputs()
-        for index, varname in enumerate(outputs):
-            print(varname, outputs[varname])
-            layout.addWidget(QLabel(varname), index, 0)
-            layout.addWidget(QLabel(str(outputs[varname])), index, 1)
-        self.setLayout(layout)
-

@@ -1,8 +1,7 @@
+""" This module contains code to create all dialogs used by the program"""
 from functools import partial
 
-import PyQt5
 from PyQt5.QtCore import Qt, QStringListModel
-from PyQt5.QtGui import QValidator
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider, \
     QVBoxLayout, QMessageBox, QListWidget, QListWidgetItem, QCompleter
 from tinydb import TinyDB
@@ -11,6 +10,7 @@ from gui.validator import FunctionValidator
 
 
 class NewNodeDialog(QDialog):
+    """ This class can be used when creating new nodes"""
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
@@ -57,7 +57,6 @@ class NewNodeDialog(QDialog):
         self.src_dialog.setWindowTitle("Select sources")
         layout = QGridLayout()
         self.list_view = QListWidget()
-        #self.list_view.setSelectionMode(PyQt5.QtWidgets.QAbstractItemView.ExtendedSelection)
         self.list_view.itemSelectionChanged.connect(self.validate_list)
 
         # We manually add an item for the global inputs
@@ -89,6 +88,7 @@ class NewNodeDialog(QDialog):
         self.src_dialog.exec_()
 
     def validate_list(self):
+        # This function enables the next button once items have been selected
         if self.list_view.selectedItems():
             self.src_edge_item = self.list_view.selectedItems()
             self.nextButton.setEnabled(True)
@@ -169,6 +169,7 @@ class NewNodeDialog(QDialog):
             self.f_form.clear()
 
     def finalize(self):
+        # Closes all remaining dialogs, this is called when the finish button is clicked
         self.fnc_dialog.accept()
         self.src_dialog.accept()
         self.accept()

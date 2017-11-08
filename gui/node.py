@@ -1,15 +1,15 @@
 """ Module containing the definitions of different node types. Currently, the Input and Output nodes are special, the
     other nodes should all contain Organ data."""
-from PyQt5.QtCore import Qt, QPointF, QRect
-from PyQt5.QtGui import QBrush, QPen, QLinearGradient, QFontMetrics, QFont
-from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsPathItem
+from PyQt5.QtCore import Qt, QPointF
+from PyQt5.QtGui import QLinearGradient, QFont
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem
 
 from gui.dialogs import OrganSettingsDialog, InputSettingsDialog, OutputSettingsDialog
 from gui.edge import Edge
 
 
 class GraphNode(QGraphicsRectItem):
-    """Contains the basic definition of a node. All other nodes share this baseclass."""
+    """ Contains the basic definition of a node. All other nodes share this baseclass."""
     def __init__(self, x, y):
         super().__init__(0, 0, 50, 50)
         self.setPos(x,y)
@@ -20,6 +20,7 @@ class GraphNode(QGraphicsRectItem):
         # self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
         # This specific ZValue is used so the nodes are rendered on top of the edges
         self.setZValue(1)
+        self.color = Qt.green
         self.name = ""
 
     def get_center(self):
@@ -52,11 +53,14 @@ class GraphNode(QGraphicsRectItem):
         self.prepareGeometryChange()
         #rect.setHeight(height)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
-        gradient.setColorAt(0, Qt.red)
+        gradient.setColorAt(0, self.color)
         gradient.setColorAt(1, Qt.white)
 
         QPainter.fillRect(rect, gradient)
         QPainter.drawText(rect, Qt.AlignCenter, self.name)
+
+    def setColor(self, color):
+        self.color = color
 
 
     def moveEdges(self, new_pos):
@@ -72,14 +76,16 @@ class GraphNode(QGraphicsRectItem):
                 edge.set_dest(new_center)
 
 class InNode(GraphNode):
-    def __init__(self, x, y, model):
+    def __init__(self, x, y, controller):
         super().__init__(x, y)
         self.name = "Input"
-        self.model = model
+        self.controller = controller
 
     def mouseDoubleClickEvent(self, QGraphicsSceneMouseEvent, **kwargs):
-        dialog = InputSettingsDialog(self.model)
+        dialog = InputSettingsDialog(self.controller)
+        self.controller.setContext()
         dialog.exec_()
+
         print("clicked: Input")
 
 class OutNode(GraphNode):
@@ -103,6 +109,15 @@ class OrganNode(GraphNode):
     def mouseDoubleClickEvent(self, QGraphicsSceneMouseEvent, **kwargs):
         dialog = OrganSettingsDialog(self.organ, self.controller)
         dialog.exec_()
+
+    def mousePressEvent(self, QGraphicsSceneMouseEvent):
+        self.setColor(Qt.darkGreen)
         print("clicked: " + self.organ.get_name())
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemSelectedChange:
+            if value == False:
+                self.setColor(Qt.green)
+        return GraphNode.itemChange(self, change, value)
 
 

@@ -6,12 +6,13 @@ from db.function_parser import EvalWrapper
 class Organ(object):
     """The class which represents all organs"""
 
-    def __init__(self, organ_info: dict, global_params: dict, global_constants: dict):
+    def __init__(self, organ_info: dict, global_params: dict, global_constants: dict, pos):
         """ This generic implementation of an organ in the model uses the __setattr__ method to add attributes.
             Adding attributes in this way is necessary since not all attributes are defined for each organ.
         """
         self.global_params = global_params
         self.global_constants = global_constants
+        self.pos = pos
         if organ_info:
             for property in organ_info.keys():
                 self.__setattr__(property, organ_info[property])
