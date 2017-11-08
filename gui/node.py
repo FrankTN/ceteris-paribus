@@ -112,6 +112,7 @@ class OrganNode(GraphNode):
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         self.setColor(Qt.darkGreen)
+        self.controller.change_context(self.organ)
         print("clicked: " + self.organ.get_name())
 
     def itemChange(self, change, value):

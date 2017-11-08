@@ -18,6 +18,12 @@ class Controller(object):
         self.model = GlobalModel(self)
         # Finally, a UI is instantiated based on the current model
         self.ui = graphWindow(self)
+        # The context pane remains empty for now
+        # TODO refactor to improve flow
+        self.context_pane = self.ui.context
+
+    def change_context(self, organ):
+        self.context_pane.change_context(organ)
 
     def open_new_db(self):
         self.db = select_db_dialog()

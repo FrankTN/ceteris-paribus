@@ -29,13 +29,15 @@ class graphWindow(QMainWindow):
 
         self.statusBar().showMessage("Ready")
 
-        context_pane = QDockWidget()
-        context_pane.setWidget(ContextPane(controller))
-        context_pane.setAllowedAreas(Qt.RightDockWidgetArea)
+        # Create context pane and link it to the controller
+        side_pane = QDockWidget()
+        self.context = ContextPane(controller)
+        side_pane.setWidget(self.context)
+        side_pane.setAllowedAreas(Qt.RightDockWidgetArea)
 
         # Demonstrate the results from the input.
 
-        self.addDockWidget(Qt.RightDockWidgetArea, context_pane)
+        self.addDockWidget(Qt.RightDockWidgetArea, side_pane)
 
         graphics = QGraphicsView(self.scene)
         self.setCentralWidget(graphics)

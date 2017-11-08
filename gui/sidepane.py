@@ -16,7 +16,6 @@ class ContextPane(QWidget):
 
         # Find the available screen geometry
         available_height = self.height()
-        print(available_height)
 
         self.input_group = QGroupBox("Inputs")
         self.input_group.setFixedSize(300, (available_height / 2))
@@ -24,7 +23,8 @@ class ContextPane(QWidget):
 
         self.context_group = QGroupBox("Context")
         self.context_group.setFixedSize(300, (available_height / 2))
-        self.set_context(list(controller.get_model().organs.values())[0])
+        self.initialize_context()
+        self.change_context(list(controller.get_model().organs.values())[0])
 
         self.output_group = QGroupBox("Outputs")
         self.output_group.setFixedSize(300, (available_height / 2))
@@ -52,13 +52,10 @@ class ContextPane(QWidget):
         layout.setRowStretch(2, 500)
         self.input_group.setLayout(layout)
 
-    def set_context(self, organ):
-        self.current_organ = organ
-
+    def initialize_context(self):
         layout = QVBoxLayout()
-
-        name_label = QLabel(organ.get_name())
-        layout.addWidget(name_label)
+        self.name_label = QLabel()
+        layout.addWidget(self.name_label)
 
         var_button = QPushButton("Local values")
         var_button.clicked.connect(self.show_locals)
@@ -81,6 +78,11 @@ class ContextPane(QWidget):
         layout.addWidget(del_button)
 
         self.context_group.setLayout(layout)
+
+    def change_context(self, organ):
+        self.current_organ = organ
+        self.name_label.setText(organ.get_name())
+
 
     def show_locals(self):
         dialog = QDialog()
