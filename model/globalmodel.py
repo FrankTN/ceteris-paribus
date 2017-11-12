@@ -15,6 +15,7 @@ class GlobalModel(object):
         self._database = self.controller.get_db()
         self.initialize_globals()
         self.initialize_organs()
+        self.vars = {}
 
     def initialize_globals(self):
         """ This function retrieves all globally defined values from the database."""
@@ -100,13 +101,16 @@ class GlobalModel(object):
             changed = False
             for function_name in list(unresolved_global_funcs):
                 # For every unresolved functions, we create an evaluator object
-                evaluator = EvalWrapper(self.organs)
+                self.vars = {**self.vars, **self.organs}
+
+                evaluator = EvalWrapper(self.vars)
                 evaluator.set_function(unresolved_global_funcs[function_name])
                 # The result of the evaluation is stored in the result variable if it exists
                 result = evaluator.evaluate()
                 if result is not None:
                     # We have found a new result, therefore, we set changed to True and we store the result
                     changed = True
+                    self.vars[function_name] = result
                     output[function_name] = result
                     # Finally, we remove the function we just resolved from the globals so that we don't loop infinitely
                     unresolved_global_funcs.pop(function_name)

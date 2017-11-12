@@ -48,6 +48,7 @@ class Controller(object):
     def param_changed(self, name: str, slider):
         # Another relay method to ensure the model is only used by the controller
         self.model.param_changed(name, slider)
+        self.context_pane.update_output()
 
     def add_organ(self, pos, organ_name: str, variables: dict, funcs: dict):
         # Adds an organ to the model object

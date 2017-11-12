@@ -28,7 +28,7 @@ class ContextPane(QWidget):
 
         self.output_group = QGroupBox("Outputs")
         self.output_group.setFixedSize(300, (available_height / 2))
-        self.set_output()
+        self.initialize_output()
 
         layout = QGridLayout()
         self.context_group.setLayout(self.context)
@@ -152,12 +152,19 @@ class ContextPane(QWidget):
         if dialog.exec_():
             self.controller.remove_organ(self.current_organ)
 
-    def set_output(self):
+    def initialize_output(self):
         outputs = self.controller.model.get_outputs()
         layout = QGridLayout()
+        self.local_outs = {}
         for index, out_name in enumerate(outputs):
             labels = QHBoxLayout()
             labels.addWidget(QLabel(out_name))
-            labels.addWidget(QLabel(str(outputs[out_name])))
+            self.local_outs[out_name] = QLabel(str(outputs[out_name]))
+            labels.addWidget(self.local_outs[out_name])
             layout.addLayout(labels, index, 0)
         self.output_group.setLayout(layout)
+
+    def update_output(self):
+        outputs = self.controller.model.get_outputs()
+        for local_out_val in self.local_outs:
+            self.local_outs[local_out_val].setText(str(outputs[local_out_val]))

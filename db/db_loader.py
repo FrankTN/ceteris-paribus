@@ -9,17 +9,20 @@ organ_db = TinyDB(os.getcwd() + "/new_organ_db.json")
 organ_db.purge_table("GlobalParameters")
 global_param_table = organ_db.table("GlobalParameters")
 global_param_table.insert({"BodyCO": [0, 10000, 5000]})
-global_param_table.insert({"BodyVO2": [0, 400, 250]})
+# global_param_table.insert({"BodyVO2": [0, 400, 250]})
+global_param_table.insert({"glu_art": [3.0, 7.0, 5.0]})
+global_param_table.insert({"lac_art": [0.6, 1.8, 1.0]})
+global_param_table.insert({"O2_art": [6, 30.0, 10.0]}) # Not based on anything, unable to find references
+global_param_table.insert({"CO2_art": [6, 40.0, 25.0]}) # Not based on anything, unable to find references
+global_param_table.insert({"FFA_art": [0, 0.0, 0.0]}) # Not based on anything, unable to find references
+# TODO Hb
+# TODO arterial pH
+
 
 organ_db.purge_table("GlobalConstants")
 global_constant_table = organ_db.table("GlobalConstants")
 global_constant_table.insert({"mol_to_ml_37_deg" : 25.48657718})
 global_constant_table.insert({"SMRglu_lung" : 0.4})
-global_constant_table.insert({"glu_art" : 5.0})
-global_constant_table.insert({"lac_art" : 1.0})
-global_constant_table.insert({"O2_art" : 10.0})
-global_constant_table.insert({"CO2_art" : 25.0})
-global_constant_table.insert({"FFA_art" : 0.0})
 
 # definitions of all the functions
 f_global_VO2 = "VO2)"
@@ -45,7 +48,9 @@ f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 
 organ_db.purge_table("GlobalFunctions")
 global_function_table = organ_db.table("GlobalFunctions")
-global_function_table.insert({"tVCO2": "Heart.variables[\'VCO2\'] + Brain.variables[\'VCO2\'] + Skeletal_muscle.variables[\'VCO2\'] + Liver.variables[\'VCO2\'] + Kidneys.variables[\'VCO2\']"})
+global_function_table.insert({"VCO2": "Heart.variables[\'VCO2\'] + Brain.variables[\'VCO2\'] + Skeletal_muscle.variables[\'VCO2\'] + Liver.variables[\'VCO2\'] + Kidneys.variables[\'VCO2\']"})
+global_function_table.insert({"VO2": "Heart.variables[\'VO2\'] + Brain.variables[\'VO2\'] + Skeletal_muscle.variables[\'VO2\'] + Liver.variables[\'VO2\'] + Kidneys.variables[\'VO2\']"})
+global_function_table.insert({"RQ": "VCO2 / VO2"})
 
 organ_db.purge_table("SystemicOrgans")
 systemic_organ_table = organ_db.table("SystemicOrgans")
