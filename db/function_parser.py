@@ -1,5 +1,4 @@
 import ast
-import decimal
 
 from PyQt5.QtWidgets import QMessageBox
 
@@ -20,6 +19,10 @@ class EvalWrapper(object):
             try:
                 tree = ast.parse(self.function, mode='eval')
                 transformer.visit(tree)
+                clause = compile(tree, '<AST>', 'eval')
+
+                # make the globals contain only the Decimal class,
+                # and eval the compiled object
                 return eval(self.function, self.variables)
             except NameError:
                 return None
@@ -33,6 +36,8 @@ class EvalWrapper(object):
                 msg.setText("Division by zero, set result of " + self.function + " to 0\n" + "".join(variables))
                 msg.exec_()
                 return 0
+            except TypeError:
+                return None
         else:
             raise NameError("Cannot evaluate: no function is defined")
 

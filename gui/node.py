@@ -1,23 +1,21 @@
 """ Module containing the definitions of different node types. Currently, the Input and Output nodes are special, the
     other nodes should all contain Organ data."""
-from PyQt5.QtCore import Qt, QPointF
-from PyQt5.QtGui import QLinearGradient, QFont
+from PyQt5.QtCore import Qt, QPointF, QRectF
+from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem
 
 from gui.dialogs import OrganSettingsDialog, InputSettingsDialog, OutputSettingsDialog
 from gui.edge import Edge
 
-
 class GraphNode(QGraphicsRectItem):
     """ Contains the basic definition of a node. All other nodes share this baseclass."""
     def __init__(self, x, y):
-        super().__init__(0, 0, 50, 50)
+        super().__init__(x, y, 50, 50)
         self.setPos(x,y)
         # Node has a list of connected edges
         self.edge_list = []
         self.setFlag(QGraphicsItem.ItemIsSelectable)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
-        # self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
         # This specific ZValue is used so the nodes are rendered on top of the edges
         self.setZValue(1)
         self.color = Qt.green
@@ -40,18 +38,16 @@ class GraphNode(QGraphicsRectItem):
     def edges(self):
         return self.edge_list
 
-    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        QPainter.setFont(QFont("Arial", 11))
-        fm = QPainter.fontMetrics()
+    def boundingRect(self):
+        fm = QFontMetrics(QFont("Arial", 13))
         text_size = fm.boundingRect(self.name)
+        rect = self.rect()
+
+        return QRectF(rect.x(), rect.y(), text_size.width() + 6, text_size.height() + 10)
+
+    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
+        QPainter.setFont(QFont("Arial", 13))
         rect = self.boundingRect()
-        # if text_size.width() > rect.width() - 10:
-        #     width = text_size.width() + 10
-        #     #rect.setWidth(width)
-        # if text_size.height() > rect.height() - 10:
-        #     height = text_size.height() + 10
-        self.prepareGeometryChange()
-        #rect.setHeight(height)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
         gradient.setColorAt(0, self.color)
         gradient.setColorAt(1, Qt.white)
