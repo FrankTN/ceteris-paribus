@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QMessageBox
 
-from db.function_parser import EvalWrapper
+from db.function_parser import EvalWrapper, ModelTransformer
 from model.organ import Organ
 
 
@@ -10,6 +10,7 @@ class GlobalModel(object):
     """
     def __init__(self, controller):
         super().__init__()
+        self.color_schemes = {}
         self.controller = controller
         # Since we only create a model after we know that the db has been loaded, we know that get_db() works
         self._database = self.controller.get_db()
@@ -39,27 +40,29 @@ class GlobalModel(object):
             the model."""
         self.organs = {}
         pos = [0, 0]
-        count = 0
-        rangeless_params = self.make_rangeless_params()
+        self.count = 0
+        rangeless_globals = self.make_rangeless_params(self._global_params)
         for organ_info in self._database.table("SystemicOrgans").all():
+            # organ_info['variables'] = self.make_rangeless_params(organ_info['variables'])
             # In the default UI we stack the organs on top of eachother by generating a pos for each
-            if count % 2 == 0:
+            if self.count % 2 == 0:
                 pos[1] *= -1
             else:
                 pos[1] *= -1
-                pos[1] += 100
+                pos[1] += 35
             # An organ_info key gives us access to all the information required to instantiate a single organ.
-            self.organs[organ_info['name']] = Organ(organ_info, rangeless_params, self._global_constants, pos[:])
-            count += 1
+            self.organs[organ_info['name']] = Organ(organ_info, rangeless_globals, self._global_constants, pos[:])
+            self.count += 1
 
-    def make_rangeless_params(self):
+
+    def make_rangeless_params(self, params_with_range):
         """ This function removes redundant information from the global values"""
         rangeless_params = {}
-        for parameter in self._global_params:
+        for parameter in params_with_range:
             # The global parameters are defined as a list, where the first two values are the range and the third
             # is its current value. An organ is not concerned with the allowed range of the params, and thus only
             # receives the third value.
-            rangeless_params[parameter] = self._global_params[parameter][2]
+            rangeless_params[parameter] = params_with_range[parameter][2]
         return rangeless_params
 
     def param_changed(self, name: str, slider):
@@ -67,7 +70,7 @@ class GlobalModel(object):
         new_value = slider.value()
         # Set the new value in the global params
         self._global_params[name][2] = new_value
-        rangeless_params = self.make_rangeless_params()
+        rangeless_params = self.make_rangeless_params(self._global_params)
         # We update each organ by explicitly resetting its globals
         for organ in self.organs:
             if organ != '__builtins__':
@@ -97,16 +100,19 @@ class GlobalModel(object):
         unresolved_global_funcs = self._global_funcs.copy()
         changed = True
         output = {}
+
         while changed:
             changed = False
             for function_name in list(unresolved_global_funcs):
                 # For every unresolved functions, we create an evaluator object
                 self.vars = {**self.vars, **self.organs}
 
-                evaluator = EvalWrapper(self.vars)
+                evaluator = EvalWrapper(self.vars, ModelTransformer())
                 evaluator.set_function(unresolved_global_funcs[function_name])
                 # The result of the evaluation is stored in the result variable if it exists
                 result = evaluator.evaluate()
+                required_vals = evaluator.transformer.visited
+                self.color_schemes[function_name] = required_vals
                 if result is not None:
                     # We have found a new result, therefore, we set changed to True and we store the result
                     changed = True
@@ -128,8 +134,8 @@ class GlobalModel(object):
     def remove(self, organ):
         self.organs.pop(organ.get_name())
 
-    def add(self, organ_info):
-        organ = Organ(organ_info, self.get_global_param_values(), self.get_global_constants())
+    def add(self, organ_info, pos):
+        organ = Organ(organ_info, self.get_global_param_values(), self.get_global_constants(), pos)
         self.organs[organ.get_name()] = organ
         return organ
 

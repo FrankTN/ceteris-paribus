@@ -50,14 +50,29 @@ class Controller(object):
         self.model.param_changed(name, slider)
         self.context_pane.update_output()
 
+    def organ_local_changed(self, name: str, slider):
+        organ = self.context_pane.current_organ
+        organ.local_changed(name, slider)
+        self.context_pane.update_output()
+
+    def set_colors_for_global(self, name: str):
+        color_scheme_names = self.get_model().color_schemes[name]
+        for organ in self.get_model().organs.values():
+            if organ.get_name() in color_scheme_names:
+                range = organ.local_ranges()[color_scheme_names[organ.get_name()]]
+                controller.ui.scene.items[organ.get_name()].set_color(range)
+            else:
+                controller.ui.scene.items[organ.get_name()].set_gray()
+        self.ui.scene.update()
+
     def add_organ(self, pos, organ_name: str, variables: dict, funcs: dict):
         # Adds an organ to the model object
         organ_info = {}
-        organ_info['pos'] = [pos.x(), pos.y()]
+        position = [pos.x(), pos.y()]
         organ_info['name'] = organ_name
         organ_info['variables'] = variables
         organ_info['functions'] = funcs
-        return self.model.add(organ_info)
+        return self.model.add(organ_info, position)
 
     def remove_organ(self, organ):
         # Removes an organ from the model and the UI

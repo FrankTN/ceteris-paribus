@@ -2,8 +2,9 @@
 from functools import partial
 
 from PyQt5.QtCore import Qt, QStringListModel
+from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider, \
-    QVBoxLayout, QMessageBox, QListWidget, QListWidgetItem, QCompleter
+    QVBoxLayout, QMessageBox, QListWidget, QListWidgetItem, QCompleter, QGroupBox
 from tinydb import TinyDB
 
 from gui.validator import FunctionValidator
@@ -14,6 +15,7 @@ class NewNodeDialog(QDialog):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
+        self.variables = {}
 
         self.nextButton = QPushButton("&Next")
         self.nextButton.setEnabled(False)
@@ -74,7 +76,7 @@ class NewNodeDialog(QDialog):
         self.nextButton.setEnabled(False)
         back_button = QPushButton("Back")
 
-        self.nextButton.clicked.connect(self.define_functions)
+        self.nextButton.clicked.connect(self.define_variables)
         back_button.clicked.connect(self.src_dialog.reject)
 
         buttonLayout = QHBoxLayout()
@@ -95,6 +97,80 @@ class NewNodeDialog(QDialog):
         else:
             self.nextButton.setEnabled(False)
 
+    def define_variables(self):
+        self.var_dialog = QDialog()
+        self.var_dialog.setWindowTitle("Define variables")
+        layout = QGridLayout()
+
+        self.var_view = QListWidget()
+
+        edit_group = QGroupBox()
+        edits = QGridLayout()
+        edits.addWidget(QLabel("Variable name"), 0, 0)
+        self.var_name = QLineEdit()
+        edits.addWidget(self.var_name, 0, 1)
+
+        self.var_min = QLineEdit()
+        self.var_min.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Min"), 1, 0)
+        edits.addWidget(self.var_min, 1, 1)
+        self.var_max = QLineEdit()
+        self.var_max.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Max"), 2, 0)
+        edits.addWidget(self.var_max, 2, 1)
+        self.var_val = QLineEdit()
+        self.var_val.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Val"), 3, 0)
+        edits.addWidget(self.var_val, 3, 1)
+
+        add_button = QPushButton("Add Variable")
+        add_button.clicked.connect(self.add_var)
+        del_button = QPushButton("Remove selected")
+        del_button.clicked.connect(partial(self.remove_selected, self.var_view, self.variables))
+        edits.addWidget(add_button)
+        edits.addWidget(del_button)
+        edit_group.setLayout(edits)
+
+        buttons = QHBoxLayout()
+        next_button = QPushButton("Next")
+        back_button = QPushButton("Back")
+
+        next_button.clicked.connect(self.define_functions)
+        back_button.clicked.connect(self.var_dialog.reject)
+
+        buttons.addStretch()
+        buttons.addWidget(next_button)
+        buttons.addWidget(back_button)
+
+        layout.addWidget(self.var_view, 0, 0)
+        layout.addWidget(edit_group, 1, 0)
+        layout.addLayout(buttons, 2, 0)
+
+        self.var_dialog.setLayout(layout)
+        self.var_dialog.exec_()
+
+    def add_var(self):
+        minimum = float(self.var_min.text())
+        maximum = float(self.var_max.text())
+        value = float(self.var_val.text())
+
+        valid_name = not self.var_name.text().strip() == ""
+        if valid_name and minimum <= value <= maximum:
+            self.var_view.addItem(QListWidgetItem(self.var_name.text() + " => [min: " + str(minimum) + ", max: " +
+                                                  str(maximum) + ", val: " + str(value) + "]"))
+            self.variables[self.var_name.text()] = [minimum, maximum, value]
+            self.var_name.clear()
+            self.var_min.clear()
+            self.var_max.clear()
+            self.var_val.clear()
+
+    def remove_selected(self, list_widget, value_dict):
+        for selected in list_widget.selectedItems():
+            list_widget.takeItem(list_widget.row(selected))
+            var_name = selected.text().split("=>")[0].strip()
+            value_dict.pop(var_name)
+
+
     def define_functions(self):
         selected_strings = self.list_view.selectedItems()
         self.sources = []
@@ -102,18 +178,19 @@ class NewNodeDialog(QDialog):
 
         for organ_name_widget in selected_strings:
             if organ_name_widget.text() == "Global Input":
-                organ_vars.append(self.controller.get_global_param_values())
+                organ_vars.append(self.controller.get_global_params())
             else:
                 self.sources.append(self.controller.get_model().get_organs()[organ_name_widget.text()])
-        organ_vars += [x.get_locals() for x in self.sources]
+        organ_vars += [x.local_ranges() for x in self.sources]
 
         self.flattened_vars = {}
         for var_dict in organ_vars:
             self.flattened_vars = {**var_dict, **self.flattened_vars}
 
         self.flattened_vars.pop('__builtins__', None)
+        self.flattened_vars = {**self.flattened_vars, **self.variables}
         # Concatenate the lists of keys, thus obtaining the variable names as strings
-        organ_var_strings = sum([list(x.keys()) for x in organ_vars],[])
+        organ_var_strings = self.flattened_vars.keys()
 
         autocomplete_model = QStringListModel()
         autocomplete_model.setStringList(organ_var_strings)
@@ -146,7 +223,10 @@ class NewNodeDialog(QDialog):
         self.f_form.setValidator(FunctionValidator(self.flattened_vars))
         add_button = QPushButton("Add Function")
         add_button.clicked.connect(self.addFunction)
+        remove_button = QPushButton("Remove Selected")
+        remove_button.clicked.connect(partial(self.remove_selected, self.function_list_widget, self.functions))
         edits.addWidget(add_button)
+        edits.addWidget(remove_button)
 
         layout = QGridLayout()
         layout.addLayout(flexible_grid, 0, 0)
@@ -172,6 +252,7 @@ class NewNodeDialog(QDialog):
         # Closes all remaining dialogs, this is called when the finish button is clicked
         self.fnc_dialog.accept()
         self.src_dialog.accept()
+        self.var_dialog.accept()
         self.accept()
 
     def get_edge_item(self):
@@ -181,6 +262,7 @@ class NewNodeDialog(QDialog):
         return self.name
 
     def get_variables(self):
+        self.flattened_vars.pop('__builtins__', None)
         return self.flattened_vars
 
     def get_funcs(self):
@@ -273,13 +355,18 @@ class OrganSettingsDialog(QDialog):
         dialog.setWindowTitle("Local values")
         layout = QGridLayout()
         
-        for index, val in enumerate(self.organ.get_locals()):
+        for index, val in enumerate(self.organ.local_ranges()):
             #TODO make into sliders with values
-            assert '__builtins__' not in self.organ.get_locals()
+            assert '__builtins__' not in self.organ.local_ranges()
             if val != '__builtins__':
-                print("val is " + str(val))
                 layout.addWidget(QLabel(val), index, 0)
-                layout.addWidget(QLabel(str(self.organ.get_locals()[val])), index, 1)
+                slider = QSlider(Qt.Horizontal)
+                slider.setMinimum(self.organ.local_ranges()[val][0])
+                slider.setMaximum(self.organ.local_ranges()[val][1])
+                slider.setValue(self.organ.local_ranges()[val][2])
+                layout.addWidget(slider, index, 1)
+                self.setLayout(layout)
+
         dialog.setLayout(layout)
         dialog.exec_()
 

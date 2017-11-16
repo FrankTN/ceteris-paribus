@@ -1,7 +1,7 @@
 """ Module containing the definitions of different node types. Currently, the Input and Output nodes are special, the
     other nodes should all contain Organ data."""
 from PyQt5.QtCore import Qt, QPointF, QRectF
-from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics
+from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem
 
 from gui.dialogs import OrganSettingsDialog, InputSettingsDialog, OutputSettingsDialog
@@ -18,7 +18,7 @@ class GraphNode(QGraphicsRectItem):
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
         # This specific ZValue is used so the nodes are rendered on top of the edges
         self.setZValue(1)
-        self.color = Qt.green
+        self.color = Qt.gray
         self.name = ""
 
     def get_center(self):
@@ -55,9 +55,24 @@ class GraphNode(QGraphicsRectItem):
         QPainter.fillRect(rect, gradient)
         QPainter.drawText(rect, Qt.AlignCenter, self.name)
 
-    def setColor(self, color):
-        self.color = color
+    def set_color(self, range: list):
+        range_min = range[0]
+        range_max = range[1]
+        val = range[2]
+        normalized_val = (val - range_min) / (range_max - range_min)
+        # Here, we spread out the normalized value for the color, which is in [0,1] to an RGB color for the node.
+        if normalized_val < (1/3):
+            self.color = QColor(normalized_val * 765, 0, 0)
+        elif normalized_val < (2/3):
+            self.color = QColor(255, (normalized_val - (1/3)) * 765, 0)
+        else:
+            self.color = QColor(255,255,(normalized_val - 2/3) * 765)
 
+    def set_gray(self):
+        self.color = Qt.gray
+
+    def set_dark_gray(self):
+        self.color = Qt.darkGray
 
     def moveEdges(self, new_pos):
         offset_x = self.rect().x() + self.rect().width()/2
@@ -107,14 +122,15 @@ class OrganNode(GraphNode):
         dialog.exec_()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        self.setColor(Qt.darkGreen)
+        self.set_dark_gray()
         self.controller.change_context(self.organ)
         print("clicked: " + self.organ.get_name())
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemSelectedChange:
             if value == False:
-                self.setColor(Qt.green)
+                self.set_gray()
         return GraphNode.itemChange(self, change, value)
+
 
 

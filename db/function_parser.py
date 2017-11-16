@@ -4,8 +4,9 @@ from PyQt5.QtWidgets import QMessageBox
 
 
 class EvalWrapper(object):
-    def __init__(self, variables : dict):
+    def __init__(self, variables : dict, transformer):
         self.variables = variables
+        self.transformer = transformer
 
     def add_vars(self, variables: dict):
         self.variables = {**self.variables, **variables}
@@ -14,17 +15,19 @@ class EvalWrapper(object):
         self.function = function
 
     def evaluate(self):
-        transformer = Transformer(self.variables) # Create syntax tree transformer
+        self.transformer.set_variables(self.variables) # Create syntax tree transformer
         if self.function:
             try:
                 tree = ast.parse(self.function, mode='eval')
-                transformer.visit(tree)
+                self.transformer.visit(tree)
                 clause = compile(tree, '<AST>', 'eval')
-
                 # make the globals contain only the Decimal class,
                 # and eval the compiled object
-                return eval(self.function, self.variables)
+                return eval(clause, self.variables)
             except NameError:
+                return None
+            except TypeError:
+                # We are missing an operand because it is undefined, this is the same as having a NameError in the eval
                 return None
             except ZeroDivisionError:
                 # On division by zero we will simply return 0 as an answer
@@ -36,18 +39,16 @@ class EvalWrapper(object):
                 msg.setText("Division by zero, set result of " + self.function + " to 0\n" + "".join(variables))
                 msg.exec_()
                 return 0
-            except TypeError:
-                return None
         else:
             raise NameError("Cannot evaluate: no function is defined")
 
 
-# using the NodeTransformer, you can also modify the nodes in the tree,
+# Using the NodeTransformer, you can also modify the nodes in the tree,
 # however in this example NodeVisitor could do as we are raising exceptions
 # only.
 class Transformer(ast.NodeTransformer):
     #TODO refine this, make more restrictive
-    def __init__(self, variables):
+    def set_variables(self, variables):
         self.variables = variables
 
     ALLOWED_NAMES = {'Decimal', 'None', 'False', 'True'}
@@ -58,27 +59,16 @@ class Transformer(ast.NodeTransformer):
         'Mult',
         'Sub',
         'Div',
-        'Tuple',      # makes a tuple
         'Call',       # a function call (hint, Decimal())
         'Name',       # an identifier...
         'Load',       # loads a value of a variable with given identifier
         'Str',        # a string literal
 
         'Num',        # allow numbers too
-        'List',       # and list literals
-        'Dict',       # and dicts...
         'Subscript',
         'Attribute',
         'Index'
     }
-
-    def visit_Name(self, node):
-        if not node.id in self.variables:
-            return
-            raise RuntimeError("Name access to %s is not allowed" % node.id)
-
-        # traverse to child nodes
-        return self.generic_visit(node)
 
     def generic_visit(self, node):
         nodetype = type(node).__name__
@@ -87,3 +77,19 @@ class Transformer(ast.NodeTransformer):
 
         return ast.NodeTransformer.generic_visit(self, node)
 
+class ModelTransformer(Transformer):
+    """ Works as an extension of the regular Transformer. This transformer is only used by the model to keep track of
+        the values being visited.
+        """
+    def __init__(self):
+        self.visited = {}
+        self.current_node = ""
+
+    def visit_Name(self, node):
+        self.visited[node.id] = ""
+        self.current_node = node.id
+        return self.generic_visit(node)
+
+    def visit_Str(self, node):
+        self.visited[self.current_node] = node.s
+        return self.generic_visit(node)

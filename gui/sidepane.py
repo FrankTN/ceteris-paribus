@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QS
 class ContextPane(QWidget):
     def __init__(self, controller):
         super().__init__()
+        self.local_outs = {}
         self.controller = controller
 
         self.context = QGridLayout()
@@ -89,13 +90,19 @@ class ContextPane(QWidget):
         dialog.setWindowTitle("Local values")
         layout = QGridLayout()
 
-        for index, val in enumerate(self.current_organ.get_locals()):
+        for index, val in enumerate(self.current_organ.local_ranges()):
             # TODO make into sliders with values
-            assert '__builtins__' not in self.current_organ.get_locals()
+            assert '__builtins__' not in self.current_organ.local_ranges()
             if val != '__builtins__':
-                print("val is " + str(val))
                 layout.addWidget(QLabel(val), index, 0)
-                layout.addWidget(QLabel(str(self.current_organ.get_locals()[val])), index, 1)
+                slider = QSlider(Qt.Horizontal)
+                slider.setMinimum(self.current_organ.local_ranges()[val][0])
+                slider.setMaximum(self.current_organ.local_ranges()[val][1])
+                slider.setValue(self.current_organ.local_ranges()[val][2])
+                #slider.valueChanged.connect(partial(self.controller.param_changed, val, slider))
+                slider.valueChanged.connect(partial(self.controller.organ_local_changed, val, slider))
+                layout.addWidget(slider, index, 1)
+                print("val is " + str(val))
         dialog.setLayout(layout)
         dialog.exec_()
 
@@ -155,14 +162,16 @@ class ContextPane(QWidget):
     def initialize_output(self):
         outputs = self.controller.model.get_outputs()
         layout = QGridLayout()
-        self.local_outs = {}
         for index, out_name in enumerate(outputs):
             labels = QHBoxLayout()
-            labels.addWidget(QLabel(out_name))
+            out_button = QPushButton(out_name)
+            out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
+            labels.addWidget(out_button)
             self.local_outs[out_name] = QLabel(str(outputs[out_name]))
             labels.addWidget(self.local_outs[out_name])
             layout.addLayout(labels, index, 0)
         self.output_group.setLayout(layout)
+
 
     def update_output(self):
         outputs = self.controller.model.get_outputs()

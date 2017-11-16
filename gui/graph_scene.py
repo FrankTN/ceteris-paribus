@@ -10,9 +10,9 @@ class GraphScene(QGraphicsScene):
     def __init__(self, controller, *__args):
         super().__init__(*__args)
         self.controller = controller
-        self.input_node = InNode(-600, 0, controller)
+        self.input_node = InNode(-300, 0, controller)
         self.addItem(self.input_node)
-        self.output_node = OutNode(600, 0, controller)
+        self.output_node = OutNode(300, 0, controller)
         self.addItem(self.output_node)
         # Items is used as a dict to keep internal references to the items.
         self.items = {}
@@ -62,5 +62,6 @@ class GraphScene(QGraphicsScene):
     def create_new_node(self, pos):
         dialog = NewNodeDialog(self.controller)
         if dialog.exec_():
+            print(dialog.get_variables())
             organ = self.controller.add_organ(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs())
             self.add_organ(organ, dialog.get_edge_item())

@@ -1,12 +1,12 @@
 from PyQt5.QtGui import QValidator
 
-from db.function_parser import EvalWrapper
+from db.function_parser import EvalWrapper, Transformer
 
 
 class FunctionValidator(QValidator):
     def __init__(self, variables):
         super().__init__()
-        self.evaluator = EvalWrapper(variables)
+        self.evaluator = EvalWrapper(variables, Transformer())
         self.confirmed = False
 
     def setConfirmed(self, bool_value):

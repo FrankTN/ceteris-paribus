@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QErrorMessage, QMessageBox
 
-from db.function_parser import EvalWrapper
+from db.function_parser import EvalWrapper, Transformer
 
 
 class Organ(object):
@@ -19,8 +19,8 @@ class Organ(object):
 
         # The defined variables dict is a combination of all the variables and their values available to this organ
         # It will be used by the evaluator to resolve all functions and their values
-        self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
-        #assert '__builtins__' not in self.defined_variables
+        self.defined_variables = {**self.local_vals(), **self.global_params, **self.global_constants}
+
         self.results = {}
         self.evaluate()
 
@@ -31,7 +31,7 @@ class Organ(object):
         :return: None
         """
         self.global_params = new_globals
-        self.defined_variables = {**getattr(self,'variables'), **self.global_params, **self.global_constants}
+        self.defined_variables = {**self.local_vals(), **self.global_params, **self.global_constants}
 
     def evaluate(self):
         """
@@ -46,7 +46,7 @@ class Organ(object):
         while changed:
             changed = False
             for function_name in list(unresolved_funcs):
-                evaluator = EvalWrapper(self.defined_variables)
+                evaluator = EvalWrapper(self.defined_variables, Transformer())
                 evaluator.set_function(unresolved_funcs[function_name])
                 result = evaluator.evaluate()
                 if result is not None:
@@ -64,6 +64,12 @@ class Organ(object):
     def get_name(self):
         return getattr(self, 'name', 'default_organ')
 
+    def local_changed(self, name: str, slider):
+        # Get new value from the slider
+        new_value = slider.value()
+        # Set local value to the new one
+        self.local_ranges()[name][2] = new_value
+
     def get_defined_variables(self) -> dict:
         # Returns all variables defined for this organ and their values in a single dict
         assert '__builtins__' not in self.defined_variables
@@ -73,10 +79,19 @@ class Organ(object):
         # Returns the global values as known to this organ in a single dict
         return self.global_params
 
-    def get_locals(self) -> dict:
+    def local_ranges(self) -> dict:
         # Returns only the locally defined variables
         assert '__builtins__' not in getattr(self, 'variables')
         return getattr(self, 'variables')
+
+    def local_vals(self) -> dict:
+        # returns only the third value in the list
+        local_vals = {}
+        ranged_vals = getattr(self, 'variables')
+        for param in ranged_vals:
+            local_vals[param] = ranged_vals[param][2]
+        return local_vals
+
 
     def get_funcs(self) -> dict:
         # Returns the local functions defined for this organ

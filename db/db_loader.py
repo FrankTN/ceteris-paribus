@@ -9,7 +9,7 @@ organ_db = TinyDB(os.getcwd() + "/new_organ_db.json")
 organ_db.purge_table("GlobalParameters")
 global_param_table = organ_db.table("GlobalParameters")
 global_param_table.insert({"BodyCO": [0, 10000, 5000]})
-# global_param_table.insert({"BodyVO2": [0, 400, 250]})
+global_param_table.insert({"BodyVO2": [0, 400, 250]})
 global_param_table.insert({"glu_art": [3.0, 7.0, 5.0]})
 global_param_table.insert({"lac_art": [0.6, 1.8, 1.0]})
 global_param_table.insert({"O2_art": [6, 30.0, 10.0]}) # Not based on anything, unable to find references
@@ -48,8 +48,8 @@ f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 
 organ_db.purge_table("GlobalFunctions")
 global_function_table = organ_db.table("GlobalFunctions")
-global_function_table.insert({"VCO2": "Heart.variables[\'VCO2\'] + Brain.variables[\'VCO2\'] + Skeletal_muscle.variables[\'VCO2\'] + Liver.variables[\'VCO2\'] + Kidneys.variables[\'VCO2\']"})
-global_function_table.insert({"VO2": "Heart.variables[\'VO2\'] + Brain.variables[\'VO2\'] + Skeletal_muscle.variables[\'VO2\'] + Liver.variables[\'VO2\'] + Kidneys.variables[\'VO2\']"})
+global_function_table.insert({"VCO2": "Heart.local_vals()[\'VCO2\'] + Brain.local_vals()[\'VCO2\'] + Skeletal_muscle.local_vals()[\'VCO2\'] + Liver.local_vals()[\'VCO2\'] + Kidneys.local_vals()[\'VCO2\']"})
+global_function_table.insert({"VO2": "Heart.local_vals()[\'VO2\'] + Brain.local_vals()[\'VO2\'] + Skeletal_muscle.local_vals()[\'VO2\'] + Liver.local_vals()[\'VO2\'] + Kidneys.local_vals()[\'VO2\']"})
 global_function_table.insert({"RQ": "VCO2 / VO2"})
 
 organ_db.purge_table("SystemicOrgans")
