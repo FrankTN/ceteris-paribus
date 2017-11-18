@@ -4,6 +4,7 @@ from db.function_parser import EvalWrapper, Transformer
 
 
 class FunctionValidator(QValidator):
+    """ There is the """
     def __init__(self, variables):
         super().__init__()
         self.evaluator = EvalWrapper(variables, Transformer())

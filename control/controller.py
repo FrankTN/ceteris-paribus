@@ -19,13 +19,14 @@ class Controller(object):
         # Finally, a UI is instantiated based on the current model
         self.ui = graphWindow(self)
         # The context pane remains empty for now
-        # TODO refactor to improve flow
         self.context_pane = self.ui.context
 
-    def change_context(self, organ):
-        self.context_pane.change_context(organ)
+    def change_context_organ(self, organ):
+        # Change the organ being displayed in the context menu on the right dock
+        self.context_pane.change_context_organ(organ)
 
     def open_new_db(self):
+        # Change to a new database, opens a UI dialog
         self.db = select_db_dialog()
         self.model = GlobalModel(self)
         # After changing the model and the database inside the controller, we ask the UI to update itself
@@ -37,12 +38,15 @@ class Controller(object):
     def get_db(self):
         return self.db
 
-    def get_global_params(self):
-        # This function provides a layer of abstraction so other object do not need to know about the existence of the
-        # model
-        return self.model.get_global_params()
+    def get_global_param_ranges(self):
+        # This function provides a layer of abstraction so other objects do not need to know about the existence of the
+        # model. Note that the value returned is a dict where the values are lists of [min, max, val] defining the
+        # ranges of the parameter
+        return self.model.get_global_param_ranges()
 
     def get_global_param_values(self):
+        # An abstraction from the model. Note that the value returned is a dict containing the values of the parameters
+        # without the ranges
         return self.model.get_global_param_values()
 
     def param_changed(self, name: str, slider):
@@ -51,11 +55,15 @@ class Controller(object):
         self.context_pane.update_output()
 
     def organ_local_changed(self, name: str, slider):
+        # If the user changes a local value in an organ, this function is called. We change the local value and update
+        # the UI accordingly
         organ = self.context_pane.current_organ
         organ.local_changed(name, slider)
         self.context_pane.update_output()
 
     def set_colors_for_global(self, name: str):
+        # If we select a global value to visualize, this function updates the nodes involved so we can see how far each
+        # node is in their range with respect to this value
         color_scheme_names = self.get_model().color_schemes[name]
         for organ in self.get_model().organs.values():
             if organ.get_name() in color_scheme_names:
@@ -66,7 +74,8 @@ class Controller(object):
         self.ui.scene.update()
 
     def add_organ(self, pos, organ_name: str, variables: dict, funcs: dict):
-        # Adds an organ to the model object
+        # Adds an organ to the model object. We need to wrap all information in an organ_info dict because of the way
+        # the database handling system works.
         organ_info = {}
         position = [pos.x(), pos.y()]
         organ_info['name'] = organ_name
@@ -80,7 +89,7 @@ class Controller(object):
         self.ui.get_scene().remove_organ(organ)
 
 if __name__ == "__main__":
-    # The starting point for the entire program, creates a QApplication and runs the controller.
+    # The starting point for the entire program, creates a QApplication and a controller.
     app = QApplication(sys.argv)
     controller = Controller()
     sys.exit(app.exec_())

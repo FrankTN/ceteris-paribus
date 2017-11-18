@@ -82,7 +82,7 @@ class GlobalModel(object):
     def get_global_param_values(self):
         return {k : v[2] for k,v in self._global_params.items()}
 
-    def get_global_params(self):
+    def get_global_param_ranges(self):
         return self._global_params
 
     def get_global_constants(self):

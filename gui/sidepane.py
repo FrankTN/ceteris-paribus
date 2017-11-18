@@ -3,7 +3,7 @@
 from functools import partial
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QSpacerItem, QHBoxLayout, QVBoxLayout, \
+from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
     QPushButton, QDialog
 
 
@@ -25,7 +25,7 @@ class ContextPane(QWidget):
         self.context_group = QGroupBox("Context")
         self.context_group.setFixedSize(300, (available_height / 2))
         self.initialize_context()
-        self.change_context(list(controller.get_model().organs.values())[0])
+        self.change_context_organ(list(controller.get_model().organs.values())[0])
 
         self.output_group = QGroupBox("Outputs")
         self.output_group.setFixedSize(300, (available_height / 2))
@@ -41,7 +41,7 @@ class ContextPane(QWidget):
 
     def set_input(self):
         layout = QGridLayout()
-        global_params = self.controller.get_global_params()
+        global_params = self.controller.get_global_param_ranges()
         for index, param_name in enumerate(global_params):
             layout.addWidget(QLabel(param_name), index, 0)
             slider = QSlider(Qt.Horizontal)
@@ -80,7 +80,7 @@ class ContextPane(QWidget):
 
         self.context_group.setLayout(layout)
 
-    def change_context(self, organ):
+    def change_context_organ(self, organ):
         self.current_organ = organ
         self.name_label.setText(organ.get_name())
 

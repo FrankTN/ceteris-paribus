@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QGraphicsScene, QWidget, QGridLayout, QLabel
 
 from gui.dialogs import NewNodeDialog
 from gui.edge import Edge
-from gui.node import OrganNode, InNode, OutNode
+from gui.visual_elements import OrganNode, InNode, OutNode
 
 
 class GraphScene(QGraphicsScene):

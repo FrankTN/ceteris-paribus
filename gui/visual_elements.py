@@ -1,14 +1,12 @@
-""" Module containing the definitions of different node types. Currently, the Input and Output nodes are special, the
-    other nodes should all contain Organ data."""
+""" Module containing the definitions of the parts of the graph, including node types and edges. Currently, the Input
+    and Output nodes are special, the other nodes should all contain Organ data."""
 from PyQt5.QtCore import Qt, QPointF, QRectF
 from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor
-from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem
-
-from gui.dialogs import OrganSettingsDialog, InputSettingsDialog, OutputSettingsDialog
-from gui.edge import Edge
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem
 
 class GraphNode(QGraphicsRectItem):
-    """ Contains the basic definition of a node. All other nodes share this baseclass."""
+    """ Contains the basic definition of a node. A node is a visual element on the graph scene represented by a colored
+        box with a name. All other nodes share this baseclass."""
     def __init__(self, x, y):
         super().__init__(x, y, 50, 50)
         self.setPos(x,y)
@@ -22,23 +20,29 @@ class GraphNode(QGraphicsRectItem):
         self.name = ""
 
     def get_center(self):
+        # Find the center of the current node
+        # TODO make this accurate
         offset_x = self.rect().x() + self.rect().width() / 2
         offset_y = self.rect().y() + self.rect().height() / 2
         new_center = QPointF(self.pos().x() + offset_x, self.pos().y() + offset_y)
         return new_center
 
     def itemChange(self, change, value):
+        # Overrides the itemChange function of the RectItem in such a way that the edges are moved if the item itself is
+        # moved
         if change == QGraphicsItem.ItemPositionChange:
             self.moveEdges(value)
         return QGraphicsRectItem.itemChange(self, change, value)
 
     def add_edge(self, edge: Edge, isSource: bool):
+        # Add edge to the local list of edges
         self.edge_list.append((edge, isSource))
 
-    def edges(self):
+    def get_edges(self):
         return self.edge_list
 
     def boundingRect(self):
+        # Reimplementation of the boundingRect function, to resize the node based on the length of its title
         fm = QFontMetrics(QFont("Arial", 13))
         text_size = fm.boundingRect(self.name)
         rect = self.rect()
@@ -46,6 +50,7 @@ class GraphNode(QGraphicsRectItem):
         return QRectF(rect.x(), rect.y(), text_size.width() + 6, text_size.height() + 10)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
+        # The basic paint method, draws a box with a gradient and fills it with the title
         QPainter.setFont(QFont("Arial", 13))
         rect = self.boundingRect()
         gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
@@ -56,6 +61,9 @@ class GraphNode(QGraphicsRectItem):
         QPainter.drawText(rect, Qt.AlignCenter, self.name)
 
     def set_color(self, range: list):
+        # Sets the color of the node based on a range of values. Range is a list with three elements, [min, max, val].
+        # Based on the distance of val from the maximum, we give the node a color. This allows the user to get an
+        # overview of the space left to move a certain variable
         range_min = range[0]
         range_max = range[1]
         val = range[2]
@@ -69,12 +77,15 @@ class GraphNode(QGraphicsRectItem):
             self.color = QColor(255,255,(normalized_val - 2/3) * 765)
 
     def set_gray(self):
+        # The default color
         self.color = Qt.gray
 
     def set_dark_gray(self):
+        # The default color when an object is selected
         self.color = Qt.darkGray
 
     def moveEdges(self, new_pos):
+        # This function moves the edges in the pane to follow the node
         offset_x = self.rect().x() + self.rect().width()/2
         offset_y = self.rect().y() + self.rect().height()/2
         new_center = QPointF(new_pos.x() + offset_x, new_pos.y() + offset_y)
@@ -87,29 +98,23 @@ class GraphNode(QGraphicsRectItem):
                 edge.set_dest(new_center)
 
 class InNode(GraphNode):
+    # TODO expand functionality
     def __init__(self, x, y, controller):
         super().__init__(x, y)
         self.name = "Input"
         self.controller = controller
 
-    def mouseDoubleClickEvent(self, QGraphicsSceneMouseEvent, **kwargs):
-        dialog = InputSettingsDialog(self.controller)
-        self.controller.setContext()
-        dialog.exec_()
-
         print("clicked: Input")
 
 class OutNode(GraphNode):
+    # TODO expand functionality
     def __init__(self, x, y, model):
         super().__init__(x, y)
         self.name = "Output"
         self.model = model
 
-    def mouseDoubleClickEvent(self, QGraphicsSceneMouseEvent):
-        dialog = OutputSettingsDialog(self.model)
-        dialog.exec_()
-
 class OrganNode(GraphNode):
+    # Subclass for the organ nodes
     def __init__(self, organ, controller):
         super().__init__(*organ.pos)
         self.setFlag(QGraphicsItem.ItemIsMovable)
@@ -117,13 +122,9 @@ class OrganNode(GraphNode):
         self.controller = controller
         self.name = organ.get_name()
 
-    def mouseDoubleClickEvent(self, QGraphicsSceneMouseEvent, **kwargs):
-        dialog = OrganSettingsDialog(self.organ, self.controller)
-        dialog.exec_()
-
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         self.set_dark_gray()
-        self.controller.change_context(self.organ)
+        self.controller.change_context_organ(self.organ)
         print("clicked: " + self.organ.get_name())
 
     def itemChange(self, change, value):
@@ -131,6 +132,36 @@ class OrganNode(GraphNode):
             if value == False:
                 self.set_gray()
         return GraphNode.itemChange(self, change, value)
+
+class Edge(QGraphicsLineItem):
+    """ This class contains the definition of an edge in the graph."""
+    def __init__(self, source_node, dest_node):
+        super().__init__(source_node.get_center().x(), source_node.get_center().y(), dest_node.get_center().x(),
+                         dest_node.get_center().y())
+        self.setAcceptedMouseButtons(Qt.NoButton)
+        self.source_node = source_node
+        self.dest_node = dest_node
+        source_node.add_edge(self, True)
+        dest_node.add_edge(self, False)
+        self.arrow_size = 10
+
+    def get_source(self):
+        return self.source_node
+
+    def get_dest(self):
+        return self.dest_node
+
+    def set_source(self, new_position: QPointF):
+        self.setLine(new_position.x(), new_position.y(), self.dest_node.get_center().x(),
+                     self.dest_node.get_center().y())
+        self.update()
+
+    def set_dest(self, new_position: QPointF):
+        self.setLine(self.source_node.get_center().x(), self.source_node.get_center().y(),
+                     new_position.x(), new_position.y())
+
+        self.dest_point = new_position
+        self.update()
 
 
 
