@@ -91,6 +91,9 @@ class GlobalModel(object):
     def get_organs(self):
         return self.organs
 
+    def get_functions(self):
+        return self._global_funcs
+
     def get_outputs(self):
         """
         This function calculates the global outputs of the model

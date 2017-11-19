@@ -4,13 +4,15 @@ from db.function_parser import EvalWrapper, Transformer
 
 
 class FunctionValidator(QValidator):
-    """ There is the """
+    """ When a function is entered by the user to be added to an organ this validator checks whether the function can
+        actually be evaluated."""
     def __init__(self, variables):
         super().__init__()
+
         self.evaluator = EvalWrapper(variables, Transformer())
         self.confirmed = False
 
-    def setConfirmed(self, bool_value):
+    def set_confirmed(self, bool_value):
         self.confirmed = bool_value
 
     def validate(self, p_str, p_int):

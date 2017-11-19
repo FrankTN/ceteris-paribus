@@ -157,7 +157,7 @@ class ContextPane(QWidget):
 
         dialog.setLayout(layout)
         if dialog.exec_():
-            self.controller.remove_organ(self.current_organ)
+            self.controller.remove_organ_node(self.current_organ)
 
     def initialize_output(self):
         outputs = self.controller.model.get_outputs()

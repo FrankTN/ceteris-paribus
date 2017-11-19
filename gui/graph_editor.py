@@ -2,13 +2,15 @@ from functools import partial
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush
-from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget, QToolBar, QAction, QGridLayout, QLabel, QSlider
+from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget, QToolBar, QAction, QGridLayout, QLabel, QSlider, \
+    QMenuBar, QMenu
 
 from gui.graph_scene import GraphScene
 from gui.sidepane import ContextPane
 
 
 class graphWindow(QMainWindow):
+    """This class represents the MainWindow as a whole."""
     def __init__(self, controller):
         super().__init__()
         self.scene = GraphScene(controller)
@@ -18,14 +20,14 @@ class graphWindow(QMainWindow):
         self.scene.setBackgroundBrush(QBrush(Qt.lightGray, Qt.CrossPattern))
         self.grid = True
 
-        menu_bar = QToolBar()
+        menu_bar = self.menuBar()
 
         open_file = QAction("Open file")
         open_file.setStatusTip("Select a file to load a new model")
         open_file.triggered.connect(self.open_new_db)
 
         menu_bar.addAction(open_file)
-        self.addToolBar(menu_bar)
+        menu_bar.addMenu(QMenu("Test"))
 
         self.statusBar().showMessage("Ready")
 
@@ -41,7 +43,8 @@ class graphWindow(QMainWindow):
 
         graphics = QGraphicsView(self.scene)
         self.setCentralWidget(graphics)
-        self.showFullScreen()
+        self.show()
+        #self.showFullScreen()
 
     def get_scene(self):
         return self.scene

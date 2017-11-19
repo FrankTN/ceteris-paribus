@@ -34,7 +34,7 @@ class GraphNode(QGraphicsRectItem):
             self.moveEdges(value)
         return QGraphicsRectItem.itemChange(self, change, value)
 
-    def add_edge(self, edge: Edge, isSource: bool):
+    def add_edge(self, edge, isSource: bool):
         # Add edge to the local list of edges
         self.edge_list.append((edge, isSource))
 

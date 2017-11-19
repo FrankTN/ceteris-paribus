@@ -256,14 +256,14 @@ class NewNodeDialog(QDialog):
 
     def addFunction(self):
         # A function is valid if it is returned as such by the validator
-        self.f_form.validator().setConfirmed(True)
+        self.f_form.validator().set_confirmed(True)
         valid_function = self.f_form.hasAcceptableInput()
         # A name is valid as long as its not empty
         valid_name = not self.f_name.text().strip() == ""
         if valid_name and valid_function:
             self.functions[self.f_name.text()] = self.f_form.text()
             self.function_list_widget.addItem(QListWidgetItem(self.f_name.text() + " => " + self.f_form.text()))
-            self.f_form.validator().setConfirmed(False)
+            self.f_form.validator().set_confirmed(False)
             self.f_form.clear()
 
     def finalize(self):

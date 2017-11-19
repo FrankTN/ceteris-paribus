@@ -5,45 +5,26 @@ import os
 
 from tinydb import TinyDB
 
-import organ_functions
-
-
-def dump_model(model, db_name: str = "organ_db.json"):
+def dump_model(model, db_name: str = "new_organ_db.json"):
     """Serialize a model as a JSON file in such a way that it can be reopened at any moment for later use."""
-    #TODO remove duplicate code and update.
+    # Create the db for dumping
     target_db = TinyDB(os.getcwd() + "/db/" + db_name)
+    target_db.purge_tables()
+    global_const = target_db.table("GlobalConstants")
+    print(model.get_global_constants())
+    global_const.insert(model.get_global_constants())
+
+    global_funcs = target_db.table("GlobalFunctions")
+    global_funcs.insert(model.get_functions())
+
     global_params = target_db.table("GlobalParameters")
-    global_params.insert(model.get_global())
+    global_params.insert(model.get_global_param_ranges())
 
-    systemic_params = target_db.table("SystemicParameters")
-    systemic_vals = model.get_systemic()
-
-    for vertex in systemic_vals[0].vertices():
-        name = vertex.name
-        frac = systemic_vals[1][name]
-        f_vec = vertex.get_function_vector()
-        f_dict = {}
-        for func in f_vec:
-            coeffs = list(f_vec[func].args)
-            type = organ_functions.parse_type(f_vec[func])
-            inner_dict = {}
-            inner_dict["coeffs"] = coeffs
-            inner_dict["type"] = type
-            f_dict[func] = inner_dict
-        systemic_params.insert({"name": name, "frac": frac, "function_vector": f_dict})
-
-    pulmonary_params = target_db.table("PulmonaryParameters")
-    pulmonary_vals = model.get_pulmonary()
-    for vertex in pulmonary_vals[0].vertices():
-        name = vertex.name
-        frac = pulmonary_vals[1][name]
-        f_vec = vertex.get_function_vector()
-        f_dict = {}
-        for func in f_vec:
-            coeffs = list(f_vec[func].args)
-            type = organ_functions.parse_type(f_vec[func])
-            inner_dict = {}
-            inner_dict["coeffs"] = coeffs
-            inner_dict["type"] = type
-            f_dict[func] = inner_dict
-        pulmonary_params.insert({"name": name, "frac": frac, "function_vector": f_dict})
+    systemic_organs = target_db.table("SystemicOrgans")
+    for organ in model.get_organs().values():
+        # Write the organ as a dict for JSON representation
+        organ_representation = {}
+        organ_representation['name'] = organ.get_name()
+        organ_representation['variables'] = organ.local_ranges()
+        organ_representation['functions'] = organ.get_funcs()
+        systemic_organs.insert(organ_representation)

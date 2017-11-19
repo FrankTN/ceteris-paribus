@@ -16,7 +16,7 @@ class TestConsistency(unittest.TestCase):
         self.assertEqual(self.m.check_global_consistency(), True)
 
     def test_global_consistency(self):
-        self.m.add_organ(Organ("heart", "SystemicParameters"), 0.04, *self.m.get_systemic())
+        self.m.add_organ_node(Organ("heart", "SystemicParameters"), 0.04, *self.m.get_systemic())
         self.assertEqual(self.m.check_global_consistency(), True)
 
     @classmethod

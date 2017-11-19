@@ -4,6 +4,7 @@ import sys
 
 from PyQt5.QtWidgets import QApplication
 
+from db.db_dumper import dump_model
 from gui.dialogs import select_db_dialog
 from gui.graph_editor import graphWindow
 from model.globalmodel import GlobalModel
@@ -86,10 +87,11 @@ class Controller(object):
     def remove_organ(self, organ):
         # Removes an organ from the model and the UI
         self.model.remove(organ)
-        self.ui.get_scene().remove_organ(organ)
+        self.ui.get_scene().remove_organ_node(organ)
 
 if __name__ == "__main__":
     # The starting point for the entire program, creates a QApplication and a controller.
     app = QApplication(sys.argv)
     controller = Controller()
+    dump_model(controller.get_model())
     sys.exit(app.exec_())
