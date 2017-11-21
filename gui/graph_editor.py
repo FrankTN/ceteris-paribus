@@ -9,7 +9,7 @@ from gui.graph_scene import GraphScene
 from gui.sidepane import ContextPane
 
 
-class graphWindow(QMainWindow):
+class GraphWindow(QMainWindow):
     """This class represents the MainWindow as a whole."""
     def __init__(self, controller):
         super().__init__()
@@ -17,17 +17,22 @@ class graphWindow(QMainWindow):
         self.controller = controller
 
         # a grid foreground
-        self.scene.setBackgroundBrush(QBrush(Qt.lightGray, Qt.CrossPattern))
         self.grid = True
 
-        menu_bar = self.menuBar()
+        # Create upper toolbar with menu options
+        menubar = self.menuBar()
 
-        open_file = QAction("Open file")
-        open_file.setStatusTip("Select a file to load a new model")
-        open_file.triggered.connect(self.open_new_db)
+        file_menu = menubar.addMenu('File')
+        db_action = file_menu.addAction('Open file')
+        db_action.setStatusTip('Select a file to use as a database')
+        db_action.triggered.connect(self.open_new_db)
+        file_menu.addAction(db_action)
 
-        menu_bar.addAction(open_file)
-        menu_bar.addMenu(QMenu("Test"))
+        edit_menu = menubar.addMenu('Edit')
+        undo_action = edit_menu.addAction('Undo')
+        undo_action.setStatusTip('Undo previous action')
+        #undo_action.triggered.connect
+        edit_menu.addAction(undo_action)
 
         self.statusBar().showMessage("Ready")
 
@@ -43,8 +48,7 @@ class graphWindow(QMainWindow):
 
         graphics = QGraphicsView(self.scene)
         self.setCentralWidget(graphics)
-        self.show()
-        #self.showFullScreen()
+        self.showFullScreen()
 
     def get_scene(self):
         return self.scene
@@ -64,4 +68,4 @@ class graphWindow(QMainWindow):
 
     def open_new_db(self):
         self.controller.open_new_db()
-        self.setCentralWidget(GraphScene(self.controller.get_model()))
+        self.setCentralWidget(QGraphicsView(GraphScene(self.controller)))

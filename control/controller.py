@@ -6,7 +6,8 @@ from PyQt5.QtWidgets import QApplication
 
 from db.db_dumper import dump_model
 from gui.dialogs import select_db_dialog
-from gui.graph_editor import graphWindow
+from gui.graph_editor import GraphWindow
+from gui.graph_scene import GraphScene
 from model.globalmodel import GlobalModel
 
 
@@ -18,7 +19,7 @@ class Controller(object):
         # Next, we create a model based on the database
         self.model = GlobalModel(self)
         # Finally, a UI is instantiated based on the current model
-        self.ui = graphWindow(self)
+        self.ui = GraphWindow(self)
         # The context pane remains empty for now
         self.context_pane = self.ui.context
 
@@ -31,7 +32,6 @@ class Controller(object):
         self.db = select_db_dialog()
         self.model = GlobalModel(self)
         # After changing the model and the database inside the controller, we ask the UI to update itself
-        self.ui.update_model(self)
 
     def get_model(self):
         return self.model
@@ -93,5 +93,4 @@ if __name__ == "__main__":
     # The starting point for the entire program, creates a QApplication and a controller.
     app = QApplication(sys.argv)
     controller = Controller()
-    dump_model(controller.get_model())
     sys.exit(app.exec_())

@@ -1,4 +1,5 @@
-from PyQt5.QtGui import QTransform
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QTransform, QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
 from gui.dialogs import NewNodeDialog
@@ -10,14 +11,19 @@ class GraphScene(QGraphicsScene):
     def __init__(self, controller, *__args):
         super().__init__(*__args)
         self.controller = controller
+
         self.input_node = InNode(-300, 0, controller)
         self.addItem(self.input_node)
         self.output_node = OutNode(300, 0, controller)
         self.addItem(self.output_node)
+
         # Items is used as a dict to keep internal references to the items.
         self.items = {}
         self.items['Global Input'] = self.input_node
         self.edges = []
+
+        self.setBackgroundBrush(QBrush(Qt.lightGray, Qt.CrossPattern))
+
         self.load_from_model(controller.get_model())
 
     def load_from_model(self, model):
@@ -70,3 +76,6 @@ class GraphScene(QGraphicsScene):
             print(dialog.get_variables())
             organ = self.controller.add_organ_node(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs())
             self.add_organ_node(organ, dialog.get_edge_item())
+
+    def update_model(self):
+        pass
