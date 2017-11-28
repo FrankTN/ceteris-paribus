@@ -10,54 +10,110 @@ from tinydb import TinyDB
 from gui.validator import FunctionValidator
 
 
-class NewNodeDialog(QDialog):
+class NewNodeCreator(object):
     """ This class is used when creating new nodes"""
+
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
-        self.organ_variables = {}
 
-        self.name_next_button = QPushButton("&Next")
-        self.name_next_button.setEnabled(False)
-        cancelButton = QPushButton("Cancel")
+    def run(self):
+        name_dialog = NameDialog()
+        if name_dialog.exec_():
+            # handle name
+            self.name = name_dialog.name_field.text()
+        else:
+            # If we reject during naming return false
+            return False
+        source_dialog = SourceDialog(self.controller)
+        self.variables = {}
+        if source_dialog.exec_():
+            # handle source
+            self.sources = source_dialog.get_source()
+            for source in self.sources:
+                # Get the source organ, or the global input, according to the name of the source
+                if source == "Global Input":
+                    self.variables = {**self.variables, **self.controller.get_global_param_ranges()}
+                else:
+                    locals_of_source = self.controller.get_model().get_organs()[source].get_local_ranges()
+                    # Unroll source locals into general variables
+                    self.variables = {**self.variables, **locals_of_source}
+        else:
+            # If we reject during source selection return false
+            return False
+        var_dialog = VarDialog(self.variables)
+        var_dialog.exec_()
+        # self.variables has been updated, we can now write functions
+        function_dialog = FunctionDialog(self.variables)
+        if function_dialog.exec_():
+            # handle functions
+            self.functions = function_dialog.functions
+        else:
+            # If we reject during naming return false
+            return False
+        return True
 
-        self.name_next_button.clicked.connect(self.set_source)
-        cancelButton.clicked.connect(self.reject)
-        self.setWindowTitle("Create new node")
+    def get_variables(self):
+        return self.variables
 
+    def get_name(self):
+        return self.name
+
+    def get_funcs(self):
+        return self.functions
+
+    def get_sources(self):
+        return self.sources
+
+
+class NameDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.next_button = QPushButton("&Next")
+        self.next_button.setEnabled(False)
+        cancel_button = QPushButton("Cancel")
+
+        self.setWindowTitle("Set node")
         name_layout = QHBoxLayout()
-        nameLabel = QLabel("&Name:")
-        self.nameField = QLineEdit()
-        self.nameField.textChanged.connect(self.validate_text_field)
+        name_label = QLabel("&Name:")
+        self.name_field = QLineEdit()
+        self.name_field.textChanged.connect(self.validate_text_field)
 
-        nameLabel.setBuddy(self.nameField)
-        name_layout.addWidget(nameLabel)
-        name_layout.addWidget(self.nameField)
+        name_label.setBuddy(self.name_field)
+        name_layout.addWidget(name_label)
+        name_layout.addWidget(self.name_field)
 
         buttonLayout = QHBoxLayout()
         buttonLayout.addStretch()
-        buttonLayout.addWidget(self.name_next_button)
-        buttonLayout.addWidget(cancelButton)
+        buttonLayout.addWidget(self.next_button)
+        buttonLayout.addWidget(cancel_button)
 
         layout = QGridLayout()
         layout.addLayout(name_layout, 0, 0)
         layout.addLayout(buttonLayout, 2, 0, 1, 3)
         self.setLayout(layout)
 
+        self.next_button.clicked.connect(self.accept)
+        cancel_button.clicked.connect(self.reject)
+
     def validate_text_field(self):
-        if not self.isEmpty(self.nameField.text()):
-            self.name = self.nameField.text()
-            self.name_next_button.setEnabled(True)
+        if not self.isEmpty(self.name_field.text()):
+            self.name = self.name_field.text()
+            self.next_button.setEnabled(True)
         else:
-            self.name_next_button.setEnabled(False)
+            self.next_button.setEnabled(False)
 
     def isEmpty(self, string: str):
         return string.strip() is ""
 
-    def set_source(self):
-        # This dialog requires the user to enter a source
-        self.src_dialog = QDialog()
-        self.src_dialog.setWindowTitle("Select sources")
+
+class SourceDialog(QDialog):
+    def __init__(self, controller):
+        super().__init__()
+        self.controller = controller
+
+        self.setWindowTitle("Select sources")
         layout = QGridLayout()
         self.list_view = QListWidget()
         self.list_view.itemSelectionChanged.connect(self.validate_list)
@@ -67,7 +123,9 @@ class NewNodeDialog(QDialog):
         input_widget.setText("Global Input")
         self.list_view.addItem(input_widget)
 
-        for item in list(self.controller.get_model().get_organs().keys()):
+        organ_names = list(self.controller.get_model().get_organs().keys())
+
+        for item in organ_names:
             if item is not '__builtins__':
                 widget = QListWidgetItem()
                 widget.setText(item)
@@ -77,8 +135,8 @@ class NewNodeDialog(QDialog):
         self.name_next_button.setEnabled(False)
         back_button = QPushButton("Back")
 
-        self.name_next_button.clicked.connect(self.define_variables)
-        back_button.clicked.connect(self.src_dialog.reject)
+        self.name_next_button.clicked.connect(self.accept)
+        back_button.clicked.connect(self.reject)
 
         buttonLayout = QHBoxLayout()
         buttonLayout.addStretch()
@@ -87,194 +145,21 @@ class NewNodeDialog(QDialog):
 
         layout.addWidget(self.list_view)
         layout.addLayout(buttonLayout, 1, 0)
-        self.src_dialog.setLayout(layout)
-        self.src_dialog.exec_()
+        self.setLayout(layout)
+
+    def get_source(self):
+        # Returns the names of the selected sources
+        source_list = []
+        for source_widget in self.list_view.selectedItems():
+            source_list.append(source_widget.text())
+        return source_list
 
     def validate_list(self):
         # This function enables the next button once items have been selected
         if self.list_view.selectedItems():
-            self.src_edge_item = self.list_view.selectedItems()
             self.name_next_button.setEnabled(True)
         else:
             self.name_next_button.setEnabled(False)
-
-    def define_variables(self):
-        # This dialog is used to define the variables which are used by the organs
-        self.var_dialog = QDialog()
-        self.var_dialog.setWindowTitle("Define variables")
-        layout = QGridLayout()
-
-        self.var_view = QListWidget()
-
-        edit_group = QGroupBox()
-        edits = QGridLayout()
-        edits.addWidget(QLabel("Variable name"), 0, 0)
-        self.var_name = QLineEdit()
-        edits.addWidget(self.var_name, 0, 1)
-
-        self.var_min = QLineEdit()
-        self.var_min.setValidator(QDoubleValidator())
-        edits.addWidget(QLabel("Min"), 1, 0)
-        edits.addWidget(self.var_min, 1, 1)
-        self.var_max = QLineEdit()
-        self.var_max.setValidator(QDoubleValidator())
-        edits.addWidget(QLabel("Max"), 2, 0)
-        edits.addWidget(self.var_max, 2, 1)
-        self.var_val = QLineEdit()
-        self.var_val.setValidator(QDoubleValidator())
-        edits.addWidget(QLabel("Val"), 3, 0)
-        edits.addWidget(self.var_val, 3, 1)
-
-        add_button = QPushButton("Add Variable")
-        add_button.clicked.connect(self.add_var)
-        del_button = QPushButton("Remove selected")
-        del_button.clicked.connect(partial(self.remove_selected, self.var_view, self.organ_variables))
-        edits.addWidget(add_button)
-        edits.addWidget(del_button)
-        edit_group.setLayout(edits)
-
-        buttons = QHBoxLayout()
-        next_button = QPushButton("Next")
-        back_button = QPushButton("Back")
-
-        next_button.clicked.connect(self.define_functions)
-        back_button.clicked.connect(self.var_dialog.reject)
-
-        buttons.addStretch()
-        buttons.addWidget(next_button)
-        buttons.addWidget(back_button)
-
-        layout.addWidget(self.var_view, 0, 0)
-        layout.addWidget(edit_group, 1, 0)
-        layout.addLayout(buttons, 2, 0)
-
-        self.var_dialog.setLayout(layout)
-        self.var_dialog.exec_()
-
-    def add_var(self):
-        # The function which is called when the "Add Variable" button is clicked
-        minimum = float(self.var_min.text())
-        maximum = float(self.var_max.text())
-        value = float(self.var_val.text())
-
-        # A name is valid if it is not empty after stripping all the whitespace
-        valid_name = not self.var_name.text().strip() == ""
-        # If we have a valid name and the value is between the minimum and the maximum, we add the item
-        if valid_name and minimum <= value <= maximum:
-            self.var_view.addItem(QListWidgetItem(self.var_name.text() + " => [min: " + str(minimum) + ", max: " +
-                                                  str(maximum) + ", val: " + str(value) + "]"))
-            self.organ_variables[self.var_name.text()] = [minimum, maximum, value]
-            self.var_name.clear()
-            self.var_min.clear()
-            self.var_max.clear()
-            self.var_val.clear()
-
-    def remove_selected(self, list_widget, value_dict):
-        # Removes the selected item from the specified widget and from the corresponding item:value dict
-        for selected in list_widget.selectedItems():
-            list_widget.takeItem(list_widget.row(selected))
-            var_name = selected.text().split("=>")[0].strip()
-            value_dict.pop(var_name)
-
-    def define_functions(self):
-        # This shows a dialog for defining the functions used by the organ. These functions can use the variables which
-        # have just been defined
-        selected_strings = self.list_view.selectedItems()
-        self.sources = []
-        organ_vars = []
-
-        for organ_name_widget in selected_strings:
-            # We handle the global input source differently, as it requires the global parameters
-            if organ_name_widget.text() == "Global Input":
-                organ_vars.append(self.controller.get_global_param_ranges())
-            else:
-                self.sources.append(self.controller.get_model().get_organs()[organ_name_widget.text()])
-        # organ_vars is a list of dicts containing the ranges of all variables keyed by the variable name
-        organ_vars += [x.local_ranges() for x in self.sources]
-
-        # flattened vars is the dict containing all the variables taken together
-        self.flattened_vars = {}
-        for var_dict in organ_vars:
-            self.flattened_vars = {**var_dict, **self.flattened_vars}
-
-        # For some inexplicable reason, the builtins keep appearing in the variables, they need to be popped
-        self.flattened_vars.pop('__builtins__', None)
-        self.flattened_vars = {**self.flattened_vars, **self.organ_variables}
-        # Concatenate the lists of keys, thus obtaining the variable names as strings
-        organ_var_strings = self.flattened_vars.keys()
-
-        # Create an autocompleter to autocomplete the variable names
-        autocomplete_model = QStringListModel()
-        autocomplete_model.setStringList(organ_var_strings)
-        autocompleter = QCompleter()
-        autocompleter.setModel(autocomplete_model)
-
-        # Create the actual dialog which can be used to create the functions
-        self.fnc_dialog = QDialog()
-        self.name_next_button = QPushButton("Finish")
-        self.name_next_button.clicked.connect(self.finalize)
-        back_button = QPushButton("Back")
-        back_button.clicked.connect(self.fnc_dialog.reject)
-
-        # Add the next and back buttons
-        buttonLayout = QHBoxLayout()
-        buttonLayout.addStretch()
-        buttonLayout.addWidget(self.name_next_button)
-        buttonLayout.addWidget(back_button)
-
-        self.functions = {}
-
-        flexible_grid = QHBoxLayout()
-        self.function_list_widget = QListWidget()
-        flexible_grid.addWidget(self.function_list_widget)
-
-        # Create the edit fields to hold the variable names and functions
-        edits = QHBoxLayout()
-        self.f_name = QLineEdit()
-        self.f_form = QLineEdit()
-        self.f_form.setCompleter(autocompleter)
-        edits.addWidget(self.f_name)
-        edits.addWidget(self.f_form)
-        self.f_form.setValidator(FunctionValidator(self.flattened_vars))
-
-        # Add buttons for adding and removing functions and connect them
-        add_button = QPushButton("Add Function")
-        add_button.clicked.connect(self.addFunction)
-        remove_button = QPushButton("Remove Selected")
-        remove_button.clicked.connect(partial(self.remove_selected, self.function_list_widget, self.functions))
-        edits.addWidget(add_button)
-        edits.addWidget(remove_button)
-
-        # Create the layout for the entire dialog
-        layout = QGridLayout()
-        layout.addLayout(flexible_grid, 0, 0)
-        layout.addLayout(edits, 1, 0)
-        layout.addLayout(buttonLayout, 2, 0)
-
-        self.fnc_dialog.setLayout(layout)
-        self.fnc_dialog.exec_()
-
-    def addFunction(self):
-        # A function is valid if it is returned as such by the validator
-        self.f_form.validator().set_confirmed(True)
-        valid_function = self.f_form.hasAcceptableInput()
-        # A name is valid as long as its not empty
-        valid_name = not self.f_name.text().strip() == ""
-        if valid_name and valid_function:
-            self.functions[self.f_name.text()] = self.f_form.text()
-            self.function_list_widget.addItem(QListWidgetItem(self.f_name.text() + " => " + self.f_form.text()))
-            self.f_form.validator().set_confirmed(False)
-            self.f_form.clear()
-
-    def finalize(self):
-        # Closes all remaining dialogs, this is called when the finish button is clicked
-        self.fnc_dialog.accept()
-        self.src_dialog.accept()
-        self.var_dialog.accept()
-        self.accept()
-
-    def get_edge_item(self):
-        return self.src_edge_item
 
     def get_name(self):
         return self.name
@@ -287,13 +172,143 @@ class NewNodeDialog(QDialog):
     def get_funcs(self):
         return self.functions
 
+
+class VarDialog(QDialog):
+    def __init__(self, variables):
+        super().__init__()
+        self.setWindowTitle("Define variables")
+        layout = QGridLayout()
+
+        # First, add all previously defined variables to the list, this is empty if we are working on a new organ
+        var_view = QListWidget()
+        for var in variables:
+            list_item = QListWidgetItem()
+            var_range = variables[var]
+            list_item.setText(var + "\t => [min: " + str(var_range[0]) + ", max: " + str(var_range[1]) + ", val: " +
+                              str(var_range[2]) + "]")
+            var_view.addItem(list_item)
+        layout.addWidget(var_view)
+
+        edit_group = QGroupBox()
+        edits = QGridLayout()
+        edits.addWidget(QLabel("Variable name"), 0, 0)
+        var_name = QLineEdit()
+        edits.addWidget(var_name, 0, 1)
+
+        var_min = QLineEdit()
+        var_min.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Min"), 1, 0)
+        edits.addWidget(var_min, 1, 1)
+        var_max = QLineEdit()
+        var_max.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Max"), 2, 0)
+        edits.addWidget(var_max, 2, 1)
+        var_val = QLineEdit()
+        var_val.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Val"), 3, 0)
+        edits.addWidget(var_val, 3, 1)
+
+        add_button = QPushButton("Add Variable")
+        add_button.clicked.connect(partial(add_var, var_min, var_max, var_val, var_name, var_view, variables))
+
+        del_button = QPushButton("Remove selected")
+        del_button.clicked.connect(partial(remove_selected, var_view, variables))
+        edits.addWidget(add_button)
+        edits.addWidget(del_button)
+        edit_group.setLayout(edits)
+
+        buttons = QHBoxLayout()
+        next_button = QPushButton("Next")
+        back_button = QPushButton("Back")
+
+        # When the next button is clicked, we call the next_function passing it the results
+        next_button.clicked.connect(self.accept)
+        back_button.clicked.connect(self.reject)
+
+        buttons.addStretch()
+        buttons.addWidget(next_button)
+        buttons.addWidget(back_button)
+
+        layout.addWidget(var_view, 0, 0)
+        layout.addWidget(edit_group, 1, 0)
+        layout.addLayout(buttons, 2, 0)
+
+        self.setLayout(layout)
+
+
+class FunctionDialog(QDialog):
+    def __init__(self, variables):
+        super().__init__()
+
+        # Create an autocompleter to autocomplete the variable names
+        autocomplete_model = QStringListModel()
+        autocomplete_model.setStringList(variables.keys())
+        autocompleter = QCompleter()
+        autocompleter.setModel(autocomplete_model)
+
+        # Create the actual dialog which can be used to create the functions
+        name_next_button = QPushButton("Finish")
+        name_next_button.clicked.connect(self.accept)
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(self.reject)
+
+        # Add the next and back buttons
+        buttonLayout = QHBoxLayout()
+        buttonLayout.addStretch()
+        buttonLayout.addWidget(name_next_button)
+        buttonLayout.addWidget(back_button)
+
+        self.functions = {}
+
+        flexible_grid = QHBoxLayout()
+        function_list_widget = QListWidget()
+        flexible_grid.addWidget(function_list_widget)
+
+        # Create the edit fields to hold the variable names and functions
+        edits = QHBoxLayout()
+        f_name = QLineEdit()
+        f_form = QLineEdit()
+        f_form.setCompleter(autocompleter)
+        edits.addWidget(f_name)
+        edits.addWidget(f_form)
+        f_form.setValidator(FunctionValidator(variables))
+
+        # Add buttons for adding and removing functions and connect them
+        add_button = QPushButton("Add Function")
+        add_button.clicked.connect(partial(self.add_function, f_form, f_name, function_list_widget, self.functions))
+        remove_button = QPushButton("Remove Selected")
+        remove_button.clicked.connect(partial(remove_selected, function_list_widget, self.functions))
+        edits.addWidget(add_button)
+        edits.addWidget(remove_button)
+
+        # Create the layout for the entire dialog
+        layout = QGridLayout()
+        layout.addLayout(flexible_grid, 0, 0)
+        layout.addLayout(edits, 1, 0)
+        layout.addLayout(buttonLayout, 2, 0)
+
+        self.setLayout(layout)
+
+    def add_function(self, f_form, f_name, function_list_widget, functions):
+        # A function is valid if it is returned as such by the validator
+        f_form.validator().set_confirmed(True)
+        valid_function = f_form.hasAcceptableInput()
+        # A name is valid as long as its not empty
+        valid_name = not f_name.text().strip() == ""
+        if valid_name and valid_function:
+            functions[self.f_name.text()] = f_form.text()
+            function_list_widget.addItem(QListWidgetItem(f_name.text() + " => " + f_form.text()))
+            f_form.validator().set_confirmed(False)
+            f_form.clear()
+
+
 def select_db_dialog():
     """ This function, which opens the database and connects it to the model is called before the UI can actually be
         used. """
     qfd = QFileDialog()
     qfd.setNameFilter("*.json")
     # A lambda is needed here so exit() is not called directly
-    qfd.rejected.connect(lambda : exit())
+    qfd.rejected.connect(lambda: exit())
     qfd.exec_()
     # We can only select a single file, therefore, we can always look at [0] without missing anything
     potential_db = qfd.selectedFiles()[0]
@@ -305,3 +320,30 @@ def select_db_dialog():
         msg.setText("Unable to load database, the file might be corrupted\nPlease try again")
         msg.exec_()
         select_db_dialog()
+
+
+def add_var(var_min, var_max, var_val, var_name, var_view, variables):
+    # The function which is called when the "Add Variable" button is clicked
+    minimum = float(var_min.text())
+    maximum = float(var_max.text())
+    value = float(var_val.text())
+
+    # A name is valid if it is not empty after stripping all the whitespace
+    valid_name = not var_name.text().strip() == ""
+    # If we have a valid name and the value is between the minimum and the maximum, we add the item
+    if valid_name and minimum <= value <= maximum:
+        var_view.addItem(QListWidgetItem(var_name.text() + " => [min: " + str(minimum) + ", max: " +
+                                         str(maximum) + ", val: " + str(value) + "]"))
+        variables[var_name.text()] = [minimum, maximum, value]
+        var_name.clear()
+        var_min.clear()
+        var_max.clear()
+        var_val.clear()
+
+
+def remove_selected(var_view, variables):
+    # Removes the selected item from the specified widget and from the corresponding item:value dict
+    for selected in var_view.selectedItems():
+        var_view.takeItem(var_view.row(selected))
+        var_name = selected.text().split("=>")[0].strip()
+        variables.pop(var_name)

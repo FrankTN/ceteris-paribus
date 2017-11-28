@@ -48,8 +48,8 @@ f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 
 organ_db.purge_table("GlobalFunctions")
 global_function_table = organ_db.table("GlobalFunctions")
-global_function_table.insert({"VCO2": "Heart.local_vals()[\'VCO2\'] + Brain.local_vals()[\'VCO2\'] + Skeletal_muscle.local_vals()[\'VCO2\'] + Liver.local_vals()[\'VCO2\'] + Kidneys.local_vals()[\'VCO2\']"})
-global_function_table.insert({"VO2": "Heart.local_vals()[\'VO2\'] + Brain.local_vals()[\'VO2\'] + Skeletal_muscle.local_vals()[\'VO2\'] + Liver.local_vals()[\'VO2\'] + Kidneys.local_vals()[\'VO2\']"})
+global_function_table.insert({"VCO2": "Heart.get_local_vals()[\'VCO2\'] + Brain.get_local_vals()[\'VCO2\'] + Skeletal_muscle.get_local_vals()[\'VCO2\'] + Liver.get_local_vals()[\'VCO2\'] + Kidneys.get_local_vals()[\'VCO2\']"})
+global_function_table.insert({"VO2": "Heart.get_local_vals()[\'VO2\'] + Brain.get_local_vals()[\'VO2\'] + Skeletal_muscle.get_local_vals()[\'VO2\'] + Liver.get_local_vals()[\'VO2\'] + Kidneys.get_local_vals()[\'VO2\']"})
 global_function_table.insert({"RQ": "VCO2 / VO2"})
 
 organ_db.purge_table("SystemicOrgans")

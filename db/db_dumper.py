@@ -25,6 +25,6 @@ def dump_model(model, db_name: str = "new_organ_db.json"):
         # Write the organ as a dict for JSON representation
         organ_representation = {}
         organ_representation['name'] = organ.get_name()
-        organ_representation['variables'] = organ.local_ranges()
+        organ_representation['variables'] = organ.get_local_ranges()
         organ_representation['functions'] = organ.get_funcs()
         systemic_organs.insert(organ_representation)

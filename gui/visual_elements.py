@@ -163,5 +163,8 @@ class Edge(QGraphicsLineItem):
         self.dest_point = new_position
         self.update()
 
+    def __str__(self):
+        return "Source: [" + self.source_node.name + "] Dest: [" + self.dest_node.name + "]"
+
 
 

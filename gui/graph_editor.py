@@ -1,9 +1,6 @@
-from functools import partial
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush
-from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget, QToolBar, QAction, QGridLayout, QLabel, QSlider, \
-    QMenuBar, QMenu
+from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget
 
 from gui.graph_scene import GraphScene
 from gui.sidepane import ContextPane
@@ -28,11 +25,15 @@ class GraphWindow(QMainWindow):
         db_action.triggered.connect(self.open_new_db)
         file_menu.addAction(db_action)
 
+        self.undo_stack = controller.get_undo_stack()
+
         edit_menu = menubar.addMenu('Edit')
         undo_action = edit_menu.addAction('Undo')
         undo_action.setStatusTip('Undo previous action')
-        #undo_action.triggered.connect
-        edit_menu.addAction(undo_action)
+        undo_action.triggered.connect(self.undo_stack.undo)
+        redo_action = edit_menu.addAction('Redo')
+        redo_action.setStatusTip('Redo previous action')
+        redo_action.triggered.connect(self.undo_stack.redo)
 
         self.statusBar().showMessage("Ready")
 

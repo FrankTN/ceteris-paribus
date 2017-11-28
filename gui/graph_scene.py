@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTransform, QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
-from gui.dialogs import NewNodeDialog
+from gui.dialogs import NewNodeCreator
 from gui.visual_elements import OrganNode, InNode, OutNode, Edge
 
 
@@ -26,6 +26,9 @@ class GraphScene(QGraphicsScene):
 
         self.load_from_model(controller.get_model())
 
+    def get_edges_for_organ(self, organ):
+        return self.items[organ.get_name()].get_edges()
+
     def load_from_model(self, model):
         # Creates a scene based on a model object
         for organ in model.organs.values():
@@ -45,13 +48,15 @@ class GraphScene(QGraphicsScene):
         self.items[organ.get_name()] = node
         self.addItem(node)
         out_edge = Edge(node, self.output_node)
+        self.edges.append(out_edge)
         self.addItem(out_edge)
-        for source in edge_src_list:
-            source_node = self.items[source.text()]
-            in_edge = Edge(source_node, node)
+        # We need a copy because the original is being updated each time we create a new edge
+        local_list = edge_src_list[:]
+        for source in local_list:
+            # We only add source edges for now
+            in_edge = Edge(source, node)
             self.edges.append(in_edge)
             self.addItem(in_edge)
-        self.edges.append(out_edge)
 
     def remove_organ_node(self, organ):
         # Remove an organ node from the model
@@ -71,11 +76,16 @@ class GraphScene(QGraphicsScene):
             self.create_new_node(event.scenePos())
 
     def create_new_node(self, pos):
-        dialog = NewNodeDialog(self.controller)
-        if dialog.exec_():
-            print(dialog.get_variables())
-            organ = self.controller.add_organ_node(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs())
-            self.add_organ_node(organ, dialog.get_edge_item())
+        dialog = NewNodeCreator(self.controller)
+
+        if dialog.run():
+            sources = dialog.get_sources()
+            source_nodes = []
+            for source_name in sources:
+                corresponding_node = self.items[source_name]
+                source_nodes.append(corresponding_node)
+            self.controller.add_organ(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs(), source_nodes)
 
     def update_model(self):
+        # TODO implement
         pass

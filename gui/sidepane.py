@@ -3,8 +3,11 @@
 from functools import partial
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog
+    QPushButton, QDialog, QListWidgetItem, QListWidget, QLineEdit
+
+from gui.commands import DeleteCommand
 
 
 class ContextPane(QWidget):
@@ -84,25 +87,27 @@ class ContextPane(QWidget):
         self.current_organ = organ
         self.name_label.setText(organ.get_name())
 
-
     def show_locals(self):
         dialog = QDialog()
         dialog.setWindowTitle("Local values")
         layout = QGridLayout()
 
-        for index, val in enumerate(self.current_organ.local_ranges()):
+        for index, name in enumerate(self.current_organ.get_local_ranges()):
             # TODO make into sliders with values
-            assert '__builtins__' not in self.current_organ.local_ranges()
-            if val != '__builtins__':
-                layout.addWidget(QLabel(val), index, 0)
+            assert '__builtins__' not in self.current_organ.get_local_ranges()
+            if name != '__builtins__':
+                layout.addWidget(QLabel(name), index, 0)
                 slider = QSlider(Qt.Horizontal)
-                slider.setMinimum(self.current_organ.local_ranges()[val][0])
-                slider.setMaximum(self.current_organ.local_ranges()[val][1])
-                slider.setValue(self.current_organ.local_ranges()[val][2])
-                #slider.valueChanged.connect(partial(self.controller.param_changed, val, slider))
-                slider.valueChanged.connect(partial(self.controller.organ_local_changed, val, slider))
+                slider.setMinimum(self.current_organ.get_local_ranges()[name][0])
+                slider.setMaximum(self.current_organ.get_local_ranges()[name][1])
+                slider.setValue(self.current_organ.get_local_ranges()[name][2])
+                value_label = QLabel(str(slider.value()))
+                slider.valueChanged.connect(partial(self.controller.organ_local_changed, name, slider, value_label))
                 layout.addWidget(slider, index, 1)
-                print("val is " + str(val))
+                layout.addWidget(value_label, index, 2)
+        edit_button = QPushButton('Edit')
+        edit_button.clicked.connect(self.edit_locals)
+        layout.addWidget(edit_button, len(self.current_organ.get_local_ranges()), 0)
         dialog.setLayout(layout)
         dialog.exec_()
 
@@ -136,7 +141,6 @@ class ContextPane(QWidget):
         dialog.setLayout(layout)
         dialog.exec_()
 
-
     def delete_organ(self):
         dialog = QDialog()
         dialog.setWindowTitle("Delete " + self.current_organ.get_name() + "?")
@@ -157,7 +161,55 @@ class ContextPane(QWidget):
 
         dialog.setLayout(layout)
         if dialog.exec_():
-            self.controller.remove_organ_node(self.current_organ)
+            # Create the undoable command of deleting the current organ
+            command = DeleteCommand(self.controller, self.current_organ)
+            # Push the command on the undo stack
+            self.controller.get_undo_stack().push(command)
+
+    def edit_locals(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Edit local values")
+        layout = QGridLayout()
+        self.locals_list = QListWidget()
+        ranges = self.current_organ.get_local_ranges()
+        for item in ranges:
+            list_item = QListWidgetItem()
+            var_range = ranges[item]
+            list_item.setText(item + "\t => [min: " + str(var_range[0]) + ", max: " + str(var_range[1]) + ", val: " +
+                              str(var_range[2]) + "]")
+            self.locals_list.addItem(list_item)
+        layout.addWidget(self.locals_list)
+
+        edit_group = QGroupBox()
+        edits = QGridLayout()
+        edits.addWidget(QLabel("Variable name"), 0, 0)
+        self.var_name = QLineEdit()
+        edits.addWidget(self.var_name, 0, 1)
+
+        self.var_min = QLineEdit()
+        self.var_min.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Min"), 1, 0)
+        edits.addWidget(self.var_min, 1, 1)
+        self.var_max = QLineEdit()
+        self.var_max.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Max"), 2, 0)
+        edits.addWidget(self.var_max, 2, 1)
+        self.var_val = QLineEdit()
+        self.var_val.setValidator(QDoubleValidator())
+        edits.addWidget(QLabel("Val"), 3, 0)
+        edits.addWidget(self.var_val, 3, 1)
+
+        add_button = QPushButton("Add Variable")
+        add_button.clicked.connect(self.add_var)
+        del_button = QPushButton("Remove selected")
+        del_button.clicked.connect(partial(self.remove_selected, self.locals_list, self.current_organ.get_local_ranges()))
+        edits.addWidget(add_button)
+        edits.addWidget(del_button)
+        edit_group.setLayout(edits)
+        layout.addWidget(edit_group)
+
+        dialog.setLayout(layout)
+        dialog.exec_()
 
     def initialize_output(self):
         outputs = self.controller.model.get_outputs()
@@ -171,7 +223,6 @@ class ContextPane(QWidget):
             labels.addWidget(self.local_outs[out_name])
             layout.addLayout(labels, index, 0)
         self.output_group.setLayout(layout)
-
 
     def update_output(self):
         outputs = self.controller.model.get_outputs()
