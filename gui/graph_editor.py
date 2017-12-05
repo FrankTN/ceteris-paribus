@@ -20,10 +20,14 @@ class GraphWindow(QMainWindow):
         menubar = self.menuBar()
 
         file_menu = menubar.addMenu('File')
-        db_action = file_menu.addAction('Open file')
-        db_action.setStatusTip('Select a file to use as a database')
-        db_action.triggered.connect(self.open_new_db)
-        file_menu.addAction(db_action)
+
+        db_open_action = file_menu.addAction('Open file')
+        db_open_action.setStatusTip('Select a file to use as a database')
+        db_open_action.triggered.connect(self.open_new_db)
+
+        db_save_action = file_menu.addAction('Save file')
+        db_save_action.setStatusTip('Save file as a database for future usage')
+        db_save_action.triggered.connect(self.save_db)
 
         self.undo_stack = controller.get_undo_stack()
 
@@ -70,3 +74,6 @@ class GraphWindow(QMainWindow):
     def open_new_db(self):
         self.controller.open_new_db()
         self.setCentralWidget(QGraphicsView(GraphScene(self.controller)))
+
+    def save_db(self):
+        pass

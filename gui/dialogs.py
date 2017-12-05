@@ -47,7 +47,7 @@ class NewNodeCreator(object):
         function_dialog = FunctionDialog(self.variables)
         if function_dialog.exec_():
             # handle functions
-            self.functions = function_dialog.functions
+            self.functions = function_dialog.get_functions()
         else:
             # If we reject during naming return false
             return False
@@ -74,7 +74,7 @@ class NameDialog(QDialog):
         self.next_button.setEnabled(False)
         cancel_button = QPushButton("Cancel")
 
-        self.setWindowTitle("Set node")
+        self.setWindowTitle("Set new node name")
         name_layout = QHBoxLayout()
         name_label = QLabel("&Name:")
         self.name_field = QLineEdit()
@@ -237,8 +237,13 @@ class VarDialog(QDialog):
 
 
 class FunctionDialog(QDialog):
-    def __init__(self, variables):
+    def __init__(self, variables, functions=None):
         super().__init__()
+
+        if functions is None:
+            functions = {}
+        self.setWindowTitle("Define functions")
+        self.functions = functions
 
         # Create an autocompleter to autocomplete the variable names
         autocomplete_model = QStringListModel()
@@ -258,11 +263,15 @@ class FunctionDialog(QDialog):
         buttonLayout.addWidget(name_next_button)
         buttonLayout.addWidget(back_button)
 
-        self.functions = {}
-
         flexible_grid = QHBoxLayout()
         function_list_widget = QListWidget()
         flexible_grid.addWidget(function_list_widget)
+
+        if self.functions:
+            for func in self.functions:
+                function_item = QListWidgetItem()
+                function_item.setText(func + "\t => " + self.functions[func])
+                function_list_widget.addItem(function_item)
 
         # Create the edit fields to hold the variable names and functions
         edits = QHBoxLayout()
@@ -272,6 +281,7 @@ class FunctionDialog(QDialog):
         edits.addWidget(f_name)
         edits.addWidget(f_form)
         f_form.setValidator(FunctionValidator(variables))
+        function_list_widget.itemDoubleClicked.connect(partial(self.update_edits, f_form, f_name, function_list_widget))
 
         # Add buttons for adding and removing functions and connect them
         add_button = QPushButton("Add Function")
@@ -289,6 +299,9 @@ class FunctionDialog(QDialog):
 
         self.setLayout(layout)
 
+    def get_functions(self):
+        return self.functions
+
     def add_function(self, f_form, f_name, function_list_widget, functions):
         # A function is valid if it is returned as such by the validator
         f_form.validator().set_confirmed(True)
@@ -296,10 +309,19 @@ class FunctionDialog(QDialog):
         # A name is valid as long as its not empty
         valid_name = not f_name.text().strip() == ""
         if valid_name and valid_function:
-            functions[self.f_name.text()] = f_form.text()
-            function_list_widget.addItem(QListWidgetItem(f_name.text() + " => " + f_form.text()))
+            functions[f_name.text()] = f_form.text()
+            function_list_widget.addItem(QListWidgetItem(f_name.text() + "\t => " + f_form.text()))
             f_form.validator().set_confirmed(False)
             f_form.clear()
+
+    def update_edits(self, f_form, f_name, var_view):
+        for selected in var_view.selectedItems():
+            var_view.item(var_view.row(selected))
+            func = selected.text().split("=>")
+            var_name = func[0].strip()
+            var_form = func[1].strip()
+            f_name.setText(var_name)
+            f_form.setText(var_form)
 
 
 def select_db_dialog():
@@ -332,7 +354,7 @@ def add_var(var_min, var_max, var_val, var_name, var_view, variables):
     valid_name = not var_name.text().strip() == ""
     # If we have a valid name and the value is between the minimum and the maximum, we add the item
     if valid_name and minimum <= value <= maximum:
-        var_view.addItem(QListWidgetItem(var_name.text() + " => [min: " + str(minimum) + ", max: " +
+        var_view.addItem(QListWidgetItem(var_name.text() + "\t => [min: " + str(minimum) + ", max: " +
                                          str(maximum) + ", val: " + str(value) + "]"))
         variables[var_name.text()] = [minimum, maximum, value]
         var_name.clear()

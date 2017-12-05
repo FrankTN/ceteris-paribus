@@ -2,6 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTransform, QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
+from gui.commands import MoveCommand
 from gui.dialogs import NewNodeCreator
 from gui.visual_elements import OrganNode, InNode, OutNode, Edge
 
@@ -74,6 +75,21 @@ class GraphScene(QGraphicsScene):
             item.mouseDoubleClickEvent(event)
         else:
             self.create_new_node(event.scenePos())
+
+    def mousePressEvent(self, event):
+        item = self.itemAt(event.scenePos().x(), event.scenePos().y(), QTransform())
+        if item:
+            self.dragPos = item.scenePos()
+
+        return QGraphicsScene.mousePressEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        foundItem = self.itemAt(event.scenePos().x(), event.scenePos().y(), QTransform())
+        if foundItem:
+            move = MoveCommand(self.controller, foundItem, self.dragPos)
+            self.controller.get_undo_stack().push(move)
+            # handle drag and drop
+        return QGraphicsScene.mouseReleaseEvent(self, event)
 
     def create_new_node(self, pos):
         dialog = NewNodeCreator(self.controller)

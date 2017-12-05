@@ -31,7 +31,7 @@ class Organ(object):
         :return: None
         """
         self.global_params = new_globals
-        self.defined_variables = {**self.get_local_vals(), **self.global_params, **self.global_constants}
+        self.get_defined_variables()
 
     def evaluate(self):
         """
@@ -75,7 +75,8 @@ class Organ(object):
 
     def get_defined_variables(self) -> dict:
         # Returns all variables defined for this organ and their values in a single dict
-        assert '__builtins__' not in self.defined_variables
+        self.defined_variables = {**self.get_local_vals(), **self.global_params, **self.global_constants}
+        self.defined_variables.pop('__builtins__', None)
         return self.defined_variables
 
     def get_globals(self) -> dict:
@@ -84,13 +85,15 @@ class Organ(object):
 
     def get_local_ranges(self) -> dict:
         # Returns only the locally defined variables
-        assert '__builtins__' not in getattr(self, 'variables')
+        local_ranges = getattr(self, 'variables')
+        local_ranges.pop('__builtins__', None)
         return getattr(self, 'variables')
 
     def get_local_vals(self) -> dict:
         # returns only the third value in the list
         local_vals = {}
         ranged_vals = getattr(self, 'variables')
+        ranged_vals.pop('__builtins__', None)
         for param in ranged_vals:
             local_vals[param] = ranged_vals[param][2]
         return local_vals

@@ -6,9 +6,18 @@ from PyQt5.QtWidgets import QUndoCommand
 
 
 class MoveCommand(QUndoCommand):
-    def __init__(self, *__args):
-        super().__init__(*__args)
+    def __init__(self, controller, node, old_pos):
+        super().__init__()
+        self.controller = controller
+        self.node = node
+        self.old_pos = old_pos
+        self.new_pos = node.scenePos()
 
+    def undo(self):
+        self.node.setPos(self.old_pos)
+
+    def redo(self):
+        self.node.setPos(self.new_pos)
 
 class DeleteCommand(QUndoCommand):
     def __init__(self, controller, organ):

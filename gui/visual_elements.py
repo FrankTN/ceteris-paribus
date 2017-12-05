@@ -4,12 +4,19 @@ from PyQt5.QtCore import Qt, QPointF, QRectF
 from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem
 
+from gui.commands import MoveCommand
+
+
 class GraphNode(QGraphicsRectItem):
     """ Contains the basic definition of a node. A node is a visual element on the graph scene represented by a colored
         box with a name. All other nodes share this baseclass."""
-    def __init__(self, x, y):
+
+    def __init__(self, controller, x, y):
         super().__init__(x, y, 50, 50)
-        self.setPos(x,y)
+        self.controller = controller
+        self.setPos(x, y)
+
+        self.setAcceptDrops(True)
         # Node has a list of connected edges
         self.edge_list = []
         self.setFlag(QGraphicsItem.ItemIsSelectable)
@@ -18,6 +25,9 @@ class GraphNode(QGraphicsRectItem):
         self.setZValue(1)
         self.color = Qt.gray
         self.name = ""
+
+    def dragEnterEvent(self, event):
+        print("Entered drag")
 
     def get_center(self):
         # Find the center of the current node
@@ -69,12 +79,12 @@ class GraphNode(QGraphicsRectItem):
         val = range[2]
         normalized_val = (val - range_min) / (range_max - range_min)
         # Here, we spread out the normalized value for the color, which is in [0,1] to an RGB color for the node.
-        if normalized_val < (1/3):
+        if normalized_val < (1 / 3):
             self.color = QColor(normalized_val * 765, 0, 0)
-        elif normalized_val < (2/3):
-            self.color = QColor(255, (normalized_val - (1/3)) * 765, 0)
+        elif normalized_val < (2 / 3):
+            self.color = QColor(255, (normalized_val - (1 / 3)) * 765, 0)
         else:
-            self.color = QColor(255,255,(normalized_val - 2/3) * 765)
+            self.color = QColor(255, 255, (normalized_val - 2 / 3) * 765)
 
     def set_gray(self):
         # The default color
@@ -86,8 +96,8 @@ class GraphNode(QGraphicsRectItem):
 
     def moveEdges(self, new_pos):
         # This function moves the edges in the pane to follow the node
-        offset_x = self.rect().x() + self.rect().width()/2
-        offset_y = self.rect().y() + self.rect().height()/2
+        offset_x = self.rect().x() + self.rect().width() / 2
+        offset_y = self.rect().y() + self.rect().height() / 2
         new_center = QPointF(new_pos.x() + offset_x, new_pos.y() + offset_y)
         for edge, isSource in self.edge_list:
             if isSource:
@@ -97,44 +107,42 @@ class GraphNode(QGraphicsRectItem):
                 # set target position to new center
                 edge.set_dest(new_center)
 
+
 class InNode(GraphNode):
     # TODO expand functionality
     def __init__(self, x, y, controller):
-        super().__init__(x, y)
+        super().__init__(controller, x, y)
         self.name = "Input"
         self.controller = controller
 
         print("clicked: Input")
 
+
 class OutNode(GraphNode):
     # TODO expand functionality
-    def __init__(self, x, y, model):
-        super().__init__(x, y)
+    def __init__(self, x, y, controller):
+        super().__init__(controller, x, y)
         self.name = "Output"
-        self.model = model
+        self.controller = controller
+
 
 class OrganNode(GraphNode):
     # Subclass for the organ nodes
     def __init__(self, organ, controller):
-        super().__init__(*organ.pos)
+        super().__init__(controller, *organ.pos)
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.organ = organ
         self.controller = controller
         self.name = organ.get_name()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        self.set_dark_gray()
         self.controller.change_context_organ(self.organ)
         print("clicked: " + self.organ.get_name())
 
-    def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemSelectedChange:
-            if value == False:
-                self.set_gray()
-        return GraphNode.itemChange(self, change, value)
 
 class Edge(QGraphicsLineItem):
     """ This class contains the definition of an edge in the graph."""
+
     def __init__(self, source_node, dest_node):
         super().__init__(source_node.get_center().x(), source_node.get_center().y(), dest_node.get_center().x(),
                          dest_node.get_center().y())
@@ -165,6 +173,3 @@ class Edge(QGraphicsLineItem):
 
     def __str__(self):
         return "Source: [" + self.source_node.name + "] Dest: [" + self.dest_node.name + "]"
-
-
-

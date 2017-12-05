@@ -3,11 +3,11 @@
 from functools import partial
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog, QListWidgetItem, QListWidget, QLineEdit
+    QPushButton, QDialog
 
 from gui.commands import DeleteCommand
+from gui.dialogs import VarDialog, FunctionDialog
 
 
 class ContextPane(QWidget):
@@ -35,7 +35,6 @@ class ContextPane(QWidget):
         self.initialize_output()
 
         layout = QGridLayout()
-        self.context_group.setLayout(self.context)
         layout.addWidget(self.input_group)
         layout.addWidget(self.context_group)
         layout.addWidget(self.output_group)
@@ -106,7 +105,7 @@ class ContextPane(QWidget):
                 layout.addWidget(slider, index, 1)
                 layout.addWidget(value_label, index, 2)
         edit_button = QPushButton('Edit')
-        edit_button.clicked.connect(self.edit_locals)
+        edit_button.clicked.connect(partial(self.edit_locals, dialog))
         layout.addWidget(edit_button, len(self.current_organ.get_local_ranges()), 0)
         dialog.setLayout(layout)
         dialog.exec_()
@@ -125,9 +124,15 @@ class ContextPane(QWidget):
         dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Functions")
-        for index, func in enumerate(self.current_organ.get_funcs()):
-            layout.addWidget(QLabel(func + ":"), index, 0)
-            layout.addWidget(QLabel(str(self.current_organ.get_funcs()[func])), index, 1)
+        if self.current_organ.get_funcs():
+            for index, func in enumerate(self.current_organ.get_funcs()):
+                layout.addWidget(QLabel(func + ":"), index, 0)
+                layout.addWidget(QLabel(str(self.current_organ.get_funcs()[func])), index, 1)
+        else:
+            layout.addWidget(QLabel("No functions have been defined for this organ"))
+        edit_button = QPushButton('Edit')
+        edit_button.clicked.connect(partial(self.edit_functions, dialog))
+        layout.addWidget(edit_button)
         dialog.setLayout(layout)
         dialog.exec_()
 
@@ -135,9 +140,12 @@ class ContextPane(QWidget):
         dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Outputs")
-        for index, func in enumerate(self.current_organ.get_funcs()):
-            layout.addWidget(QLabel(func + ":"), index, 0)
-            layout.addWidget(QLabel(str(self.current_organ.defined_variables[func])), index, 1)
+        if self.current_organ.get_funcs():
+            for index, func in enumerate(self.current_organ.get_funcs()):
+                layout.addWidget(QLabel(func + ":"), index, 0)
+                layout.addWidget(QLabel(str(self.current_organ.defined_variables[func])), index, 1)
+        else:
+            layout.addWidget(QLabel("No outputs can be displayed for this organ"))
         dialog.setLayout(layout)
         dialog.exec_()
 
@@ -166,65 +174,37 @@ class ContextPane(QWidget):
             # Push the command on the undo stack
             self.controller.get_undo_stack().push(command)
 
-    def edit_locals(self):
-        dialog = QDialog()
-        dialog.setWindowTitle("Edit local values")
-        layout = QGridLayout()
-        self.locals_list = QListWidget()
-        ranges = self.current_organ.get_local_ranges()
-        for item in ranges:
-            list_item = QListWidgetItem()
-            var_range = ranges[item]
-            list_item.setText(item + "\t => [min: " + str(var_range[0]) + ", max: " + str(var_range[1]) + ", val: " +
-                              str(var_range[2]) + "]")
-            self.locals_list.addItem(list_item)
-        layout.addWidget(self.locals_list)
+    def edit_locals(self, previous_dialog):
+        dialog = VarDialog(self.current_organ.get_local_ranges())
 
-        edit_group = QGroupBox()
-        edits = QGridLayout()
-        edits.addWidget(QLabel("Variable name"), 0, 0)
-        self.var_name = QLineEdit()
-        edits.addWidget(self.var_name, 0, 1)
+        if dialog.exec_():
+            # Close the previous dialog and start a new one, showing the updated locals
+            previous_dialog.accept()
+            self.show_locals()
 
-        self.var_min = QLineEdit()
-        self.var_min.setValidator(QDoubleValidator())
-        edits.addWidget(QLabel("Min"), 1, 0)
-        edits.addWidget(self.var_min, 1, 1)
-        self.var_max = QLineEdit()
-        self.var_max.setValidator(QDoubleValidator())
-        edits.addWidget(QLabel("Max"), 2, 0)
-        edits.addWidget(self.var_max, 2, 1)
-        self.var_val = QLineEdit()
-        self.var_val.setValidator(QDoubleValidator())
-        edits.addWidget(QLabel("Val"), 3, 0)
-        edits.addWidget(self.var_val, 3, 1)
+    def edit_functions(self, previous_dialog):
+        dialog = FunctionDialog(self.current_organ.get_defined_variables(), self.current_organ.get_funcs())
 
-        add_button = QPushButton("Add Variable")
-        add_button.clicked.connect(self.add_var)
-        del_button = QPushButton("Remove selected")
-        del_button.clicked.connect(partial(self.remove_selected, self.locals_list, self.current_organ.get_local_ranges()))
-        edits.addWidget(add_button)
-        edits.addWidget(del_button)
-        edit_group.setLayout(edits)
-        layout.addWidget(edit_group)
-
-        dialog.setLayout(layout)
-        dialog.exec_()
+        if dialog.exec_():
+            previous_dialog.accept()
+            self.show_funcs()
 
     def initialize_output(self):
         outputs = self.controller.model.get_outputs()
         layout = QGridLayout()
         for index, out_name in enumerate(outputs):
-            labels = QHBoxLayout()
             out_button = QPushButton(out_name)
             out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
-            labels.addWidget(out_button)
-            self.local_outs[out_name] = QLabel(str(outputs[out_name]))
-            labels.addWidget(self.local_outs[out_name])
-            layout.addLayout(labels, index, 0)
+            layout.addWidget(out_button, index, 0)
+            self.local_outs[out_name] = QLabel(str(round(outputs[out_name], 2)))
+            self.local_outs[out_name].setStyleSheet("QLabel { background-color : white; color : blue; }")
+            layout.addWidget(self.local_outs[out_name], index, 1)
         self.output_group.setLayout(layout)
 
     def update_output(self):
         outputs = self.controller.model.get_outputs()
         for local_out_val in self.local_outs:
             self.local_outs[local_out_val].setText(str(outputs[local_out_val]))
+            if self.controller.current_global == local_out_val:
+                # If the output of the currently selected value is changed we update the color schemes
+                self.controller.set_colors_for_global(local_out_val)

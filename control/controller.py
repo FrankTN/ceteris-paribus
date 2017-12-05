@@ -67,6 +67,7 @@ class Controller(object):
         self.context_pane.update_output()
 
     def set_colors_for_global(self, name: str):
+        self.current_global = name
         # If we select a global value to visualize, this function updates the nodes involved so we can see how far each
         # node is in their range with respect to this value
         color_scheme_names = self.get_model().color_schemes[name]
