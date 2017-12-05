@@ -180,39 +180,40 @@ class VarDialog(QDialog):
         layout = QGridLayout()
 
         # First, add all previously defined variables to the list, this is empty if we are working on a new organ
-        var_view = QListWidget()
+        self.var_list_widget = QListWidget()
         for var in variables:
             list_item = QListWidgetItem()
             var_range = variables[var]
             list_item.setText(var + "\t => [min: " + str(var_range[0]) + ", max: " + str(var_range[1]) + ", val: " +
                               str(var_range[2]) + "]")
-            var_view.addItem(list_item)
-        layout.addWidget(var_view)
+            self.var_list_widget.addItem(list_item)
+        layout.addWidget(self.var_list_widget)
+        self.var_list_widget.itemDoubleClicked.connect(self.update_edits)
 
         edit_group = QGroupBox()
         edits = QGridLayout()
         edits.addWidget(QLabel("Variable name"), 0, 0)
-        var_name = QLineEdit()
-        edits.addWidget(var_name, 0, 1)
+        self.var_name = QLineEdit()
+        edits.addWidget(self.var_name, 0, 1)
 
-        var_min = QLineEdit()
-        var_min.setValidator(QDoubleValidator())
+        self.var_min = QLineEdit()
+        self.var_min.setValidator(QDoubleValidator())
         edits.addWidget(QLabel("Min"), 1, 0)
-        edits.addWidget(var_min, 1, 1)
-        var_max = QLineEdit()
-        var_max.setValidator(QDoubleValidator())
+        edits.addWidget(self.var_min, 1, 1)
+        self.var_max = QLineEdit()
+        self.var_max.setValidator(QDoubleValidator())
         edits.addWidget(QLabel("Max"), 2, 0)
-        edits.addWidget(var_max, 2, 1)
-        var_val = QLineEdit()
-        var_val.setValidator(QDoubleValidator())
+        edits.addWidget(self.var_max, 2, 1)
+        self.var_val = QLineEdit()
+        self.var_val.setValidator(QDoubleValidator())
         edits.addWidget(QLabel("Val"), 3, 0)
-        edits.addWidget(var_val, 3, 1)
+        edits.addWidget(self.var_val, 3, 1)
 
         add_button = QPushButton("Add Variable")
-        add_button.clicked.connect(partial(add_var, var_min, var_max, var_val, var_name, var_view, variables))
+        add_button.clicked.connect(partial(self.add_var, variables))
 
         del_button = QPushButton("Remove selected")
-        del_button.clicked.connect(partial(remove_selected, var_view, variables))
+        del_button.clicked.connect(partial(remove_selected, self.var_list_widget, variables))
         edits.addWidget(add_button)
         edits.addWidget(del_button)
         edit_group.setLayout(edits)
@@ -229,12 +230,79 @@ class VarDialog(QDialog):
         buttons.addWidget(next_button)
         buttons.addWidget(back_button)
 
-        layout.addWidget(var_view, 0, 0)
+        layout.addWidget(self.var_list_widget, 0, 0)
         layout.addWidget(edit_group, 1, 0)
         layout.addLayout(buttons, 2, 0)
 
         self.setLayout(layout)
 
+    def add_var(self, variables):
+        try:
+            if self.var_name.text() in variables:
+                raise NameError
+            minimum = float(self.var_min.text())
+            maximum = float(self.var_max.text())
+            value = float(self.var_val.text())
+
+            # A name is valid if it is not empty after stripping all the whitespace
+            valid_name = not self.var_name.text().strip() == ""
+            # If we have a valid name and the value is between the minimum and the maximum, we add the item
+            if valid_name and minimum <= value <= maximum:
+                self.var_list_widget.addItem(QListWidgetItem(self.var_name.text() + "\t => [min: " + str(minimum) + ", max: " +
+                                                 str(maximum) + ", val: " + str(value) + "]"))
+                variables[self.var_name.text()] = [minimum, maximum, value]
+                self.var_name.clear()
+                self.var_min.clear()
+                self.var_max.clear()
+                self.var_val.clear()
+        except ValueError:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Incorrect field value was entered, please try again")
+            msg.setInformativeText("Please make sure the values are numbers")
+            msg.setWindowTitle("Data in field is incorrect")
+            if not self.var_min.text():
+                min_message = "empty"
+            else:
+                min_message = self.var_min.text()
+
+            if not self.var_max.text():
+                max_message = "empty"
+            else:
+                max_message = self.var_max.text()
+
+            if not self.var_val.text():
+                val_message = "empty"
+            else:
+                val_message = self.var_max.text()
+            msg.setDetailedText("Min: " + min_message + "\n"
+                                "Max: " + max_message + "\n"
+                                "Val: " + val_message + "\n")
+            msg.exec_()
+        except NameError:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("The name you entered already exists, please specify a different name for your variable")
+            msg.setWindowTitle("Name already exists")
+            msg.exec_()
+
+    def update_edits(self):
+        for selected in self.var_list_widget.selectedItems():
+            self.var_list_widget.item(self.var_list_widget.row(selected))
+            var = selected.text().split("=>")
+            var_name = var[0].strip()
+            var_def_string = var[1].strip()
+
+            # var_def has the form [min: x, max: y, val: z], and we must split the field accordingly
+            var_def_list = var_def_string.split()
+            # The values are now defined at specified locations, we have:
+            var_min = var_def_list[1].rstrip(",")
+            self.var_min.setText(var_min)
+            var_max = var_def_list[3].rstrip(",")
+            self.var_max.setText(var_max)
+            var_val = var_def_list[5].rstrip("]")
+            self.var_val.setText(var_val)
+            self.var_name.setText(var_name)
 
 class FunctionDialog(QDialog):
     def __init__(self, variables, functions=None):
@@ -264,30 +332,30 @@ class FunctionDialog(QDialog):
         buttonLayout.addWidget(back_button)
 
         flexible_grid = QHBoxLayout()
-        function_list_widget = QListWidget()
-        flexible_grid.addWidget(function_list_widget)
+        self.function_list_widget = QListWidget()
+        flexible_grid.addWidget(self.function_list_widget)
 
         if self.functions:
             for func in self.functions:
                 function_item = QListWidgetItem()
                 function_item.setText(func + "\t => " + self.functions[func])
-                function_list_widget.addItem(function_item)
+                self.function_list_widget.addItem(function_item)
 
         # Create the edit fields to hold the variable names and functions
         edits = QHBoxLayout()
-        f_name = QLineEdit()
-        f_form = QLineEdit()
-        f_form.setCompleter(autocompleter)
-        edits.addWidget(f_name)
-        edits.addWidget(f_form)
-        f_form.setValidator(FunctionValidator(variables))
-        function_list_widget.itemDoubleClicked.connect(partial(self.update_edits, f_form, f_name, function_list_widget))
+        self.f_name = QLineEdit()
+        self.f_form = QLineEdit()
+        self.f_form.setCompleter(autocompleter)
+        edits.addWidget(self.f_name)
+        edits.addWidget(self.f_form)
+        self.f_form.setValidator(FunctionValidator(variables))
+        self.function_list_widget.itemDoubleClicked.connect(self.update_edits)
 
         # Add buttons for adding and removing functions and connect them
         add_button = QPushButton("Add Function")
-        add_button.clicked.connect(partial(self.add_function, f_form, f_name, function_list_widget, self.functions))
+        add_button.clicked.connect(self.add_function)
         remove_button = QPushButton("Remove Selected")
-        remove_button.clicked.connect(partial(remove_selected, function_list_widget, self.functions))
+        remove_button.clicked.connect(partial(remove_selected, self.function_list_widget, self.functions))
         edits.addWidget(add_button)
         edits.addWidget(remove_button)
 
@@ -302,26 +370,26 @@ class FunctionDialog(QDialog):
     def get_functions(self):
         return self.functions
 
-    def add_function(self, f_form, f_name, function_list_widget, functions):
+    def add_function(self):
         # A function is valid if it is returned as such by the validator
-        f_form.validator().set_confirmed(True)
-        valid_function = f_form.hasAcceptableInput()
+        self.f_form.validator().set_confirmed(True)
+        valid_function = self.f_form.hasAcceptableInput()
         # A name is valid as long as its not empty
-        valid_name = not f_name.text().strip() == ""
+        valid_name = not self.f_name.text().strip() == ""
         if valid_name and valid_function:
-            functions[f_name.text()] = f_form.text()
-            function_list_widget.addItem(QListWidgetItem(f_name.text() + "\t => " + f_form.text()))
-            f_form.validator().set_confirmed(False)
-            f_form.clear()
+            self.functions[self.f_name.text()] = self.f_form.text()
+            self.function_list_widget.addItem(QListWidgetItem(self.f_name.text() + "\t => " + self.f_form.text()))
+            self.f_form.validator().set_confirmed(False)
+            self.f_form.clear()
 
-    def update_edits(self, f_form, f_name, var_view):
-        for selected in var_view.selectedItems():
-            var_view.item(var_view.row(selected))
+    def update_edits(self):
+        for selected in self.var_view.selectedItems():
+            self.function_list_widget.item(self.function_list_widget.row(selected))
             func = selected.text().split("=>")
             var_name = func[0].strip()
             var_form = func[1].strip()
-            f_name.setText(var_name)
-            f_form.setText(var_form)
+            self.f_name.setText(var_name)
+            self.f_form.setText(var_form)
 
 
 def select_db_dialog():
@@ -342,26 +410,6 @@ def select_db_dialog():
         msg.setText("Unable to load database, the file might be corrupted\nPlease try again")
         msg.exec_()
         select_db_dialog()
-
-
-def add_var(var_min, var_max, var_val, var_name, var_view, variables):
-    # The function which is called when the "Add Variable" button is clicked
-    minimum = float(var_min.text())
-    maximum = float(var_max.text())
-    value = float(var_val.text())
-
-    # A name is valid if it is not empty after stripping all the whitespace
-    valid_name = not var_name.text().strip() == ""
-    # If we have a valid name and the value is between the minimum and the maximum, we add the item
-    if valid_name and minimum <= value <= maximum:
-        var_view.addItem(QListWidgetItem(var_name.text() + "\t => [min: " + str(minimum) + ", max: " +
-                                         str(maximum) + ", val: " + str(value) + "]"))
-        variables[var_name.text()] = [minimum, maximum, value]
-        var_name.clear()
-        var_min.clear()
-        var_max.clear()
-        var_val.clear()
-
 
 def remove_selected(var_view, variables):
     # Removes the selected item from the specified widget and from the corresponding item:value dict
