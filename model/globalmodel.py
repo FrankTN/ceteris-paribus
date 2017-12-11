@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMessageBox
 
-from db.function_parser import EvalWrapper, ModelTransformer
-from model.organ import Organ
+from ceteris_paribus.db.function_parser import EvalWrapper, ModelTransformer
+from ceteris_paribus.model.organ import Organ
 
 
 class GlobalModel(object):

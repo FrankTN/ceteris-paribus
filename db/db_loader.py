@@ -2,7 +2,7 @@
 import os
 from tinydb import TinyDB, Query
 
-from model.organ import Organ
+from ceteris_paribus.model.organ import Organ
 
 organ_db = TinyDB(os.getcwd() + "/new_organ_db.json")
 

@@ -5,11 +5,9 @@ import sys
 from PyQt5.QtCore import QPointF
 from PyQt5.QtWidgets import QApplication, QUndoStack
 
-from db.db_dumper import dump_model
-from gui.dialogs import select_db_dialog
-from gui.graph_editor import GraphWindow
-from gui.graph_scene import GraphScene
-from model.globalmodel import GlobalModel
+from ceteris_paribus.gui.dialogs import select_db_dialog
+from ceteris_paribus.gui.graph_editor import GraphWindow
+from ceteris_paribus.model.globalmodel import GlobalModel
 
 
 class Controller(object):

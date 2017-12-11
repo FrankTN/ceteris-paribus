@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLab
     QVBoxLayout, QMessageBox, QListWidget, QListWidgetItem, QCompleter, QGroupBox
 from tinydb import TinyDB
 
-from gui.validator import FunctionValidator
+from ceteris_paribus.gui.validator import FunctionValidator
 
 
 class NewNodeCreator(object):

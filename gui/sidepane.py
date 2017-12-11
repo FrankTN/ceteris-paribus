@@ -6,8 +6,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
     QPushButton, QDialog
 
-from gui.commands import DeleteCommand
-from gui.dialogs import VarDialog, FunctionDialog
+from ceteris_paribus.gui.commands import DeleteCommand
+from ceteris_paribus.gui.dialogs import VarDialog, FunctionDialog
 
 
 class ContextPane(QWidget):
@@ -100,7 +100,7 @@ class ContextPane(QWidget):
                 slider.setMinimum(self.current_organ.get_local_ranges()[name][0])
                 slider.setMaximum(self.current_organ.get_local_ranges()[name][1])
                 slider.setValue(self.current_organ.get_local_ranges()[name][2])
-                value_label = QLabel(str(slider.value()))
+                value_label = QLabel(str(round(slider.value(), 2)))
                 slider.valueChanged.connect(partial(self.controller.organ_local_changed, name, slider, value_label))
                 layout.addWidget(slider, index, 1)
                 layout.addWidget(value_label, index, 2)
@@ -143,7 +143,7 @@ class ContextPane(QWidget):
         if self.current_organ.get_funcs():
             for index, func in enumerate(self.current_organ.get_funcs()):
                 layout.addWidget(QLabel(func + ":"), index, 0)
-                layout.addWidget(QLabel(str(self.current_organ.defined_variables[func])), index, 1)
+                layout.addWidget(QLabel(str(round(self.current_organ.defined_variables[func], 2))), index, 1)
         else:
             layout.addWidget(QLabel("No outputs can be displayed for this organ"))
         dialog.setLayout(layout)
