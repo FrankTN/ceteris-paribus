@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QValidator
 
-from ceteris_paribus.db.function_parser import EvalWrapper, Transformer
+from db.function_parser import EvalWrapper, Transformer
 
 
 class FunctionValidator(QValidator):

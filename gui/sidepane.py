@@ -6,8 +6,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
     QPushButton, QDialog
 
-from ceteris_paribus.gui.commands import DeleteCommand
-from ceteris_paribus.gui.dialogs import VarDialog, FunctionDialog
+from gui.commands import DeleteCommand
+from gui.dialogs import VarDialog, FunctionDialog
 
 
 class ContextPane(QWidget):

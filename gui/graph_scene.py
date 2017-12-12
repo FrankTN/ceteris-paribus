@@ -2,9 +2,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTransform, QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
-from ceteris_paribus.gui.commands import MoveCommand
-from ceteris_paribus.gui.dialogs import NewNodeCreator
-from ceteris_paribus.gui.visual_elements import OrganNode, InNode, OutNode, Edge
+from gui.commands import MoveCommand
+from gui.dialogs import NewNodeCreator
+from gui.visual_elements import OrganNode, InNode, OutNode, Edge
 
 
 class GraphScene(QGraphicsScene):

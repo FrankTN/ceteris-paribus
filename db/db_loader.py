@@ -2,8 +2,6 @@
 import os
 from tinydb import TinyDB, Query
 
-from ceteris_paribus.model.organ import Organ
-
 organ_db = TinyDB(os.getcwd() + "/new_organ_db.json")
 
 organ_db.purge_table("GlobalParameters")

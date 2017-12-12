@@ -2,8 +2,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush
 from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget
 
-from ceteris_paribus.gui.graph_scene import GraphScene
-from ceteris_paribus.gui.sidepane import ContextPane
+from gui.graph_scene import GraphScene
+from gui.sidepane import ContextPane
 
 
 class GraphWindow(QMainWindow):

@@ -1,13 +1,17 @@
 """ The controller acts as a layer handling communication between the GUI, the model and the database. """
 #TODO this will be refactored into multiple smaller parts
 import sys
+import os.path
+# Append the parent directory of this file to the global path. This ensures that we may always find the required modules
+# irrespective of the starting directory.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from PyQt5.QtCore import QPointF
 from PyQt5.QtWidgets import QApplication, QUndoStack
 
-from ceteris_paribus.gui.dialogs import select_db_dialog
-from ceteris_paribus.gui.graph_editor import GraphWindow
-from ceteris_paribus.model.globalmodel import GlobalModel
+from gui.dialogs import select_db_dialog
+from gui.graph_editor import GraphWindow
+from model.globalmodel import GlobalModel
 
 
 class Controller(object):
