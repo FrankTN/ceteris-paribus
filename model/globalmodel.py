@@ -65,7 +65,7 @@ class GlobalModel(object):
             rangeless_params[parameter] = params_with_range[parameter][2]
         return rangeless_params
 
-    def param_changed(self, name: str, slider):
+    def param_changed(self, name, slider):
         """This function handles the updating of a parameter in response to the user interacting with the UI"""
         new_value = slider.value()
         # Set the new value in the global params

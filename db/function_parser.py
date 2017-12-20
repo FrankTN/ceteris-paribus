@@ -4,14 +4,14 @@ from PyQt5.QtWidgets import QMessageBox
 
 
 class EvalWrapper(object):
-    def __init__(self, variables : dict, transformer):
+    def __init__(self, variables, transformer):
         self.variables = variables
         self.transformer = transformer
 
-    def add_vars(self, variables: dict):
+    def add_vars(self, variables):
         self.variables = {**self.variables, **variables}
 
-    def set_function(self, function: str):
+    def set_function(self, function):
         self.function = function
 
     def evaluate(self):

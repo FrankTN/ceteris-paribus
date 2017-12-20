@@ -104,7 +104,7 @@ class NameDialog(QDialog):
         else:
             self.next_button.setEnabled(False)
 
-    def isEmpty(self, string: str):
+    def isEmpty(self, string):
         return string.strip() is ""
 
 

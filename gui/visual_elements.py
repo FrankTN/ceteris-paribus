@@ -44,7 +44,7 @@ class GraphNode(QGraphicsRectItem):
             self.moveEdges(value)
         return QGraphicsRectItem.itemChange(self, change, value)
 
-    def add_edge(self, edge, isSource: bool):
+    def add_edge(self, edge, isSource):
         # Add edge to the local list of edges
         self.edge_list.append((edge, isSource))
 
@@ -70,7 +70,7 @@ class GraphNode(QGraphicsRectItem):
         QPainter.fillRect(rect, gradient)
         QPainter.drawText(rect, Qt.AlignCenter, self.name)
 
-    def set_color(self, range: list):
+    def set_color(self, range):
         # Sets the color of the node based on a range of values. Range is a list with three elements, [min, max, val].
         # Based on the distance of val from the maximum, we give the node a color. This allows the user to get an
         # overview of the space left to move a certain variable
@@ -159,12 +159,12 @@ class Edge(QGraphicsLineItem):
     def get_dest(self):
         return self.dest_node
 
-    def set_source(self, new_position: QPointF):
+    def set_source(self, new_position):
         self.setLine(new_position.x(), new_position.y(), self.dest_node.get_center().x(),
                      self.dest_node.get_center().y())
         self.update()
 
-    def set_dest(self, new_position: QPointF):
+    def set_dest(self, new_position):
         self.setLine(self.source_node.get_center().x(), self.source_node.get_center().y(),
                      new_position.x(), new_position.y())
 

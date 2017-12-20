@@ -5,7 +5,7 @@ import os
 
 from tinydb import TinyDB
 
-def dump_model(model, db_name: str = "new_organ_db.json"):
+def dump_model(model, db_name = "new_organ_db.json"):
     """Serialize a model as a JSON file in such a way that it can be reopened at any moment for later use."""
     # Create the db for dumping
     target_db = TinyDB(os.getcwd() + "/db/" + db_name)

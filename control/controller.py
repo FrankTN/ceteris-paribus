@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """ The controller acts as a layer handling communication between the GUI, the model and the database. """
 #TODO this will be refactored into multiple smaller parts
 import sys
@@ -6,7 +8,6 @@ import os.path
 # irrespective of the starting directory.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from PyQt5.QtCore import QPointF
 from PyQt5.QtWidgets import QApplication, QUndoStack
 
 from gui.dialogs import select_db_dialog
@@ -27,6 +28,7 @@ class Controller(object):
         self.ui = GraphWindow(self)
         # The context pane remains empty for now
         self.context_pane = self.ui.context
+        self.current_global = None
 
     def change_context_organ(self, organ):
         # Change the organ being displayed in the context menu on the right dock
@@ -55,12 +57,12 @@ class Controller(object):
         # without the ranges
         return self.model.get_global_param_values()
 
-    def param_changed(self, name: str, slider):
+    def param_changed(self, name, slider):
         # Another relay method to ensure the model is only used by the controller
         self.model.param_changed(name, slider)
         self.context_pane.update_output()
 
-    def organ_local_changed(self, name: str, slider, label):
+    def organ_local_changed(self, name, slider, label):
         # If the user changes a local value in an organ, this function is called. We change the local value and update
         # the UI accordingly
         organ = self.context_pane.current_organ
@@ -68,7 +70,7 @@ class Controller(object):
         label.setText(str(slider.value()))
         self.context_pane.update_output()
 
-    def set_colors_for_global(self, name: str):
+    def set_colors_for_global(self, name):
         self.current_global = name
         # If we select a global value to visualize, this function updates the nodes involved so we can see how far each
         # node is in their range with respect to this value
@@ -81,7 +83,7 @@ class Controller(object):
                 controller.ui.scene.items[organ.get_name()].set_gray()
         self.ui.scene.update()
 
-    def add_organ(self, pos: QPointF, organ_name: str, variables: dict, funcs: dict, edges: list):
+    def add_organ(self, pos, organ_name, variables, funcs, edges):
         # Adds an organ to the model object. We need to wrap all information in an organ_info dict because of the way
         # the database handling system works.
         organ_info = {}

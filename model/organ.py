@@ -6,7 +6,7 @@ from db.function_parser import EvalWrapper, Transformer
 class Organ(object):
     """The class which represents all organs"""
 
-    def __init__(self, organ_info: dict, global_params: dict, global_constants: dict, pos):
+    def __init__(self, organ_info, global_params, global_constants, pos):
         """ This generic implementation of an organ in the model uses the __setattr__ method to add attributes.
             Adding attributes in this way is necessary since not all attributes are defined for each organ.
         """
@@ -24,7 +24,7 @@ class Organ(object):
         self.results = {}
         self.evaluate()
 
-    def set_globals(self, new_globals: dict):
+    def set_globals(self, new_globals):
         """
         This functions swaps the global variables of the organ. As a side-effect, the defined_variables are also changed
         :param new_globals: a dict containing the new global variables
