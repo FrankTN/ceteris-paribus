@@ -14,7 +14,6 @@ from gui.dialogs import select_db_dialog
 from gui.graph_editor import GraphWindow
 from model.globalmodel import GlobalModel
 
-
 class Controller(object):
 
     def __init__(self):

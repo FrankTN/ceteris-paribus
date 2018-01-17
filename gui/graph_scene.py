@@ -101,7 +101,3 @@ class GraphScene(QGraphicsScene):
                 corresponding_node = self.items[source_name]
                 source_nodes.append(corresponding_node)
             self.controller.add_organ(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs(), source_nodes)
-
-    def update_model(self):
-        # TODO implement
-        pass

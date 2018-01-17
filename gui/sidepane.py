@@ -204,7 +204,7 @@ class ContextPane(QWidget):
     def update_output(self):
         outputs = self.controller.model.get_outputs()
         for local_out_val in self.local_outs:
-            self.local_outs[local_out_val].setText(str(outputs[local_out_val]))
+            self.local_outs[local_out_val].setText(str(round(outputs[local_out_val],2)))
             if self.controller.current_global == local_out_val:
                 # If the output of the currently selected value is changed we update the color schemes
                 self.controller.set_colors_for_global(local_out_val)
