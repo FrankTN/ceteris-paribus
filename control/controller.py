@@ -74,13 +74,22 @@ class Controller(object):
         # If we select a global value to visualize, this function updates the nodes involved so we can see how far each
         # node is in their range with respect to this value
         color_scheme_names = self.get_model().color_schemes[name]
+
+        gradient = self.context_pane.colorBar.getLookupTable(100) # A lookup table giving RGB colors
+
         for organ in self.get_model().organs.values():
             if organ.get_name() in color_scheme_names:
                 range = organ.get_local_ranges()[color_scheme_names[organ.get_name()]]
-                controller.ui.scene.items[organ.get_name()].set_color(range)
+                controller.ui.scene.items[organ.get_name()].set_color(range, gradient)
             else:
                 controller.ui.scene.items[organ.get_name()].set_gray()
         self.ui.scene.update()
+
+    def update_colors(self):
+        # This function is called when something changes in the color editor.
+        if hasattr(self, 'current_global'):
+            self.set_colors_for_global(self.current_global)
+
 
     def add_organ(self, pos, organ_name, variables, funcs, edges):
         # Adds an organ to the model object. We need to wrap all information in an organ_info dict because of the way

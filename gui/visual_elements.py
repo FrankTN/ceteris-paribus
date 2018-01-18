@@ -70,7 +70,7 @@ class GraphNode(QGraphicsRectItem):
         QPainter.fillRect(rect, gradient)
         QPainter.drawText(rect, Qt.AlignCenter, self.name)
 
-    def set_color(self, range):
+    def set_color(self, range, gradient_table):
         # Sets the color of the node based on a range of values. Range is a list with three elements, [min, max, val].
         # Based on the distance of val from the maximum, we give the node a color. This allows the user to get an
         # overview of the space left to move a certain variable
@@ -78,13 +78,10 @@ class GraphNode(QGraphicsRectItem):
         range_max = range[1]
         val = range[2]
         normalized_val = (val - range_min) / (range_max - range_min)
-        # Here, we spread out the normalized value for the color, which is in [0,1] to an RGB color for the node.
-        if normalized_val < (1 / 3):
-            self.color = QColor(normalized_val * 765, 0, 0)
-        elif normalized_val < (2 / 3):
-            self.color = QColor(255, (normalized_val - (1 / 3)) * 765, 0)
-        else:
-            self.color = QColor(255, 255, (normalized_val - 2 / 3) * 765)
+        index = int(normalized_val*len(gradient_table))
+
+        # Here, we use the index to find the closest color in the gradient table.
+        self.color = QColor(*gradient_table[index])
 
     def set_gray(self):
         # The default color

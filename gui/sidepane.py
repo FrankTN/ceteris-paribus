@@ -3,6 +3,7 @@
 from functools import partial
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QLinearGradient
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
     QPushButton, QDialog, QGraphicsProxyWidget
 
@@ -35,16 +36,20 @@ class ContextPane(QWidget):
         self.output_group.setFixedSize(300, (available_height / 2))
         self.initialize_output()
 
+        color_group = QGroupBox("Color")
+        color_group.setFixedSize(300, (available_height / 6))
+        self.colorBar = pg.GradientWidget()
+        color_layout = QGridLayout()
+        color_layout.addWidget(self.colorBar)
+        color_group.setLayout(color_layout)
+        self.colorBar.loadPreset('cyclic')
+        self.colorBar.sigGradientChangeFinished.connect(lambda : self.controller.update_colors())
+
         layout = QGridLayout()
         layout.addWidget(self.input_group)
         layout.addWidget(self.context_group)
         layout.addWidget(self.output_group)
-
-
-        self.colorBar = pg.GradientWidget()
-        
-
-        layout.addWidget(self.colorBar)
+        layout.addWidget(color_group)
 
         self.setLayout(layout)
 
