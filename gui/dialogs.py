@@ -1,13 +1,13 @@
 """ This module contains code to create all dialogs used by the program"""
 from functools import partial
 
-from PyQt5.QtCore import Qt, QStringListModel
+from PyQt5.QtCore import QStringListModel
 from PyQt5.QtGui import QDoubleValidator
-from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QSlider, \
-    QVBoxLayout, QMessageBox, QListWidget, QListWidgetItem, QCompleter, QGroupBox
-from tinydb import TinyDB
-
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QPushButton, QGridLayout, QLabel, QLineEdit, QFileDialog, QMessageBox, \
+    QListWidget, QListWidgetItem, QCompleter, QGroupBox
+import pyqtgraph as pg
 from gui.validator import FunctionValidator
+from tinydb import TinyDB
 
 
 class NewNodeCreator(object):

@@ -19,7 +19,7 @@ class GraphNode(QGraphicsRectItem):
         self.setAcceptDrops(True)
         # Node has a list of connected edges
         self.edge_list = []
-        self.setFlag(QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QGraphicsItem.ItemIsSelectable, False)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
         # This specific ZValue is used so the nodes are rendered on top of the edges
         self.setZValue(1)

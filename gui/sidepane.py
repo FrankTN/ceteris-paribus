@@ -4,11 +4,12 @@ from functools import partial
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog
+    QPushButton, QDialog, QGraphicsProxyWidget
 
 from gui.commands import DeleteCommand
 from gui.dialogs import VarDialog, FunctionDialog
 
+import pyqtgraph as pg
 
 class ContextPane(QWidget):
     def __init__(self, controller):
@@ -38,6 +39,12 @@ class ContextPane(QWidget):
         layout.addWidget(self.input_group)
         layout.addWidget(self.context_group)
         layout.addWidget(self.output_group)
+
+
+        self.colorBar = pg.GradientWidget()
+        
+
+        layout.addWidget(self.colorBar)
 
         self.setLayout(layout)
 
