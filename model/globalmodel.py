@@ -88,11 +88,80 @@ class GlobalModel(object):
     def get_global_constants(self):
         return self._global_constants
 
+    def add_global_constant(self, name, val):
+        if name in self._global_constants:
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning")
+            msg.setText(
+                "The global constant you want to add already exists:\n" + name + " : " +
+                str(self._global_constants[name]) + "\nOverwrite?")
+            msg.setStandardButtons(QMessageBox.Yes)
+            msg.addButton(QMessageBox.No)
+            msg.setDefaultButton(QMessageBox.No)
+            if msg.exec() == QMessageBox.Yes:
+                self._global_constants[name] = val
+        else:
+            self._global_constants[name] = val
+
+    def add_global_parameter(self, name, val):
+        assert(len(val) == 3)
+        if name in self._global_params:
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning")
+            msg.setText(
+                "The global constant you want to add already exists:\n" + name + " : " +
+                str(self._global_params[name]) + "\nOverwrite?")
+            msg.setStandardButtons(QMessageBox.Yes)
+            msg.addButton(QMessageBox.No)
+            msg.setDefaultButton(QMessageBox.No)
+            if msg.exec() == QMessageBox.Yes:
+                self._global_params[name] = val
+        else:
+            self._global_params[name] = val
+
     def get_organs(self):
         return self.organs
 
     def get_functions(self):
         return self._global_funcs
+
+    def add_global_func(self, f_name, f_string):
+        if f_name in self._global_funcs:
+            #TODO add warning for global function redundancy
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning")
+            msg.setText(
+                "The global function you want to add already exists:\n" + f_name + " : " +
+                str(self._global_funcs[f_name]) + "\nOverwrite?")
+            msg.setStandardButtons(QMessageBox.Yes)
+            msg.addButton(QMessageBox.No)
+            msg.setDefaultButton(QMessageBox.No)
+            if msg.exec() == QMessageBox.No:
+                return
+        if self.verify_function(f_string):
+            self._global_funcs[f_name] = f_string
+            print('The function was added')
+        else:
+            msg = QMessageBox()
+            msg.setWindowTitle("Warning")
+            msg.setText(
+                "Adding the specified function invalidates the model, please ensure that the variables are defined"
+                " first:\n " + f_name + " : " + f_string)
+            msg.exec()
+
+    def verify_function(self, function):
+        # This function merely verifies whether a given function can be executed under the current model
+        self.vars = {**self.vars, **self.organs}
+
+        evaluator = EvalWrapper(self.vars, ModelTransformer())
+        evaluator.set_function(function)
+        # The result of the evaluation is stored in the result variable if it exists
+        result = evaluator.evaluate()
+        if result is not None:
+            # We obtained a result, therefore the evaluation works
+            return True
+        # The evaluation was not successful, as we did not obtain a result
+        return False
 
     def get_outputs(self):
         """

@@ -87,7 +87,7 @@ class Controller(object):
 
     def update_colors(self):
         # This function is called when something changes in the color editor.
-        if hasattr(self, 'current_global'):
+        if hasattr(self, 'current_global') and self.current_global is not None:
             self.set_colors_for_global(self.current_global)
 
 

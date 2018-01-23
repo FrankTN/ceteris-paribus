@@ -54,17 +54,25 @@ class ContextPane(QWidget):
         self.setLayout(layout)
 
     def set_input(self):
-        layout = QGridLayout()
+        layout = QVBoxLayout()
+
+        glob_button = QPushButton("View global inputs")
+        glob_button.clicked.connect(self.show_globals)
+        layout.addWidget(glob_button)
+
+        slider_layout = QGridLayout()
+
         global_params = self.controller.get_global_param_ranges()
         for index, param_name in enumerate(global_params):
-            layout.addWidget(QLabel(param_name), index, 0)
+            slider_layout.addWidget(QLabel(param_name), index+1, 0)
             slider = QSlider(Qt.Horizontal)
             slider.setMinimum(global_params[param_name][0])
             slider.setMaximum(global_params[param_name][1])
             slider.setValue(global_params[param_name][2])
             slider.valueChanged.connect(partial(self.controller.param_changed, param_name, slider))
-            layout.addWidget(slider, index, 1)
-        layout.setRowStretch(2, 500)
+            slider_layout.addWidget(slider, index+1, 1)
+        slider_layout.setRowStretch(2, 500)
+        layout.addLayout(slider_layout)
         self.input_group.setLayout(layout)
 
     def initialize_context(self):
@@ -72,25 +80,24 @@ class ContextPane(QWidget):
         self.name_label = QLabel()
         layout.addWidget(self.name_label)
 
+        button_layout = QGridLayout()
+
         var_button = QPushButton("Local values")
         var_button.clicked.connect(self.show_locals)
-        layout.addWidget(var_button)
-
-        glob_button = QPushButton("Global values")
-        glob_button.clicked.connect(self.show_globals)
-        layout.addWidget(glob_button)
+        button_layout.addWidget(var_button, 0, 0)
 
         func_button = QPushButton("Functions")
-        func_button.clicked.connect(self.show_funcs)
-        layout.addWidget(func_button)
+        func_button.clicked.connect(self.show_local_funcs)
+        button_layout.addWidget(func_button, 0, 1)
 
         out_button = QPushButton("Outputs")
         out_button.clicked.connect(self.show_outs)
-        layout.addWidget(out_button)
+        button_layout.addWidget(out_button, 1, 0)
 
         del_button = QPushButton("Delete")
         del_button.clicked.connect(self.delete_organ)
-        layout.addWidget(del_button)
+        button_layout.addWidget(del_button, 1, 1)
+        layout.addLayout(button_layout)
 
         self.context_group.setLayout(layout)
 
@@ -132,7 +139,7 @@ class ContextPane(QWidget):
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def show_funcs(self):
+    def show_local_funcs(self):
         dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Functions")
@@ -146,7 +153,29 @@ class ContextPane(QWidget):
         edit_button.clicked.connect(partial(self.edit_functions, dialog))
         layout.addWidget(edit_button)
         dialog.setLayout(layout)
-        dialog.exec_()
+        dialog.exec()
+
+    def show_global_funcs(self):
+        dialog = QDialog()
+        layout = QGridLayout()
+        dialog.setWindowTitle("Global functions")
+        functions_dict = self.controller.model.get_functions()
+        for index, func in enumerate(functions_dict):
+            layout.addWidget(QLabel(func), index, 0)
+            layout.addWidget(QLabel(functions_dict[func]), index, 1)
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def modify_global_funcs(self):
+        dialog = QDialog()
+        layout = QGridLayout()
+        dialog.setWindowTitle("Global functions")
+        functions_dict = self.controller.model.get_functions()
+        for index, func in enumerate(functions_dict):
+            button = QPushButton(func)
+            layout.addWidget(button)
+        dialog.setLayout(layout)
+        dialog.exec()
 
     def show_outs(self):
         dialog = QDialog()
@@ -199,18 +228,27 @@ class ContextPane(QWidget):
 
         if dialog.exec_():
             previous_dialog.accept()
-            self.show_funcs()
+            self.show_local_funcs()
 
     def initialize_output(self):
         outputs = self.controller.model.get_outputs()
         layout = QGridLayout()
+
+        view_outs = QPushButton("View global functions")
+        view_outs.clicked.connect(lambda : self.show_global_funcs())
+        layout.addWidget(view_outs, 0, 0)
+
+        modify_outs = QPushButton("Modify global functions")
+        modify_outs.clicked.connect(lambda x : x)
+        layout.addWidget(modify_outs, 0, 1)
+
         for index, out_name in enumerate(outputs):
             out_button = QPushButton(out_name)
             out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
-            layout.addWidget(out_button, index, 0)
+            layout.addWidget(out_button, index+1, 0)
             self.local_outs[out_name] = QLabel(str(round(outputs[out_name], 2)))
             self.local_outs[out_name].setStyleSheet("QLabel { background-color : white; color : blue; }")
-            layout.addWidget(self.local_outs[out_name], index, 1)
+            layout.addWidget(self.local_outs[out_name], index+1, 1)
         self.output_group.setLayout(layout)
 
     def update_output(self):
