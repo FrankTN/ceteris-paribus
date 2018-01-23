@@ -5,7 +5,7 @@ from functools import partial
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QLinearGradient
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog, QGraphicsProxyWidget
+    QPushButton, QDialog, QGraphicsProxyWidget, QTextEdit, QDialogButtonBox, QLineEdit
 
 from gui.commands import DeleteCommand
 from gui.dialogs import VarDialog, FunctionDialog
@@ -171,11 +171,34 @@ class ContextPane(QWidget):
         layout = QGridLayout()
         dialog.setWindowTitle("Global functions")
         functions_dict = self.controller.model.get_functions()
-        for index, func in enumerate(functions_dict):
+        for func in functions_dict:
             button = QPushButton(func)
+            button.clicked.connect(partial(self.change_single_function, func, functions_dict[func]))
             layout.addWidget(button)
         dialog.setLayout(layout)
         dialog.exec()
+
+    def change_single_function(self, f_name, f_string):
+        dialog = QDialog()
+        layout = QGridLayout()
+        dialog.setWindowTitle("Modify " + f_name)
+
+        new_func = QLineEdit()
+        new_func.setText(f_string)
+        layout.addWidget(new_func)
+
+        button_layout = QHBoxLayout()
+        accept_button = QPushButton('Accept')
+        accept_button.clicked.connect(dialog.accept)
+        button_layout.addWidget(accept_button)
+        cancel_button = QPushButton('Cancel')
+        cancel_button.clicked.connect(dialog.reject)
+        button_layout.addWidget(cancel_button)
+        layout.addItem(button_layout)
+
+        dialog.setLayout(layout)
+        if dialog.exec():
+            self.controller.model.add_global_func(f_name, new_func.text())
 
     def show_outs(self):
         dialog = QDialog()
@@ -239,7 +262,7 @@ class ContextPane(QWidget):
         layout.addWidget(view_outs, 0, 0)
 
         modify_outs = QPushButton("Modify global functions")
-        modify_outs.clicked.connect(lambda x : x)
+        modify_outs.clicked.connect(lambda : self.modify_global_funcs())
         layout.addWidget(modify_outs, 0, 1)
 
         for index, out_name in enumerate(outputs):
