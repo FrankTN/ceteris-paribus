@@ -10,6 +10,7 @@ class FunctionValidator(QValidator):
         super().__init__()
 
         self.evaluator = EvalWrapper(variables, Transformer())
+        # The confirmed bool is used to signal when input is final
         self.confirmed = False
 
     def set_confirmed(self, bool_value):

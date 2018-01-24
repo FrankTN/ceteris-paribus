@@ -239,7 +239,15 @@ class VarDialog(QDialog):
     def add_var(self, variables):
         try:
             if self.var_name.text() in variables:
-                raise NameError
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText("The name you entered already exists, \nOverwrite?")
+                msg.setWindowTitle("Name already exists")
+                msg.setStandardButtons(QMessageBox.Yes)
+                msg.addButton(QMessageBox.No)
+                msg.setDefaultButton(QMessageBox.No)
+                if msg.exec() == QMessageBox.No:
+                    return
             minimum = float(self.var_min.text())
             maximum = float(self.var_max.text())
             value = float(self.var_val.text())
@@ -255,6 +263,8 @@ class VarDialog(QDialog):
                 self.var_min.clear()
                 self.var_max.clear()
                 self.var_val.clear()
+            else :
+                raise ValueError
         except ValueError:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -274,16 +284,10 @@ class VarDialog(QDialog):
             if not self.var_val.text():
                 val_message = "empty"
             else:
-                val_message = self.var_max.text()
+                val_message = self.var_val.text()
             msg.setDetailedText("Min: " + min_message + "\n"
                                 "Max: " + max_message + "\n"
                                 "Val: " + val_message + "\n")
-            msg.exec_()
-        except NameError:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("The name you entered already exists, please specify a different name for your variable")
-            msg.setWindowTitle("Name already exists")
             msg.exec_()
 
     def update_edits(self):
@@ -326,44 +330,52 @@ class FunctionDialog(QDialog):
         back_button.clicked.connect(self.reject)
 
         # Add the next and back buttons
-        buttonLayout = QHBoxLayout()
-        buttonLayout.addStretch()
-        buttonLayout.addWidget(name_next_button)
-        buttonLayout.addWidget(back_button)
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(name_next_button)
+        button_layout.addWidget(back_button)
 
         flexible_grid = QHBoxLayout()
         self.function_list_widget = QListWidget()
         flexible_grid.addWidget(self.function_list_widget)
+        self.function_ref_table = {}
 
         if self.functions:
             for func in self.functions:
                 function_item = QListWidgetItem()
                 function_item.setText(func + "\t => " + self.functions[func])
+                self.function_ref_table[func] = function_item
                 self.function_list_widget.addItem(function_item)
 
         # Create the edit fields to hold the variable names and functions
-        edits = QHBoxLayout()
+        edits = QGroupBox()
+        edit_layout = QHBoxLayout()
         self.f_name = QLineEdit()
         self.f_form = QLineEdit()
         self.f_form.setCompleter(autocompleter)
-        edits.addWidget(self.f_name)
-        edits.addWidget(self.f_form)
+        self.f_form.setMinimumWidth(400)
+
+        edit_layout.addWidget(self.f_name)
+        edit_layout.addWidget(self.f_form)
         self.f_form.setValidator(FunctionValidator(variables))
-        self.function_list_widget.itemDoubleClicked.connect(self.update_edits)
+        self.function_list_widget.itemDoubleClicked.connect(self.update_functions)
+        edits.setLayout(edit_layout)
 
         # Add buttons for adding and removing functions and connect them
+        modify_layout = QHBoxLayout()
         add_button = QPushButton("Add Function")
         add_button.clicked.connect(self.add_function)
         remove_button = QPushButton("Remove Selected")
         remove_button.clicked.connect(partial(remove_selected, self.function_list_widget, self.functions))
-        edits.addWidget(add_button)
-        edits.addWidget(remove_button)
+        modify_layout.addWidget(add_button)
+        modify_layout.addWidget(remove_button)
 
         # Create the layout for the entire dialog
         layout = QGridLayout()
         layout.addLayout(flexible_grid, 0, 0)
-        layout.addLayout(edits, 1, 0)
-        layout.addLayout(buttonLayout, 2, 0)
+        layout.addWidget(edits, 1, 0)
+        layout.addLayout(modify_layout, 2, 0)
+        layout.addLayout(button_layout, 3, 0)
 
         self.setLayout(layout)
 
@@ -377,13 +389,32 @@ class FunctionDialog(QDialog):
         # A name is valid as long as its not empty
         valid_name = not self.f_name.text().strip() == ""
         if valid_name and valid_function:
+            if self.f_name.text() in self.functions:
+                # Function already exists
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText("The name you entered already exists, \nOverwrite?")
+                msg.setWindowTitle("Name already exists")
+                msg.setStandardButtons(QMessageBox.Yes)
+                msg.addButton(QMessageBox.No)
+                msg.setDefaultButton(QMessageBox.No)
+                if msg.exec() == QMessageBox.No:
+                    self.f_form.validator().set_confirmed(False)
+                    return
+                else:
+                    # Remove existing function from dict to prepare for write
+                    self.functions.pop(self.f_name.text())
+                    # Update view accordingly
+                    overwrite_item = self.function_ref_table[self.f_name.text()]
+                    self.function_list_widget.takeItem(self.function_list_widget.row(overwrite_item))
+
             self.functions[self.f_name.text()] = self.f_form.text()
             self.function_list_widget.addItem(QListWidgetItem(self.f_name.text() + "\t => " + self.f_form.text()))
             self.f_form.validator().set_confirmed(False)
             self.f_form.clear()
 
-    def update_edits(self):
-        for selected in self.var_view.selectedItems():
+    def update_functions(self):
+        for selected in self.function_list_widget.selectedItems():
             self.function_list_widget.item(self.function_list_widget.row(selected))
             func = selected.text().split("=>")
             var_name = func[0].strip()

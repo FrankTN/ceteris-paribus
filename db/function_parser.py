@@ -24,6 +24,13 @@ class EvalWrapper(object):
                 # make the globals contain only the Decimal class,
                 # and eval the compiled object
                 return eval(clause, self.variables)
+            except SyntaxError:
+                # On division by zero we will simply return 0 as an answer
+                msg = QMessageBox()
+                msg.setWindowTitle("Error")
+                msg.setText("Invalid Syntax")
+                msg.exec_()
+                return None
             except NameError:
                 return None
             except TypeError:
@@ -73,7 +80,7 @@ class Transformer(ast.NodeTransformer):
     def generic_visit(self, node):
         nodetype = type(node).__name__
         if nodetype not in self.ALLOWED_NODE_TYPES:
-            raise RuntimeError("Invalid expression: %s not allowed" % nodetype)
+            raise SyntaxError("Invalid expression: %s not allowed" % nodetype)
 
         return ast.NodeTransformer.generic_visit(self, node)
 
