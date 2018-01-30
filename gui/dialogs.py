@@ -442,6 +442,10 @@ def select_db_dialog():
         msg.exec_()
         select_db_dialog()
 
+def save_db_dialog():
+    """ This function creates a graphical interface to save a file. It returns the name of the target"""
+    return QFileDialog.getSaveFileName(None, "Save File", "/home","*.json")[0]
+
 def remove_selected(var_view, variables):
     # Removes the selected item from the specified widget and from the corresponding item:value dict
     for selected in var_view.selectedItems():

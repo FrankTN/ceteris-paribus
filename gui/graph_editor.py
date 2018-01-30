@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget
 from gui.graph_scene import GraphScene
 from gui.sidepane import ContextPane
 
+from ceteris_paribus.db import db_dumper
+from ceteris_paribus.gui.dialogs import save_db_dialog
+
 
 class GraphWindow(QMainWindow):
     """This class represents the MainWindow as a whole."""
@@ -76,4 +79,5 @@ class GraphWindow(QMainWindow):
         self.setCentralWidget(QGraphicsView(GraphScene(self.controller)))
 
     def save_db(self):
-        pass
+        target = save_db_dialog()
+        db_dumper.dump_model(self.controller.model, target)
