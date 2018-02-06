@@ -17,9 +17,11 @@ class FunctionValidator(QValidator):
         self.confirmed = bool_value
 
     def validate(self, p_str, p_int):
+        # Check that the function, present in the p_str argument as a string, is actually valid
         self.evaluator.set_function(p_str)
         if self.evaluator.function:
             if self.confirmed:
+                # If we reach this it means the user has confirmed the input, we validate
                 if self.evaluator.evaluate():
                     return QValidator.Acceptable, p_str, p_int
                 else:

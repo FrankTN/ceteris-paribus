@@ -7,8 +7,10 @@ class EvalWrapper(object):
     def __init__(self, variables, transformer):
         self.variables = variables
         self.transformer = transformer
+        self.function = None
 
     def add_vars(self, variables):
+        # This functions adds new values to the var dict which is already present in the object
         self.variables = {**self.variables, **variables}
 
     def set_function(self, function):

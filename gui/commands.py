@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QUndoCommand
 
 
 class MoveCommand(QUndoCommand):
+    """ This class specifies what happens when a move command is performed. It stores the old position so that the
+        action may be undone."""
     def __init__(self, controller, node, old_pos):
         super().__init__()
         self.controller = controller
@@ -20,6 +22,8 @@ class MoveCommand(QUndoCommand):
         self.node.setPos(self.new_pos)
 
 class DeleteCommand(QUndoCommand):
+    """ This class specifies the data required to undo a delete action. If we undo the action the action the organ
+        is restored in the model, together with its edges."""
     def __init__(self, controller, organ):
         super().__init__()
         self.controller = controller

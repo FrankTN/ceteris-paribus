@@ -1,5 +1,3 @@
-from PyQt5.QtWidgets import QUndoStack
-
 from ceteris_paribus.model.global_model import GlobalModel
 
 

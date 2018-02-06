@@ -58,7 +58,7 @@ class ContextPane(QWidget):
     def reload(self):
         self.initialize_input()
 
-        self.change_context_organ(list(self.controller.get_model().organs.values())[0])
+        self.change_context_organ(self.controller.first_organ())
         self.initialize_context()
 
         self.initialize_output()

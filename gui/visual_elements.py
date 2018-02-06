@@ -4,8 +4,6 @@ from PyQt5.QtCore import Qt, QPointF, QRectF
 from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem
 
-from ceteris_paribus.gui.commands import MoveCommand
-
 
 class GraphNode(QGraphicsRectItem):
     """ Contains the basic definition of a node. A node is a visual element on the graph scene represented by a colored

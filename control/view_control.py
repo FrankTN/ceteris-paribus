@@ -29,14 +29,14 @@ class ViewController(object):
         organ_info['name'] = organ_name
         organ_info['variables'] = variables
         organ_info['functions'] = funcs
-        added_organ = self.model.add(organ_info, position)
+        added_organ = self.global_control.get_model().add(organ_info, position)
         self.ui.scene.add_organ_node(added_organ, edges)
         self.ui.scene.update()
         return added_organ
 
     def remove_organ(self, organ):
         # Removes an organ from the model and the UI
-        self.model.remove(organ)
+        self.global_control.get_model().remove(organ)
         self.ui.get_scene().remove_organ_node(organ)
 
     def update_colors(self):
@@ -45,23 +45,24 @@ class ViewController(object):
             self.set_colors_for_global(self.current_global)
 
     def get_global_param_ranges(self):
-        return self.global_control.get_global_param_ranges()
+        return self.global_control.get_model().get_global_param_ranges()
 
     def get_outputs(self):
-        return self.get_model().get_outputs()
+        return self.global_control.get_model().get_outputs()
 
-    def get_model(self):
-        return self.global_control.get_model()
+    def first_organ(self):
+        # Return the first organ object, this is used for initialization of the sidepane
+        return list(self.global_control.get_model().organs.values())[0]
 
     def set_colors_for_global(self, name):
         self.current_global = name
         # If we select a global value to visualize, this function updates the nodes involved so we can see how far each
         # node is in their range with respect to this value
-        color_scheme_names = self.get_model().color_schemes[name]
+        color_scheme_names = self.global_control.get_model().color_schemes[name]
 
         gradient = self.context_pane.colorBar.getLookupTable(100) # A lookup table giving RGB colors
 
-        for organ in self.get_model().organs.values():
+        for organ in self.global_control.get_model().organs.values():
             if organ.get_name() in color_scheme_names:
                 range = organ.get_local_ranges()[color_scheme_names[organ.get_name()]]
                 self.ui.scene.items[organ.get_name()].set_color(range, gradient)
@@ -75,6 +76,7 @@ class ViewController(object):
         self.context_pane.change_context_organ(organ)
 
     def open_new_db(self):
+        # This is called when the button to open a db is clicked in the menu
         self.global_control.open_new_db()
         new_model = self.global_control.model_control.get_model()
         self.ui.scene.load_from_model(new_model)
@@ -91,7 +93,7 @@ class ViewController(object):
         self.context_pane.update_output()
 
     def get_functions(self):
-        return self.get_model().get_functions()
+        return self.global_control.get_model().get_functions()
 
     def param_changed(self, name, slider):
         # Another relay method to ensure the model is only used by the controller

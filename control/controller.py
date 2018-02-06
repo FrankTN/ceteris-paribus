@@ -23,9 +23,12 @@ class Controller(object):
     def __init__(self):
         # Create a view control object and a model control object, to be used by this controller
         self.view_control = ViewController(self)
+        # Initialize the database and the model controller as empty objects, as we do not have a model to control yet
+        self.model_control = None
+        self.db = None
 
     def open_new_db(self):
-        # Change to a new database, opens a UI dialogs
+        # Change to a new database, opens a UI dialog
         self.db = select_db_dialog()
         self.model_control = ModelController(self.db)
 
@@ -34,12 +37,6 @@ class Controller(object):
 
     def get_model(self):
         return self.model_control.model
-
-    def get_outputs(self):
-        return
-
-    def get_global_param_ranges(self):
-        return self.model_control.get_global_param_ranges()
 
 if __name__ == "__main__":
     # The starting point for the entire program, creates a QApplication object.
