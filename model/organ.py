@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QErrorMessage, QMessageBox
 
-from db.function_parser import EvalWrapper, Transformer
+from ceteris_paribus.db.function_parser import EvalWrapper, Transformer
 
 
 class Organ(object):

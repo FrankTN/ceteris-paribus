@@ -2,36 +2,35 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTransform, QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
-from gui.commands import MoveCommand
-from gui.dialogs import NewNodeCreator
-from gui.visual_elements import OrganNode, InNode, OutNode, Edge
+from ceteris_paribus.gui.commands import MoveCommand
+from ceteris_paribus.gui.dialogs.new_node_dialog import NewNodeDialog
+from ceteris_paribus.gui.visual_elements import OrganNode, InNode, OutNode, Edge
 
 
 class GraphScene(QGraphicsScene):
     """The GraphScene class is used to display the visual elements in a grid."""
-    def __init__(self, controller, *__args):
+    def __init__(self, view_control, *__args):
         super().__init__(*__args)
-        self.controller = controller
-
-        self.input_node = InNode(-300, 0, controller)
-        self.addItem(self.input_node)
-        self.output_node = OutNode(300, 0, controller)
-        self.addItem(self.output_node)
+        self.controller = view_control
 
         # Items is used as a dict to keep internal references to the items.
         self.items = {}
-        self.items['Global Input'] = self.input_node
+        # self.items['Global Input'] = self.input_node
         self.edges = []
 
         self.setBackgroundBrush(QBrush(Qt.lightGray, Qt.CrossPattern))
-
-        self.load_from_model(controller.get_model())
 
     def get_edges_for_organ(self, organ):
         return self.items[organ.get_name()].get_edges()
 
     def load_from_model(self, model):
         # Creates a scene based on a model object
+
+        self.input_node = InNode(-300, 0, self.controller)
+        self.addItem(self.input_node)
+        self.output_node = OutNode(300, 0, self.controller)
+        self.addItem(self.output_node)
+
         for organ in model.organs.values():
             node = OrganNode(organ, self.controller)
             self.items[organ.get_name()] = node
@@ -92,7 +91,7 @@ class GraphScene(QGraphicsScene):
         return QGraphicsScene.mouseReleaseEvent(self, event)
 
     def create_new_node(self, pos):
-        dialog = NewNodeCreator(self.controller)
+        dialog = NewNodeDialog(self.controller)
 
         if dialog.run():
             sources = dialog.get_sources()

@@ -7,14 +7,16 @@ from PyQt5.QtGui import QLinearGradient
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
     QPushButton, QDialog, QGraphicsProxyWidget, QTextEdit, QDialogButtonBox, QLineEdit
 
-from gui.commands import DeleteCommand
-from gui.dialogs import VarDialog, FunctionDialog
+from ceteris_paribus.gui.commands import DeleteCommand
+from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
+from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
 
 import pyqtgraph as pg
 
 class ContextPane(QWidget):
     def __init__(self, controller):
         super().__init__()
+        self.name_label = QLabel()
         self.local_outs = {}
         self.controller = controller
 
@@ -25,16 +27,16 @@ class ContextPane(QWidget):
 
         self.input_group = QGroupBox("Inputs")
         self.input_group.setFixedSize(300, (available_height / 2))
-        self.set_input()
+#        self.set_input()
 
         self.context_group = QGroupBox("Context")
         self.context_group.setFixedSize(300, (available_height / 2))
-        self.initialize_context()
-        self.change_context_organ(list(controller.get_model().organs.values())[0])
+#        self.initialize_context()
+#        self.change_context_organ(list(controller.get_model().organs.values())[0])
 
         self.output_group = QGroupBox("Outputs")
         self.output_group.setFixedSize(300, (available_height / 2))
-        self.initialize_output()
+ #       self.initialize_output()
 
         color_group = QGroupBox("Color")
         color_group.setFixedSize(300, (available_height / 6))
@@ -53,7 +55,15 @@ class ContextPane(QWidget):
 
         self.setLayout(layout)
 
-    def set_input(self):
+    def reload(self):
+        self.initialize_input()
+
+        self.change_context_organ(list(self.controller.get_model().organs.values())[0])
+        self.initialize_context()
+
+        self.initialize_output()
+
+    def initialize_input(self):
         layout = QVBoxLayout()
 
         glob_button = QPushButton("View global inputs")
@@ -77,7 +87,6 @@ class ContextPane(QWidget):
 
     def initialize_context(self):
         layout = QVBoxLayout()
-        self.name_label = QLabel()
         layout.addWidget(self.name_label)
 
         button_layout = QGridLayout()
@@ -159,7 +168,7 @@ class ContextPane(QWidget):
         dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Global functions")
-        functions_dict = self.controller.model.get_functions()
+        functions_dict = self.controller.get_functions()
         for index, func in enumerate(functions_dict):
             layout.addWidget(QLabel(func), index, 0)
             layout.addWidget(QLabel(functions_dict[func]), index, 1)
@@ -170,7 +179,7 @@ class ContextPane(QWidget):
         dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Global functions")
-        functions_dict = self.controller.model.get_functions()
+        functions_dict = self.controller.get_functions()
         for func in functions_dict:
             button = QPushButton(func)
             button.clicked.connect(partial(self.change_single_function, func, functions_dict[func]))
@@ -242,7 +251,7 @@ class ContextPane(QWidget):
         dialog = VarDialog(self.current_organ.get_local_ranges())
 
         if dialog.exec_():
-            # Close the previous dialog and start a new one, showing the updated locals
+            # Close the previous dialogs and start a new one, showing the updated locals
             previous_dialog.accept()
             self.show_locals()
 
@@ -254,7 +263,7 @@ class ContextPane(QWidget):
             self.show_local_funcs()
 
     def initialize_output(self):
-        outputs = self.controller.model.get_outputs()
+        outputs = self.controller.get_outputs()
         layout = QGridLayout()
 
         view_outs = QPushButton("View global functions")
@@ -275,7 +284,7 @@ class ContextPane(QWidget):
         self.output_group.setLayout(layout)
 
     def update_output(self):
-        outputs = self.controller.model.get_outputs()
+        outputs = self.controller.get_outputs()
         for local_out_val in self.local_outs:
             self.local_outs[local_out_val].setText(str(round(outputs[local_out_val],2)))
             if self.controller.current_global == local_out_val:
