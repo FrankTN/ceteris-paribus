@@ -16,7 +16,7 @@ class SourceDialog(QDialog):
         input_widget.setText("Global Input")
         self.list_view.addItem(input_widget)
 
-        organ_names = list(self.controller.get_model().get_organs().keys())
+        organ_names = list(self.controller.get_organ_names())
 
         for item in organ_names:
             if item is not '__builtins__':

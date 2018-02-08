@@ -50,9 +50,12 @@ class ViewController(object):
     def get_outputs(self):
         return self.global_control.get_model().get_outputs()
 
-    def first_organ(self):
-        # Return the first organ object, this is used for initialization of the sidepane
-        return list(self.global_control.get_model().organs.values())[0]
+    def get_organs(self):
+        # Return the list of organs in the model
+        return self.global_control.get_model().get_organs()
+
+    def get_organ_names(self):
+        return self.global_control.get_model().get_organs().keys()
 
     def set_colors_for_global(self, name):
         self.current_global = name

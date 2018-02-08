@@ -25,11 +25,11 @@ class NewNodeDialog(object):
             # handle source
             self.sources = source_dialog.get_source()
             for source in self.sources:
-                # Get the source organ, or the global input, according to the name of the source
+                # Retrieve the source organ, or the global input, according to the name of the source
                 if source == "Global Input":
                     self.variables = {**self.variables, **self.controller.get_global_param_ranges()}
                 else:
-                    locals_of_source = self.controller.get_model().get_organs()[source].get_local_ranges()
+                    locals_of_source = self.controller.get_organs()[source].get_local_ranges()
                     # Unroll source locals into general variables
                     self.variables = {**self.variables, **locals_of_source}
         else:

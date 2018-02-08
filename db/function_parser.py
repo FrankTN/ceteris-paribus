@@ -17,7 +17,7 @@ class EvalWrapper(object):
         self.function = function
 
     def evaluate(self):
-        self.transformer.set_variables(self.variables) # Create syntax tree transformer
+        self.transformer.set_variables(self.variables)  # Create syntax tree transformer
         if self.function:
             try:
                 tree = ast.parse(self.function, mode='eval')
@@ -56,24 +56,24 @@ class EvalWrapper(object):
 # however in this example NodeVisitor could do as we are raising exceptions
 # only.
 class Transformer(ast.NodeTransformer):
-    #TODO refine this, make more restrictive
+
     def set_variables(self, variables):
         self.variables = variables
 
     ALLOWED_NAMES = {'Decimal', 'None', 'False', 'True'}
     ALLOWED_NODE_TYPES = {
-        'Expression', # a top node for an expression
+        'Expression',  # a top node for an expression
         'BinOp',
         'Add',
         'Mult',
         'Sub',
         'Div',
-        'Call',       # a function call (hint, Decimal())
-        'Name',       # an identifier...
-        'Load',       # loads a value of a variable with given identifier
-        'Str',        # a string literal
+        'Call',  # a function call (hint, Decimal())
+        'Name',  # an identifier...
+        'Load',  # loads a value of a variable with given identifier
+        'Str',  # a string literal
 
-        'Num',        # allow numbers too
+        'Num',  # allow numbers too
         'Subscript',
         'Attribute',
         'Index'
@@ -83,20 +83,26 @@ class Transformer(ast.NodeTransformer):
         nodetype = type(node).__name__
         if nodetype not in self.ALLOWED_NODE_TYPES:
             raise SyntaxError("Invalid expression: %s not allowed" % nodetype)
+        # if node
 
         return ast.NodeTransformer.generic_visit(self, node)
+
 
 class ModelTransformer(Transformer):
     """ Works as an extension of the regular Transformer. This transformer is only used by the model to keep track of
         the values being visited.
         """
-    def __init__(self):
+
+    def __init__(self, vars):
         self.visited = {}
         self.current_node = ""
+        self.variables = vars
 
     def visit_Name(self, node):
         self.visited[node.id] = ""
         self.current_node = node.id
+        if node.id not in self.variables.keys():
+            raise NameError
         return self.generic_visit(node)
 
     def visit_Str(self, node):

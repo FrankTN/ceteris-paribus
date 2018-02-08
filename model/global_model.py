@@ -179,7 +179,7 @@ class GlobalModel(object):
                 # For every unresolved functions, we create an evaluator object
                 self.vars = {**self.vars, **self.organs}
 
-                evaluator = EvalWrapper(self.vars, ModelTransformer())
+                evaluator = EvalWrapper(self.vars, ModelTransformer(self.vars))
                 evaluator.set_function(unresolved_global_funcs[function_name])
                 # The result of the evaluation is stored in the result variable if it exists
                 result = evaluator.evaluate()

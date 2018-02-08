@@ -27,16 +27,12 @@ class ContextPane(QWidget):
 
         self.input_group = QGroupBox("Inputs")
         self.input_group.setFixedSize(300, (available_height / 2))
-#        self.set_input()
 
         self.context_group = QGroupBox("Context")
         self.context_group.setFixedSize(300, (available_height / 2))
-#        self.initialize_context()
-#        self.change_context_organ(list(controller.get_model().organs.values())[0])
 
         self.output_group = QGroupBox("Outputs")
         self.output_group.setFixedSize(300, (available_height / 2))
- #       self.initialize_output()
 
         color_group = QGroupBox("Color")
         color_group.setFixedSize(300, (available_height / 6))
@@ -58,7 +54,8 @@ class ContextPane(QWidget):
     def reload(self):
         self.initialize_input()
 
-        self.change_context_organ(self.controller.first_organ())
+        # Initialize the current organ being displayed in the model to be the first organ encountered in the list
+        self.change_context_organ(list(self.controller.get_organs().values())[0])
         self.initialize_context()
 
         self.initialize_output()
