@@ -1,3 +1,5 @@
+""" This module defines the function dialog class, which is created and executed when the user wants to view the
+    functions defined for an organ."""
 from functools import partial
 
 from PyQt5.QtCore import QStringListModel
@@ -9,7 +11,9 @@ from ceteris_paribus.gui.validator import FunctionValidator
 
 
 class FunctionDialog(QDialog):
-    def __init__(self, variables, functions=None):
+    """ A class for viewing and modifying the functions in an organ. """
+
+    def __init__(self, variables, organ_name, functions=None):
         super().__init__()
 
         if functions is None:
@@ -57,8 +61,8 @@ class FunctionDialog(QDialog):
 
         edit_layout.addWidget(self.f_name)
         edit_layout.addWidget(self.f_form)
-        self.f_form.setValidator(FunctionValidator(variables))
-        self.function_list_widget.itemDoubleClicked.connect(self.update_functions)
+        self.f_form.setValidator(FunctionValidator(variables, organ_name))
+        self.function_list_widget.itemDoubleClicked.connect(self.fill_edits)
         edits.setLayout(edit_layout)
 
         # Add buttons for adding and removing functions and connect them
@@ -115,6 +119,8 @@ class FunctionDialog(QDialog):
             self.f_form.validator().set_confirmed(False)
             self.f_form.clear()
         else:
+            # Either the name, the function or both are invalid. We respond accordingly by creating a messagebox and
+            # filling it with a message
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             if not valid_name and not valid_function:
@@ -128,8 +134,9 @@ class FunctionDialog(QDialog):
             if msg.exec():
                 return
 
-
-    def update_functions(self):
+    def fill_edits(self):
+        # Filling the edits mean we obtain the selected value from the selected items and enter its values in their
+        # respective textedits in the UI
         for selected in self.function_list_widget.selectedItems():
             self.function_list_widget.item(self.function_list_widget.row(selected))
             func = selected.text().split("=>")

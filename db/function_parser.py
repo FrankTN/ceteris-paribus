@@ -4,17 +4,23 @@ from PyQt5.QtWidgets import QMessageBox
 
 
 class EvalWrapper(object):
-    def __init__(self, variables, transformer):
+    def __init__(self, variables, transformer, organ_name = None):
         self.variables = variables
         self.transformer = transformer
         self.function = None
+        self.function_name = None
+        self.organ_name = organ_name
 
     def add_vars(self, variables):
         # This functions adds new values to the var dict which is already present in the object
         self.variables = {**self.variables, **variables}
 
-    def set_function(self, function):
-        self.function = function
+    def set_function(self, function_name, functions_dict):
+        self.function_name = function_name
+        self.function = functions_dict[function_name]
+
+    def set_organ_name(self, organ_name):
+        self.organ_name = organ_name
 
     def evaluate(self):
         self.transformer.set_variables(self.variables)  # Create syntax tree transformer
@@ -43,9 +49,11 @@ class EvalWrapper(object):
                 msg = QMessageBox()
                 msg.setWindowTitle("Error")
                 self.variables.pop("__builtins__", None)
-                printable_vars = self.variables
-                variables = {str(x) + ": " + str(self.variables[x]) + "\n" for x in printable_vars.keys()}
-                msg.setText("Division by zero, set result of " + self.function + " to 0\n" + "".join(variables))
+                if self.organ_name is not None:
+                    message = " in " + self.organ_name
+                else:
+                    message = ""
+                msg.setText("Division by zero, we are setting the value of " + self.function_name + message + " to 0\n")
                 msg.exec_()
                 return 0
         else:

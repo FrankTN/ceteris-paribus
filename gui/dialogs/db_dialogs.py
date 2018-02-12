@@ -1,4 +1,5 @@
-""" This module contains code for the generic"""
+""" This module contains code for the generic dialogs used when opening a new dialog. Note that we don't specify classes
+    for this as the functionality is simple enough."""
 
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from tinydb import TinyDB
@@ -8,8 +9,6 @@ def select_db_dialog():
         used. """
     qfd = QFileDialog()
     qfd.setNameFilter("*.json")
-    # A lambda is needed here so exit() is not called directly
-    qfd.rejected.connect(lambda: exit())
     qfd.exec_()
     # We can only select a single file, therefore, we can always look at [0] without missing anything
     potential_db = qfd.selectedFiles()[0]
@@ -20,7 +19,6 @@ def select_db_dialog():
         msg = QMessageBox()
         msg.setText("Unable to load database, the file might be corrupted\nPlease try again")
         msg.exec_()
-        select_db_dialog()
 
 def save_db_dialog():
     """ This function creates a graphical interface to save a file. It returns the name of the target"""

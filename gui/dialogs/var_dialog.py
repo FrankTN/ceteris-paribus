@@ -1,3 +1,5 @@
+"""This module contains the class defining the variable dialog, which is used by the new_node_dialog when we need to
+    define the local variables used by our new organ."""
 from functools import partial
 
 from PyQt5.QtGui import QDoubleValidator
@@ -24,7 +26,7 @@ class VarDialog(QDialog):
             self.var_ref_table[var] = list_item
             self.var_list_widget.addItem(list_item)
         layout.addWidget(self.var_list_widget)
-        self.var_list_widget.itemDoubleClicked.connect(self.update_edits)
+        self.var_list_widget.itemDoubleClicked.connect(self.fill_edits)
 
         edit_group = QGroupBox()
         edits = QGridLayout()
@@ -85,7 +87,7 @@ class VarDialog(QDialog):
                 if msg.exec() == QMessageBox.No:
                     return
                 else:
-                    # Remove the previous entry
+                    # Remove the previous entry, to prevent a duplicate from existing
                     overwrite_item = self.var_ref_table[self.var_name.text()]
                     self.var_list_widget.takeItem(self.var_list_widget.row(overwrite_item))
             minimum = float(self.var_min.text())
@@ -130,7 +132,8 @@ class VarDialog(QDialog):
                                 "Val: " + val_message + "\n")
             msg.exec_()
 
-    def update_edits(self):
+    def fill_edits(self):
+        # Based on the var value we select we fill then textedits to reflect the values of the selected variable
         for selected in self.var_list_widget.selectedItems():
             self.var_list_widget.item(self.var_list_widget.row(selected))
             var = selected.text().split("=>")

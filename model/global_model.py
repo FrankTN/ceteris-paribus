@@ -180,7 +180,7 @@ class GlobalModel(object):
                 self.vars = {**self.vars, **self.organs}
 
                 evaluator = EvalWrapper(self.vars, ModelTransformer(self.vars))
-                evaluator.set_function(unresolved_global_funcs[function_name])
+                evaluator.set_function(function_name, unresolved_global_funcs)
                 # The result of the evaluation is stored in the result variable if it exists
                 result = evaluator.evaluate()
                 required_vals = evaluator.transformer.visited

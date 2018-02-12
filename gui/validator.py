@@ -6,10 +6,10 @@ from ceteris_paribus.db.function_parser import EvalWrapper, Transformer
 class FunctionValidator(QValidator):
     """ When a function is entered by the user to be added to an organ this validator checks whether the function can
         actually be evaluated."""
-    def __init__(self, variables):
+    def __init__(self, variables, organ_name):
         super().__init__()
 
-        self.evaluator = EvalWrapper(variables, Transformer())
+        self.evaluator = EvalWrapper(variables, Transformer(), organ_name)
         # The confirmed bool is used to signal when input is final
         self.confirmed = False
 

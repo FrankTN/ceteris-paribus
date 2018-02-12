@@ -2,16 +2,15 @@
     information for the model."""
 from functools import partial
 
+import pyqtgraph as pg
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QLinearGradient
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog, QGraphicsProxyWidget, QTextEdit, QDialogButtonBox, QLineEdit
+    QPushButton, QDialog, QLineEdit
 
 from ceteris_paribus.gui.commands import DeleteCommand
-from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
+from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
 
-import pyqtgraph as pg
 
 class ContextPane(QWidget):
     def __init__(self, controller):
@@ -253,7 +252,7 @@ class ContextPane(QWidget):
             self.show_locals()
 
     def edit_functions(self, previous_dialog):
-        dialog = FunctionDialog(self.current_organ.get_defined_variables(), self.current_organ.get_funcs())
+        dialog = FunctionDialog(self.current_organ.get_defined_variables(), self.current_organ.get_name(), self.current_organ.get_funcs())
 
         if dialog.exec_():
             previous_dialog.accept()

@@ -46,8 +46,8 @@ class Organ(object):
         while changed:
             changed = False
             for function_name in list(unresolved_funcs):
-                evaluator = EvalWrapper(self.defined_variables, Transformer())
-                evaluator.set_function(unresolved_funcs[function_name])
+                evaluator = EvalWrapper(self.defined_variables, Transformer(), self.get_name())
+                evaluator.set_function(function_name, unresolved_funcs)
                 result = evaluator.evaluate()
                 if result is not None:
                     changed = True

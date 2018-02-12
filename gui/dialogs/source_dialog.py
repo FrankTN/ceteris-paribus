@@ -1,3 +1,6 @@
+"""This module contains a definition of a class for selecting the source of an organ. This source can be seen as the
+    organ from which the model receives its blood supply. In our code this means that the organ gets its local variables
+    from the source."""
 from PyQt5.QtWidgets import QDialog, QGridLayout, QListWidget, QListWidgetItem, QPushButton, QHBoxLayout
 
 

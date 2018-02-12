@@ -1,8 +1,10 @@
-
+"""This module contains the class for creating a new node. This dialog invokes the other sub-dialogs when required and
+    orchestrates the entire process."""
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
 from ceteris_paribus.gui.dialogs.name_dialog import NameDialog
 from ceteris_paribus.gui.dialogs.source_dialog import SourceDialog
 from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
+
 
 class NewNodeDialog(object):
     """ This class is used when creating new nodes"""
@@ -10,6 +12,9 @@ class NewNodeDialog(object):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
+        self.name = None
+        self.sources = None
+        self.functions = None
 
     def run(self):
         name_dialog = NameDialog()
@@ -22,7 +27,7 @@ class NewNodeDialog(object):
         source_dialog = SourceDialog(self.controller)
         self.variables = {}
         if source_dialog.exec_():
-            # handle source
+            # handle source, which represents the organ we are receiving information from
             self.sources = source_dialog.get_source()
             for source in self.sources:
                 # Retrieve the source organ, or the global input, according to the name of the source
@@ -38,7 +43,7 @@ class NewNodeDialog(object):
         var_dialog = VarDialog(self.variables)
         var_dialog.exec_()
         # self.variables has been updated, we can now write functions
-        function_dialog = FunctionDialog(self.variables)
+        function_dialog = FunctionDialog(self.variables, self.name)
         if function_dialog.exec_():
             # handle functions
             self.functions = function_dialog.get_functions()

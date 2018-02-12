@@ -6,6 +6,8 @@ import sys
 
 # Append the parent directory of this file to the global path. This ensures that we may always find the required modules
 # irrespective of the starting directory.
+from PyQt5.QtGui import QFont
+
 from ceteris_paribus.control.model_control import ModelController
 from ceteris_paribus.control.view_control import ViewController
 
@@ -41,5 +43,7 @@ class Controller(object):
 if __name__ == "__main__":
     # The starting point for the entire program, creates a QApplication object.
     app = QApplication(sys.argv)
+    new_font = QFont("Arial", 12)
+    app.setFont(new_font)
     controller = Controller()
     sys.exit(app.exec_())
