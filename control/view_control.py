@@ -67,7 +67,9 @@ class ViewController(object):
 
         for organ in self.global_control.get_model().organs.values():
             if organ.get_name() in color_scheme_names:
+                # We get the reference range for this variable within this particular organ
                 range = organ.get_local_ranges()[color_scheme_names[organ.get_name()]]
+                # Using the range, and the gradient we previously obtained, we update the nodes with a color
                 self.ui.scene.items[organ.get_name()].set_color(range, gradient)
             else:
                 self.ui.scene.items[organ.get_name()].set_gray()

@@ -23,6 +23,7 @@ class GraphNode(QGraphicsRectItem):
         self.setZValue(1)
         self.color = Qt.gray
         self.name = ""
+        self.color_val_text = ""
 
     def dragEnterEvent(self, event):
         print("Entered drag")
@@ -52,7 +53,7 @@ class GraphNode(QGraphicsRectItem):
     def boundingRect(self):
         # Reimplementation of the boundingRect function, to resize the node based on the length of its title
         fm = QFontMetrics(QFont("Arial", 13))
-        text_size = fm.boundingRect(self.name)
+        text_size = fm.boundingRect(self.name + self.color_val_text)
         rect = self.rect()
 
         return QRectF(rect.x(), rect.y(), text_size.width() + 6, text_size.height() + 10)
@@ -66,7 +67,8 @@ class GraphNode(QGraphicsRectItem):
         gradient.setColorAt(1, Qt.white)
 
         QPainter.fillRect(rect, gradient)
-        QPainter.drawText(rect, Qt.AlignCenter, self.name)
+        QPainter.drawText(rect, Qt.AlignCenter, self.name + " " + self.color_val_text)
+
 
     def set_color(self, range, gradient_table):
         # Sets the color of the node based on a range of values. Range is a list with three elements, [min, max, val].
@@ -78,12 +80,14 @@ class GraphNode(QGraphicsRectItem):
         normalized_val = (val - range_min) / (range_max - range_min)
         index = int(normalized_val*len(gradient_table))
 
+        self.color_val_text = str(round(val,2))
         # Here, we use the index to find the closest color in the gradient table.
         self.color = QColor(*gradient_table[index])
 
     def set_gray(self):
         # The default color
         self.color = Qt.gray
+        self.color_val_text = ""
 
     def set_dark_gray(self):
         # The default color when an object is selected
