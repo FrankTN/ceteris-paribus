@@ -1,7 +1,7 @@
 """ Module containing the definitions of the parts of the graph, including node types and edges. Currently, the Input
     and Output nodes are special, the other nodes should all contain Organ data."""
 from PyQt5.QtCore import Qt, QPointF, QRectF
-from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor
+from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor, QPainterPath
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem
 
 
@@ -55,13 +55,15 @@ class GraphNode(QGraphicsRectItem):
         fm = QFontMetrics(QFont("Arial", 13))
         text_size = fm.boundingRect(self.name + self.color_val_text)
         rect = self.rect()
-
-        return QRectF(rect.x(), rect.y(), text_size.width() + 6, text_size.height() + 10)
+        new_width = max(text_size.width(), rect.width())
+        new_height = text_size.height()
+        return QRectF(rect.x(), rect.y(), new_width + 6, new_height + 10)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         # The basic paint method, draws a box with a gradient and fills it with the title
         QPainter.setFont(QFont("Arial", 13))
         rect = self.boundingRect()
+        QPainter.drawRect(rect)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
         gradient.setColorAt(0, self.color)
         gradient.setColorAt(1, Qt.white)
@@ -69,6 +71,11 @@ class GraphNode(QGraphicsRectItem):
         QPainter.fillRect(rect, gradient)
         QPainter.drawText(rect, Qt.AlignCenter, self.name + " " + self.color_val_text)
 
+    def shape(self):
+        # This method must be overridden for the textboxes to be selectable after changing the names
+        path = QPainterPath()
+        path.addRect(self.boundingRect())
+        return path
 
     def set_color(self, range, gradient_table):
         # Sets the color of the node based on a range of values. Range is a list with three elements, [min, max, val].

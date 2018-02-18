@@ -87,4 +87,5 @@ class GraphWindow(QMainWindow):
 
     def save_db(self):
         target = save_db_dialog()
-        db_dumper.dump_model(self.controller.model, target)
+        if hasattr(self.controller, "model"):
+            db_dumper.dump_model(self.controller.model, target)

@@ -5,10 +5,11 @@ from functools import partial
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog, QLineEdit
+    QPushButton, QDialog, QLineEdit, QTextEdit, QComboBox
 
 from ceteris_paribus.gui.commands import DeleteCommand
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
+from ceteris_paribus.gui.dialogs.global_function_dialog import GlobalFunctionDialog
 from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
 
 
@@ -162,26 +163,23 @@ class ContextPane(QWidget):
 
     def show_global_funcs(self):
         dialog = QDialog()
-        layout = QGridLayout()
-        dialog.setWindowTitle("Global functions")
-        functions_dict = self.controller.get_functions()
-        for index, func in enumerate(functions_dict):
-            layout.addWidget(QLabel(func), index, 0)
-            layout.addWidget(QLabel(functions_dict[func]), index, 1)
-        dialog.setLayout(layout)
-        dialog.exec()
 
-    def modify_global_funcs(self):
-        dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Global functions")
+
+
         functions_dict = self.controller.get_functions()
         for func in functions_dict:
             button = QPushButton(func)
-            button.clicked.connect(partial(self.change_single_function, func, functions_dict[func]))
+            button.clicked.connect(partial(self.modify_global_function, func, functions_dict[func]))
             layout.addWidget(button)
         dialog.setLayout(layout)
         dialog.exec()
+
+    def modify_global_function(self, func_name, func_str):
+        if GlobalFunctionDialog(self.controller).exec():
+            pass
+
 
     def change_single_function(self, f_name, f_string):
         dialog = QDialog()
@@ -262,14 +260,13 @@ class ContextPane(QWidget):
         outputs = self.controller.get_outputs()
         layout = QGridLayout()
 
-        view_outs = QPushButton("View global functions")
-        view_outs.clicked.connect(lambda : self.show_global_funcs())
-        layout.addWidget(view_outs, 0, 0)
+        global_outs = QPushButton("Global functions")
+        global_outs.clicked.connect(lambda : self.show_global_funcs())
+        layout.addWidget(global_outs, 0, 0)
 
-        modify_outs = QPushButton("Modify global functions")
-        modify_outs.clicked.connect(lambda : self.modify_global_funcs())
-        layout.addWidget(modify_outs, 0, 1)
-
+        # global_new = QPushButton("New")
+        # global_new.clicked.connect(lambda : self.new_global_func)
+        # layout.addWidget(global_new, 0, 1)
         for index, out_name in enumerate(outputs):
             out_button = QPushButton(out_name)
             out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
