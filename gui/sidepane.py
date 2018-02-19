@@ -162,24 +162,56 @@ class ContextPane(QWidget):
         dialog.exec()
 
     def show_global_funcs(self):
+        # This function creates a dialog for viewing and editing the global functions
         dialog = QDialog()
 
         layout = QGridLayout()
         dialog.setWindowTitle("Global functions")
 
-
         functions_dict = self.controller.get_functions()
-        for func in functions_dict:
-            button = QPushButton(func)
-            button.clicked.connect(partial(self.modify_global_function, func, functions_dict[func]))
-            layout.addWidget(button)
+        function_selector = QComboBox()
+        function_selector.addItems(functions_dict)
+        layout.addWidget(function_selector)
+
+        buttons = QHBoxLayout()
+
+        view_button = QPushButton('View')
+        view_button.clicked.connect(partial(self.view_global_function, function_selector, functions_dict))
+        buttons.addWidget(view_button)
+
+        edit_button = QPushButton('Edit')
+        edit_button.clicked.connect(partial(self.edit_global_function, function_selector, functions_dict))
+        buttons.addWidget(edit_button)
+
+        layout.addItem(buttons)
+
+        new_button = QPushButton('New')
+        new_button.clicked.connect(self.new_global_function)
+        layout.addWidget(new_button)
+
         dialog.setLayout(layout)
         dialog.exec()
 
-    def modify_global_function(self, func_name, func_str):
-        if GlobalFunctionDialog(self.controller).exec():
+    def edit_global_function(self, func_combobox, func_dict):
+        if GlobalFunctionDialog(self.controller, func_combobox.currentText()).exec():
             pass
 
+    def view_global_function(self, func_combobox, func_dict):
+        dialog = QDialog()
+        layout = QGridLayout()
+
+        name = func_combobox.currentText()
+        name_label = QLabel(name)
+        layout.addWidget(name_label, 0, 0)
+
+        function = func_dict[name]
+        str_label = QLabel(function)
+        layout.addWidget(str_label, 0, 1)
+        dialog.setLayout(layout)
+        dialog.exec()
+
+    def new_global_function(self):
+        pass
 
     def change_single_function(self, f_name, f_string):
         dialog = QDialog()
@@ -258,22 +290,24 @@ class ContextPane(QWidget):
 
     def initialize_output(self):
         outputs = self.controller.get_outputs()
-        layout = QGridLayout()
+        layout = QVBoxLayout()
 
+        button_layout = QHBoxLayout()
         global_outs = QPushButton("Global functions")
         global_outs.clicked.connect(lambda : self.show_global_funcs())
-        layout.addWidget(global_outs, 0, 0)
+        button_layout.addWidget(global_outs)
 
-        # global_new = QPushButton("New")
-        # global_new.clicked.connect(lambda : self.new_global_func)
-        # layout.addWidget(global_new, 0, 1)
+        grid_layout = QGridLayout()
         for index, out_name in enumerate(outputs):
             out_button = QPushButton(out_name)
             out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
-            layout.addWidget(out_button, index+1, 0)
+            grid_layout.addWidget(out_button, index+1, 0)
             self.local_outs[out_name] = QLabel(str(round(outputs[out_name], 2)))
             self.local_outs[out_name].setStyleSheet("QLabel { background-color : white; color : blue; }")
-            layout.addWidget(self.local_outs[out_name], index+1, 1)
+            grid_layout.addWidget(self.local_outs[out_name], index+1, 1)
+
+        layout.addLayout(button_layout)
+        layout.addLayout(grid_layout)
         self.output_group.setLayout(layout)
 
     def update_output(self):

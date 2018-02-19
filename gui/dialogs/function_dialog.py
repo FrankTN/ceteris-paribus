@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QDialog, QCompleter, QPushButton, QHBoxLayout, QList
     QGroupBox, QGridLayout, QMessageBox
 
 from ceteris_paribus.gui.dialogs.db_dialogs import remove_selected
-from ceteris_paribus.gui.validator import FunctionValidator
+from ceteris_paribus.gui.validator import LocalFunctionValidator
 
 
 class FunctionDialog(QDialog):
@@ -61,7 +61,7 @@ class FunctionDialog(QDialog):
 
         edit_layout.addWidget(self.f_name)
         edit_layout.addWidget(self.f_form)
-        self.f_form.setValidator(FunctionValidator(variables, organ_name))
+        self.f_form.setValidator(LocalFunctionValidator(variables, organ_name))
         self.function_list_widget.itemDoubleClicked.connect(self.fill_edits)
         edits.setLayout(edit_layout)
 

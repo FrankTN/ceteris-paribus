@@ -3,12 +3,13 @@ from PyQt5.QtGui import QValidator
 from ceteris_paribus.db.function_parser import EvalWrapper, Transformer
 
 
-class FunctionValidator(QValidator):
+class LocalFunctionValidator(QValidator):
     """ When a function is entered by the user to be added to an organ this validator checks whether the function can
         actually be evaluated."""
-    def __init__(self, variables, organ_name):
+    def __init__(self, variables, functions, organ_name):
         super().__init__()
 
+        self.functions = functions
         self.evaluator = EvalWrapper(variables, Transformer(), organ_name)
         # The confirmed bool is used to signal when input is final
         self.confirmed = False
@@ -29,3 +30,10 @@ class FunctionValidator(QValidator):
             return QValidator.Intermediate, p_str, p_int
         else:
             return QValidator.Intermediate, p_str, p_int
+
+class GlobalFunctionValidator(QValidator):
+    def __init__(self):
+        super().__init__()
+
+    def validate(self, p_str, p_int):
+        return QValidator.Invalid, p_str, p_int

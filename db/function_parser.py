@@ -91,8 +91,6 @@ class Transformer(ast.NodeTransformer):
         nodetype = type(node).__name__
         if nodetype not in self.ALLOWED_NODE_TYPES:
             raise SyntaxError("Invalid expression: %s not allowed" % nodetype)
-        # if node
-
         return ast.NodeTransformer.generic_visit(self, node)
 
 
