@@ -168,7 +168,7 @@ class ContextPane(QWidget):
         layout = QGridLayout()
         dialog.setWindowTitle("Global functions")
 
-        functions_dict = self.controller.get_functions()
+        functions_dict = self.controller.get_global_functions()
         function_selector = QComboBox()
         function_selector.addItems(functions_dict)
         layout.addWidget(function_selector)

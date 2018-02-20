@@ -15,7 +15,7 @@ def dump_model(model, target = os.getcwd() + "/db/" +  "new_organ_db"):
     global_const.insert(model.get_global_constants())
 
     global_funcs = target_db.table("GlobalFunctions")
-    global_funcs.insert(model.get_functions())
+    global_funcs.insert(model.get_global_functions())
 
     global_params = target_db.table("GlobalParameters")
     global_params.insert(model.get_global_param_ranges())

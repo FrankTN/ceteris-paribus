@@ -100,8 +100,9 @@ class ViewController(object):
     def add_global_function(self, f_name, f_str):
         self.global_control.get_model().add_global_func(f_name, f_str)
 
-    def get_functions(self):
-        return self.global_control.get_model().get_functions()
+    def get_global_functions(self):
+        # Returns the global functions defined in the model
+        return self.global_control.get_model().get_global_functions()
 
     def param_changed(self, name, slider):
         # Another relay method to ensure the model is only used by the controller

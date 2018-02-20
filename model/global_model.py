@@ -122,7 +122,7 @@ class GlobalModel(object):
     def get_organs(self):
         return self.organs
 
-    def get_functions(self):
+    def get_global_functions(self):
         return self._global_funcs
 
     def add_global_func(self, f_name, f_string):

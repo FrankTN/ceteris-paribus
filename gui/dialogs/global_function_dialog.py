@@ -12,8 +12,9 @@ class GlobalFunctionDialog(QDialog):
     def __init__(self, controller, func_name, **kwargs):
         super().__init__(**kwargs)
         self.controller = controller
-        current_function = self.controller.get_functions()[func_name]
-        self.evaluator = EvalWrapper(self.controller.get_organs(), ModelTransformer(self.controller.get_organs()))
+        current_function = self.controller.get_global_functions()[func_name]
+        accessible_vars = {**self.controller.get_organs(),**self.controller.get_global_functions()}
+        self.evaluator = EvalWrapper(accessible_vars, ModelTransformer(accessible_vars))
         self.evaluator.set_function_name(func_name)
         self.func_name = func_name
 
