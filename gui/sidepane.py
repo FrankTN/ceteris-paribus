@@ -33,6 +33,8 @@ class ContextPane(QWidget):
 
         self.output_group = QGroupBox("Outputs")
         self.output_group.setFixedSize(300, (available_height / 2))
+        output_layout = QVBoxLayout()
+        self.output_group.setLayout(output_layout)
 
         color_group = QGroupBox("Color")
         color_group.setFixedSize(300, (available_height / 6))
@@ -185,9 +187,16 @@ class ContextPane(QWidget):
 
         layout.addItem(buttons)
 
+        new_remove_layout = QHBoxLayout()
         new_button = QPushButton('New')
         new_button.clicked.connect(self.new_global_function)
-        layout.addWidget(new_button)
+        new_remove_layout.addWidget(new_button)
+        remove_button = QPushButton('Remove')
+        remove_button.clicked.connect(partial(self.remove_global_function, function_selector))
+        remove_button.clicked.connect(dialog.accept)
+        new_remove_layout.addWidget(remove_button)
+
+        layout.addItem(new_remove_layout)
 
         dialog.setLayout(layout)
         dialog.exec()
@@ -213,7 +222,14 @@ class ContextPane(QWidget):
         dialog.exec()
 
     def new_global_function(self):
-        pass
+        dialog = GlobalFunctionDialog(self.controller)
+        if dialog.exec():
+            self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
+
+    def remove_global_function(self, selector):
+        removable_func = selector.currentText()
+        self.controller.remove_global_func(removable_func)
+        self.initialize_output()
 
     def change_single_function(self, f_name, f_string):
         dialog = QDialog()
@@ -292,8 +308,9 @@ class ContextPane(QWidget):
 
     def initialize_output(self):
         outputs = self.controller.get_outputs()
-        layout = QVBoxLayout()
-
+        layout = self.output_group.layout()
+        while not layout.isEmpty():
+            layout.takeAt(0)
         button_layout = QHBoxLayout()
         global_outs = QPushButton("Global functions")
         global_outs.clicked.connect(lambda : self.show_global_funcs())
@@ -310,7 +327,6 @@ class ContextPane(QWidget):
 
         layout.addLayout(button_layout)
         layout.addLayout(grid_layout)
-        self.output_group.setLayout(layout)
 
     def update_output(self):
         outputs = self.controller.get_outputs()

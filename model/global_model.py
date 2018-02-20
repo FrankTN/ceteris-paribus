@@ -125,6 +125,12 @@ class GlobalModel(object):
     def get_global_functions(self):
         return self._global_funcs
 
+    def remove_global_func(self, f_name):
+        if f_name not in self._global_funcs:
+            #TODO unable to remove
+            pass
+        self._global_funcs.pop(f_name, None)
+
     def add_global_func(self, f_name, f_string):
         if f_name in self._global_funcs:
             #TODO add warning for global function redundancy
