@@ -153,7 +153,7 @@ class GlobalModel(object):
         # This function merely verifies whether a given function can be executed under the current model
         self.vars = {**self.vars, **self.organs}
 
-        evaluator = EvalWrapper(self.vars, ModelTransformer())
+        evaluator = EvalWrapper(self.vars, ModelTransformer(self.vars))
         evaluator.set_function(function)
         # The result of the evaluation is stored in the result variable if it exists
         result = evaluator.evaluate()
@@ -180,7 +180,9 @@ class GlobalModel(object):
                 self.vars = {**self.vars, **self.organs}
 
                 evaluator = EvalWrapper(self.vars, ModelTransformer(self.vars))
-                evaluator.set_function(function_name, unresolved_global_funcs)
+                new_func = unresolved_global_funcs[function_name]
+                evaluator.set_function(new_func)
+                evaluator.set_function_name(function_name)
                 # The result of the evaluation is stored in the result variable if it exists
                 result = evaluator.evaluate()
                 required_vals = evaluator.transformer.visited

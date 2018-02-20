@@ -1,17 +1,12 @@
 from PyQt5.QtGui import QValidator
 
-from ceteris_paribus.db.function_parser import EvalWrapper, Transformer
+from ceteris_paribus.db.function_parser import EvalWrapper, Transformer, ModelTransformer
 
 
-class LocalFunctionValidator(QValidator):
-    """ When a function is entered by the user to be added to an organ this validator checks whether the function can
-        actually be evaluated."""
-    def __init__(self, variables, functions, organ_name):
-        super().__init__()
-
-        self.functions = functions
-        self.evaluator = EvalWrapper(variables, Transformer(), organ_name)
+class Validator(QValidator):
+    def __init__(self):
         # The confirmed bool is used to signal when input is final
+        super().__init__()
         self.confirmed = False
 
     def set_confirmed(self, bool_value):
@@ -31,9 +26,19 @@ class LocalFunctionValidator(QValidator):
         else:
             return QValidator.Intermediate, p_str, p_int
 
-class GlobalFunctionValidator(QValidator):
-    def __init__(self):
+
+class LocalFunctionValidator(Validator):
+    """ When a function is entered by the user to be added to an organ this validator checks whether the function can
+        actually be evaluated."""
+    def __init__(self, variables, organ_name):
         super().__init__()
 
-    def validate(self, p_str, p_int):
-        return QValidator.Invalid, p_str, p_int
+        # self.functions = functions
+        self.evaluator = EvalWrapper(variables, Transformer(), organ_name)
+
+
+class GlobalFunctionValidator(Validator):
+    def __init__(self, vars, function_name):
+        super().__init__()
+        self.evaluator = EvalWrapper(vars, ModelTransformer(vars))
+        self.evaluator.set_function_name(function_name)

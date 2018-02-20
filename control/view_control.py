@@ -97,6 +97,9 @@ class ViewController(object):
         label.setText(str(slider.value()))
         self.context_pane.update_output()
 
+    def add_global_function(self, f_name, f_str):
+        self.global_control.get_model().add_global_func(f_name, f_str)
+
     def get_functions(self):
         return self.global_control.get_model().get_functions()
 

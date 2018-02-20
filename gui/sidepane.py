@@ -193,8 +193,10 @@ class ContextPane(QWidget):
         dialog.exec()
 
     def edit_global_function(self, func_combobox, func_dict):
-        if GlobalFunctionDialog(self.controller, func_combobox.currentText()).exec():
-            pass
+        dialog = GlobalFunctionDialog(self.controller, func_combobox.currentText())
+        if dialog.exec():
+            self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
+            print(dialog.reconstruction)
 
     def view_global_function(self, func_combobox, func_dict):
         dialog = QDialog()

@@ -15,9 +15,8 @@ class EvalWrapper(object):
         # This functions adds new values to the var dict which is already present in the object
         self.variables = {**self.variables, **variables}
 
-    def set_function(self, function_name, functions_dict):
-        self.function_name = function_name
-        self.function = functions_dict[function_name]
+    def set_function(self, function_str):
+        self.function = function_str
 
     def set_organ_name(self, organ_name):
         self.organ_name = organ_name
@@ -58,6 +57,9 @@ class EvalWrapper(object):
                 return 0
         else:
             raise NameError("Cannot evaluate: no function is defined")
+
+    def set_function_name(self, function_name):
+        self.function_name = function_name
 
 
 # Using the NodeTransformer, you can also modify the nodes in the tree,
