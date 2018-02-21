@@ -33,8 +33,7 @@ class ContextPane(QWidget):
 
         self.output_group = QGroupBox("Outputs")
         self.output_group.setFixedSize(300, (available_height / 2))
-        output_layout = QVBoxLayout()
-        self.output_group.setLayout(output_layout)
+        self.output_grid_layout = QGridLayout()
 
         color_group = QGroupBox("Color")
         color_group.setFixedSize(300, (available_height / 6))
@@ -229,7 +228,7 @@ class ContextPane(QWidget):
     def remove_global_function(self, selector):
         removable_func = selector.currentText()
         self.controller.remove_global_func(removable_func)
-        self.initialize_output()
+        self.reload_output_layout()
 
     def change_single_function(self, f_name, f_string):
         dialog = QDialog()
@@ -306,27 +305,40 @@ class ContextPane(QWidget):
             previous_dialog.accept()
             self.show_local_funcs()
 
-    def initialize_output(self):
+    def reload_output_layout(self):
+        while not self.output_grid_layout.isEmpty():
+            # Our first item is always the button
+            item = self.output_grid_layout.takeAt(0)
+            self.output_grid_layout.removeItem(item)
+            # item.updateGeometry()
+            if item.widget():
+                item.widget().deleteLater()
+        self.fill_output_grid()
+
+    def fill_output_grid(self):
         outputs = self.controller.get_outputs()
-        layout = self.output_group.layout()
-        while not layout.isEmpty():
-            layout.takeAt(0)
+        for index, out_name in enumerate(outputs):
+            out_button = QPushButton(out_name)
+            out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
+            self.output_grid_layout.addWidget(out_button, index+1, 0)
+            self.local_outs[out_name] = QLabel(str(round(outputs[out_name], 2)))
+            self.local_outs[out_name].setStyleSheet("QLabel { background-color : white; color : blue; }")
+            self.output_grid_layout.addWidget(self.local_outs[out_name], index+1, 1)
+        self.output_group.update()
+
+    def initialize_output(self):
+        output_layout = QVBoxLayout()
+
         button_layout = QHBoxLayout()
         global_outs = QPushButton("Global functions")
         global_outs.clicked.connect(lambda : self.show_global_funcs())
         button_layout.addWidget(global_outs)
 
-        grid_layout = QGridLayout()
-        for index, out_name in enumerate(outputs):
-            out_button = QPushButton(out_name)
-            out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
-            grid_layout.addWidget(out_button, index+1, 0)
-            self.local_outs[out_name] = QLabel(str(round(outputs[out_name], 2)))
-            self.local_outs[out_name].setStyleSheet("QLabel { background-color : white; color : blue; }")
-            grid_layout.addWidget(self.local_outs[out_name], index+1, 1)
+        self.fill_output_grid()
 
-        layout.addLayout(button_layout)
-        layout.addLayout(grid_layout)
+        output_layout.addLayout(button_layout)
+        output_layout.addLayout(self.output_grid_layout)
+        self.output_group.setLayout(output_layout)
 
     def update_output(self):
         outputs = self.controller.get_outputs()
