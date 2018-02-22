@@ -5,11 +5,12 @@ from functools import partial
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog, QLineEdit, QTextEdit, QComboBox
+    QPushButton, QDialog, QLineEdit, QTextEdit, QComboBox, QFrame
 
 from ceteris_paribus.gui.commands import DeleteCommand
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
-from ceteris_paribus.gui.dialogs.global_function_dialog import GlobalFunctionDialog
+from ceteris_paribus.gui.dialogs.global_function_dialog import GlobalFunctionDialog, reconstruct_function, \
+    parse_function
 from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
 
 
@@ -213,10 +214,15 @@ class ContextPane(QWidget):
         name = func_combobox.currentText()
         name_label = QLabel(name)
         layout.addWidget(name_label, 0, 0)
+        line = QFrame()
+        line.setFrameShape(QFrame.VLine)
+        line.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(line, 0, 1)
 
-        function = func_dict[name]
-        str_label = QLabel(function)
-        layout.addWidget(str_label, 0, 1)
+
+        func = parse_function(func_dict[name])
+        str_label = QLabel(" ".join(func))
+        layout.addWidget(str_label, 0, 2)
         dialog.setLayout(layout)
         dialog.exec()
 
