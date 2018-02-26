@@ -160,6 +160,9 @@ class GlobalFunctionDialog(QDialog):
         global_selector = QComboBox()
         global_selector.addItems(functions)
         global_layout.addWidget(global_selector)
+        global_add_button = QPushButton('Add')
+        global_add_button.clicked.connect(lambda : self.add_word(global_selector.currentText()))
+        global_layout.addWidget(global_add_button)
         global_box.setLayout(global_layout)
 
         lower_layout.addWidget(global_box)
