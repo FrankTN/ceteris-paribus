@@ -66,9 +66,7 @@ class Organ(object):
     def get_name(self):
         return getattr(self, 'name', 'default_organ')
 
-    def local_changed(self, name: str, slider):
-        # Get new value from the slider
-        new_value = slider.value()
+    def local_changed(self, name: str, new_value):
         # Set local value to the new one
         self.get_local_ranges()[name][2] = new_value
 

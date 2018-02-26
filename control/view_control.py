@@ -89,12 +89,12 @@ class ViewController(object):
         # After changing the model and the database inside the controller, we ask the UI to update itself
         self.ui.reload()
 
-    def organ_local_changed(self, name, slider, label):
+    def organ_local_changed(self, name, label, new_value):
         # If the user changes a local value in an organ, this function is called. We change the local value and update
         # the UI accordingly
         organ = self.context_pane.current_organ
-        organ.local_changed(name, slider)
-        label.setText(str(slider.value()))
+        organ.local_changed(name, new_value)
+        label.setText(str(new_value))
         self.context_pane.update_output()
 
     def add_global_function(self, f_name, f_str):

@@ -3,15 +3,14 @@
 from functools import partial
 
 import pyqtgraph as pg
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QSlider, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog, QLineEdit, QTextEdit, QComboBox, QFrame
+from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QHBoxLayout, QVBoxLayout, \
+    QPushButton, QDialog, QLineEdit, QComboBox, QFrame
 
 from ceteris_paribus.gui.commands import DeleteCommand
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
-from ceteris_paribus.gui.dialogs.global_function_dialog import GlobalFunctionDialog, reconstruct_function, \
-    parse_function
+from ceteris_paribus.gui.dialogs.global_function_dialog import GlobalFunctionDialog, parse_function
 from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
+from ceteris_paribus.gui.visual_elements import FloatSlider
 
 
 class ContextPane(QWidget):
@@ -74,11 +73,11 @@ class ContextPane(QWidget):
         global_params = self.controller.get_global_param_ranges()
         for index, param_name in enumerate(global_params):
             slider_layout.addWidget(QLabel(param_name), index+1, 0)
-            slider = QSlider(Qt.Horizontal)
-            slider.setMinimum(global_params[param_name][0])
-            slider.setMaximum(global_params[param_name][1])
-            slider.setValue(global_params[param_name][2])
-            slider.valueChanged.connect(partial(self.controller.param_changed, param_name, slider))
+            minimum = global_params[param_name][0]
+            maximum = global_params[param_name][1]
+            value = global_params[param_name][2]
+            target = partial(self.controller.param_changed, param_name)
+            slider = FloatSlider(minimum, maximum, value, target)
             slider_layout.addWidget(slider, index+1, 1)
         slider_layout.setRowStretch(2, 500)
         layout.addLayout(slider_layout)
@@ -119,16 +118,15 @@ class ContextPane(QWidget):
         layout = QGridLayout()
 
         for index, name in enumerate(self.current_organ.get_local_ranges()):
-            # TODO make into sliders with values
             assert '__builtins__' not in self.current_organ.get_local_ranges()
             if name != '__builtins__':
                 layout.addWidget(QLabel(name), index, 0)
-                slider = QSlider(Qt.Horizontal)
-                slider.setMinimum(self.current_organ.get_local_ranges()[name][0])
-                slider.setMaximum(self.current_organ.get_local_ranges()[name][1])
-                slider.setValue(self.current_organ.get_local_ranges()[name][2])
-                value_label = QLabel(str(round(slider.value(), 2)))
-                slider.valueChanged.connect(partial(self.controller.organ_local_changed, name, slider, value_label))
+                minimum = self.current_organ.get_local_ranges()[name][0]
+                maximum = self.current_organ.get_local_ranges()[name][1]
+                value = self.current_organ.get_local_ranges()[name][2]
+                value_label = QLabel(str(round(value, 2)))
+                target = partial(self.controller.organ_local_changed, name, value_label)
+                slider = FloatSlider(minimum, maximum, value, target)
                 layout.addWidget(slider, index, 1)
                 layout.addWidget(value_label, index, 2)
         edit_button = QPushButton('Edit')

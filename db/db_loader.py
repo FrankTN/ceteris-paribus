@@ -42,7 +42,6 @@ f_ven_glu = "glu_art - Organ_Weight * (SMRglu - SMRglu_prod) / BF"
 f_ven_O2 = "O2_art - (Organ_Weight * SMRO2) / BF"
 f_ven_CO2 = "CO2_art + (Organ_Weight * SMRCO2) / BF"
 f_ven_lac = "lac_art + Organ_Weight * (SMRglu - SMRglu_prod) / BF"
-# TODO convert to fractional weight :: f_Weight_Organ = "Organ_Weight "
 
 organ_db.purge_table("GlobalFunctions")
 global_function_table = organ_db.table("GlobalFunctions")

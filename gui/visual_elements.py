@@ -2,7 +2,7 @@
     and Output nodes are special, the other nodes should all contain Organ data."""
 from PyQt5.QtCore import Qt, QPointF, QRectF
 from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor, QPainterPath
-from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem, QSlider
 
 
 class GraphNode(QGraphicsRectItem):
@@ -179,3 +179,33 @@ class Edge(QGraphicsLineItem):
 
     def __str__(self):
         return "Source: [" + self.source_node.name + "] Dest: [" + self.dest_node.name + "]"
+
+class FloatSlider(QSlider):
+    """ Custom QSlider subc;ass which performs a translation step between its value in a range from [0,100] to the
+        variables arbitrary floating point range."""
+    def __init__(self, min, max, val, target):
+        super().__init__(Qt.Horizontal)
+        self.diff = float(max) - float(min)
+
+        # This is the function hook we will call once we have rescaled the value
+        self.target = target
+        self.setRange(0,100)
+        self.setSingleStep(1)
+        self.valueChanged.connect(self.value_handler)
+
+        if self.diff == 0:
+            # We have no range to map to, defaulting to 0
+            scaled_init_val = 0
+        else:
+            scaled_init_val = val * 100/self.diff
+        self.setValue(scaled_init_val)
+
+    def value_handler(self, value):
+        if self.diff == 0:
+            # We have no range to map to, defaulting to 0
+            scaled_val = 0
+        else:
+            scaled_val = (self.diff*float(value))/100
+        self.target(scaled_val)
+
+
