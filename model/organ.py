@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QErrorMessage, QMessageBox
 
-from ceteris_paribus.db.function_parser import EvalWrapper, Transformer
+from ceteris_paribus.db.function_parser import EvalWrapper, Transformer, evaluate_functions
 
 
 class Organ(object):
@@ -34,34 +34,8 @@ class Organ(object):
         self.get_defined_variables()
 
     def evaluate(self):
-        """
-        Evaluate all functions defined for the organ. This function naively keeps trying to solve for all variables
-        until no new changes occur. If all variables have been resolved execution was successful, otherwise we display
-        an error message.
-        :return: None
-        """
-        #TODO combine this function with the one in the global model
         unresolved_funcs = getattr(self, 'functions').copy()
-        changed = True
-        while changed:
-            changed = False
-            for function_name in list(unresolved_funcs):
-                evaluator = EvalWrapper(self.defined_variables, Transformer(), self.get_name())
-                next_func = unresolved_funcs[function_name]
-                evaluator.set_function(next_func)
-                evaluator.set_function_name(function_name)
-                result = evaluator.evaluate()
-                if result is not None:
-                    changed = True
-                    self.defined_variables[function_name] = result
-                    unresolved_funcs.pop(function_name)
-        if unresolved_funcs:
-            msg = QMessageBox()
-            msg.setWindowTitle("Error")
-            unresolved_string = {str(x) + ": " + unresolved_funcs[x] + "\n" for x in unresolved_funcs.keys()}
-            msg.setText("The specified database cannot create the organ " + self.get_name() + ",\nplease look at the following unresolvable functions: \n" + "".join(unresolved_string))
-            msg.exec_()
-            quit(-1)
+        self.defined_variables = evaluate_functions(unresolved_funcs, self.defined_variables)
 
     def get_name(self):
         return getattr(self, 'name', 'default_organ')

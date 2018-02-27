@@ -82,12 +82,11 @@ class ViewController(object):
 
     def open_new_db(self):
         # This is called when the button to open a db is clicked in the menu
-        self.global_control.open_new_db()
-        new_model = self.global_control.model_control.get_model()
-        self.ui.scene.load_from_model(new_model)
-
-        # After changing the model and the database inside the controller, we ask the UI to update itself
-        self.ui.reload()
+        if self.global_control.open_new_db():
+            new_model = self.global_control.model_control.get_model()
+            self.ui.scene.load_from_model(new_model)
+            # After changing the model and the database inside the controller, we ask the UI to update itself
+            self.ui.reload()
 
     def organ_local_changed(self, name, label, new_value):
         # If the user changes a local value in an organ, this function is called. We change the local value and update

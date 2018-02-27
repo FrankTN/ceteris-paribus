@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QMessageBox
 
-from ceteris_paribus.db.function_parser import EvalWrapper, ModelTransformer
+from ceteris_paribus.db.function_parser import EvalWrapper, ModelTransformer, evaluate_functions
 from ceteris_paribus.model.organ import Organ
 
 
@@ -22,15 +22,18 @@ class GlobalModel(object):
         """ This function retrieves all globally defined values from the database."""
         # From the database, get the global input parameters.
         self._global_params = {}
-        for param in self._database.table("GlobalParameters").all():
+        global_param_table =  self._database.table("GlobalParameters").all()
+        for param in global_param_table:
             self._global_params.update(param)
         # The globally defined constants are also retrieved from the database
         self._global_constants = {}
-        for const in self._database.table("GlobalConstants").all():
+        global_const_table =  self._database.table("GlobalConstants").all()
+        for const in global_const_table:
             self._global_constants.update(const)
         # Finally, the global functions are retrieved
         self._global_funcs = {}
-        for func in self._database.table("GlobalFunctions").all():
+        global_func_table = self._database.table("GlobalFunctions").all()
+        for func in global_func_table:
             self._global_funcs.update(func)
         # _globals is defined as the dictionary containing all globally accessible values, constant or variable
         self._globals = {**self._global_params, **self._global_constants}
@@ -43,8 +46,7 @@ class GlobalModel(object):
         self.count = 0
         rangeless_globals = self.make_rangeless_params(self._global_params)
         for organ_info in self._database.table("SystemicOrgans").all():
-            # organ_info['variables'] = self.make_rangeless_params(organ_info['variables'])
-            # In the default UI we stack the organs on top of eachother by generating a pos for each
+            # In the default UI we stack the organs on top of each other by generating a pos for each
             if self.count % 2 == 0:
                 pos[1] *= -1
             else:
@@ -126,13 +128,14 @@ class GlobalModel(object):
 
     def remove_global_func(self, f_name):
         if f_name not in self._global_funcs:
-            #TODO unable to remove
-            pass
+            msg = QMessageBox()
+            msg.setText("Unable to remove global function " + f_name)
+            msg.exec()
+            return
         self._global_funcs.pop(f_name, None)
 
     def add_global_func(self, f_name, f_string):
         if f_name in self._global_funcs:
-            #TODO add warning for global function redundancy
             msg = QMessageBox()
             msg.setWindowTitle("Warning")
             msg.setText(
@@ -174,41 +177,10 @@ class GlobalModel(object):
         :return: a dictionary containing the names of the outputs and their calculated values.
         """
         # Make a shallow copy of the global function dict, so that we can freely modify it
-        unresolved_global_funcs = self._global_funcs.copy()
-        changed = True
-        output = {}
-
-        while changed:
-            changed = False
-            for function_name in list(unresolved_global_funcs):
-                # For every unresolved functions, we create an evaluator object
-                self.vars = {**self.vars, **self.organs}
-
-                evaluator = EvalWrapper(self.vars, ModelTransformer(self.vars))
-                new_func = unresolved_global_funcs[function_name]
-                evaluator.set_function(new_func)
-                evaluator.set_function_name(function_name)
-                # The result of the evaluation is stored in the result variable if it exists
-                result = evaluator.evaluate()
-                required_vals = evaluator.transformer.visited
-                self.color_schemes[function_name] = required_vals
-                if result is not None:
-                    # We have found a new result, therefore, we set changed to True and we store the result
-                    changed = True
-                    self.vars[function_name] = result
-                    output[function_name] = result
-                    # Finally, we remove the function we just resolved from the globals so that we don't loop infinitely
-                    unresolved_global_funcs.pop(function_name)
-        if unresolved_global_funcs:
-            msg = QMessageBox()
-            msg.setWindowTitle("Error")
-            unresolved_string = {str(x) + ": " + unresolved_global_funcs[x] + "\n" for x in unresolved_global_funcs.keys()}
-            msg.setText(
-                "The specified database cannot create the model,\nplease look at the following unresolvable functions: \n" + "".join(
-                    unresolved_string))
-            msg.exec_()
-            quit(-1)
-        return output
+        copied_functions = self._global_funcs.copy()
+        variables = {**self.vars, **self.organs}
+        result = evaluate_functions(copied_functions, variables, self.color_schemes)
+        return result
 
     def remove(self, organ):
         self.organs.pop(organ.get_name())
@@ -217,4 +189,3 @@ class GlobalModel(object):
         organ = Organ(organ_info, self.get_global_param_values(), self.get_global_constants(), pos)
         self.organs[organ.get_name()] = organ
         return organ
-

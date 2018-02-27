@@ -2,7 +2,7 @@
     and Output nodes are special, the other nodes should all contain Organ data."""
 from PyQt5.QtCore import Qt, QPointF, QRectF
 from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor, QPainterPath
-from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem, QSlider
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem, QSlider, QMessageBox
 
 
 class GraphNode(QGraphicsRectItem):
@@ -30,7 +30,6 @@ class GraphNode(QGraphicsRectItem):
 
     def get_center(self):
         # Find the center of the current node
-        # TODO make this accurate
         offset_x = self.rect().x() + self.rect().width() / 2
         offset_y = self.rect().y() + self.rect().height() / 2
         new_center = QPointF(self.pos().x() + offset_x, self.pos().y() + offset_y)
@@ -121,9 +120,6 @@ class InNode(GraphNode):
         self.name = "Input"
         self.controller = controller
 
-        print("clicked: Input")
-
-
 class OutNode(GraphNode):
     # TODO expand functionality
     def __init__(self, x, y, controller):
@@ -208,4 +204,8 @@ class FloatSlider(QSlider):
             scaled_val = (self.diff*float(value))/100
         self.target(scaled_val)
 
-
+def print_warning(text):
+    msg = QMessageBox()
+    msg.setWindowTitle("Warning")
+    msg.setText(text)
+    msg.exec()

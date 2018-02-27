@@ -116,3 +116,46 @@ class ModelTransformer(Transformer):
     def visit_Str(self, node):
         self.visited[self.current_node] = node.s
         return self.generic_visit(node)
+
+def evaluate_functions(functions, variables, prerequisites = None):
+    """
+    This function calculates the global outputs of the model
+    :return: a dictionary containing the names of the outputs and their calculated values.
+    """
+    # Make a shallow copy of the global function dict, so that we can freely modify it
+    changed = True
+    output = {}
+
+    while changed:
+        changed = False
+        for function_name in list(functions):
+            # For every unresolved functions, we create an evaluator object
+
+            evaluator = EvalWrapper(variables, ModelTransformer(variables))
+            new_func = functions[function_name]
+            evaluator.set_function(new_func)
+            evaluator.set_function_name(function_name)
+            # The result of the evaluation is stored in the result variable if it exists
+            result = evaluator.evaluate()
+            if prerequisites is not None:
+                # We are also supposed to store the required values as a side effect
+                required_vals = evaluator.transformer.visited
+                prerequisites[function_name] = required_vals
+
+            if result is not None:
+                # We have found a new result, therefore, we set changed to True and we store the result
+                changed = True
+                variables[function_name] = result
+                output[function_name] = result
+                # Finally, we remove the function we just resolved from the globals so that we don't loop infinitely
+                functions.pop(function_name)
+    if functions:
+        msg = QMessageBox()
+        msg.setWindowTitle("Error")
+        unresolved_string = {str(x) + ": " + functions[x] + "\n" for x in functions.keys()}
+        msg.setText(
+            "The specified database cannot create the model,\nplease look at the following unresolvable functions: \n" + "".join(
+                unresolved_string))
+        msg.exec_()
+        quit(-1)
+    return output
