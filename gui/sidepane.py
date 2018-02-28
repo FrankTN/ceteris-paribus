@@ -76,9 +76,11 @@ class ContextPane(QWidget):
             minimum = global_params[param_name][0]
             maximum = global_params[param_name][1]
             value = global_params[param_name][2]
-            target = partial(self.controller.param_changed, param_name)
+            value_label = QLabel(str(round(value, 2)))
+            target = partial(self.input_slider_changed, param_name, value_label)
             slider = FloatSlider(minimum, maximum, value, target)
             slider_layout.addWidget(slider, index+1, 1)
+            slider_layout.addWidget(value_label, index+1, 2)
         slider_layout.setRowStretch(2, 500)
         layout.addLayout(slider_layout)
         self.input_group.setLayout(layout)
@@ -136,12 +138,13 @@ class ContextPane(QWidget):
         dialog.exec_()
 
     def show_globals(self):
+        print(self.controller.get_global_param_ranges())
         dialog = QDialog()
         dialog.setWindowTitle("Globals")
         layout = QGridLayout()
         for index, val in enumerate(self.current_organ.get_globals()):
             layout.addWidget(QLabel(val), index, 0)
-            layout.addWidget(QLabel(str(self.current_organ.get_globals()[val])), index, 1)
+            layout.addWidget(QLabel(str(round(self.current_organ.get_globals()[val],2))), index, 1)
         dialog.setLayout(layout)
         dialog.exec_()
 
@@ -152,7 +155,7 @@ class ContextPane(QWidget):
         if self.current_organ.get_funcs():
             for index, func in enumerate(self.current_organ.get_funcs()):
                 layout.addWidget(QLabel(func + ":"), index, 0)
-                layout.addWidget(QLabel(str(self.current_organ.get_funcs()[func])), index, 1)
+                layout.addWidget(QLabel(str(round(self.current_organ.get_funcs()[func],2))), index, 1)
         else:
             layout.addWidget(QLabel("No functions have been defined for this organ"))
         edit_button = QPushButton('Edit')
@@ -199,7 +202,7 @@ class ContextPane(QWidget):
         dialog.setLayout(layout)
         dialog.exec()
 
-    def edit_global_function(self, func_combobox, func_dict):
+    def edit_global_function(self, func_combobox):
         dialog = GlobalFunctionDialog(self.controller, func_combobox.currentText())
         if dialog.exec():
             self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
@@ -314,7 +317,6 @@ class ContextPane(QWidget):
             # Our first item is always the button
             item = self.output_grid_layout.takeAt(0)
             self.output_grid_layout.removeItem(item)
-            # item.updateGeometry()
             if item.widget():
                 item.widget().deleteLater()
         self.fill_output_grid()
@@ -344,10 +346,17 @@ class ContextPane(QWidget):
         output_layout.addLayout(self.output_grid_layout)
         self.output_group.setLayout(output_layout)
 
-    def update_output(self):
+    def update_output(self, target_label, new_out):
+        if target_label is not None:
+            target_label.setText(str(round(new_out,2)))
         outputs = self.controller.get_outputs()
         for local_out_val in self.local_outs:
             self.local_outs[local_out_val].setText(str(round(outputs[local_out_val],2)))
             if self.controller.current_global == local_out_val:
                 # If the output of the currently selected value is changed we update the color schemes
                 self.controller.set_colors_for_global(local_out_val)
+
+    def input_slider_changed(self, name, label, value):
+        # Change global parameter, call global param changed
+        label.setText(str(round(value, 2)))
+        self.controller.input_slider_changed(name, value)

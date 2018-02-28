@@ -93,8 +93,8 @@ class ViewController(object):
         # the UI accordingly
         organ = self.context_pane.current_organ
         organ.local_changed(name, new_value)
-        label.setText(str(new_value))
-        self.context_pane.update_output()
+        label.setText(str(round(new_value,2)))
+        self.context_pane.update_output(None, None)
 
     def add_global_function(self, f_name, f_str):
         self.global_control.get_model().add_global_func(f_name, f_str)
@@ -110,6 +110,5 @@ class ViewController(object):
         # Verifies that the argument can be used as a global function
         return self.global_control.get_model().verify_function(func)
 
-    def param_changed(self, name, slider):
-        # Another relay method to ensure the model is only used by the controller
-        self.context_pane.update_output()
+    def input_slider_changed(self, name, value):
+        return self.global_control.get_model().param_changed(name, value)

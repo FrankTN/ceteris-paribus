@@ -27,6 +27,6 @@ class ModelController(object):
         # without the ranges
         return self.model.get_global_param_values()
 
-    def param_changed(self, name, slider):
+    def param_changed(self, name, value):
         # Another relay method to ensure the model is only used by the controller
-        self.model.param_changed(name, slider)
+        self.model.param_changed(name, value)
