@@ -14,7 +14,8 @@ class NewNodeDialog(object):
         self.controller = controller
         self.name = None
         self.sources = None
-        self.functions = None
+        self.functions = {}
+        self.variables = {}
 
     def run(self):
         name_dialog = NameDialog()
@@ -25,7 +26,6 @@ class NewNodeDialog(object):
             # If we reject during naming return false
             return False
         source_dialog = SourceDialog(self.controller)
-        self.variables = {}
         if source_dialog.exec_():
             # handle source, which represents the organ we are receiving information from
             self.sources = source_dialog.get_source()
@@ -37,13 +37,17 @@ class NewNodeDialog(object):
                     locals_of_source = self.controller.get_organs()[source].get_local_ranges()
                     # Unroll source locals into general variables
                     self.variables = {**self.variables, **locals_of_source}
+
+                    funcs_of_source = self.controller.get_organs()[source].get_funcs()
+                    # Unroll source functions into the functions defined here
+                    self.functions = {**self.functions, **funcs_of_source}
         else:
             # If we reject during source selection return false
             return False
         var_dialog = VarDialog(self.variables)
         var_dialog.exec_()
         # self.variables has been updated, we can now write functions
-        function_dialog = FunctionDialog(self.variables, self.name)
+        function_dialog = FunctionDialog(self.variables, self.name, self.functions)
         if function_dialog.exec_():
             # handle functions
             self.functions = function_dialog.get_functions()

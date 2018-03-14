@@ -264,6 +264,7 @@ class ContextPane(QWidget):
         layout = QGridLayout()
         dialog.setWindowTitle("Outputs")
         if self.current_organ.get_funcs():
+            self.current_organ.evaluate()
             for index, func in enumerate(self.current_organ.get_funcs()):
                 layout.addWidget(QLabel(func + ":"), index, 0)
                 layout.addWidget(QLabel(str(round(self.current_organ.defined_variables[func], 2))), index, 1)

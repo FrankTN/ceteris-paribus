@@ -47,6 +47,9 @@ class ViewController(object):
     def get_global_param_ranges(self):
         return self.global_control.get_model().get_global_param_ranges()
 
+    def get_global_funcs(self):
+        return self.global_control.get_model().get_global_functions()
+
     def get_outputs(self):
         return self.global_control.get_model().get_outputs()
 

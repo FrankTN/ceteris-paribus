@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QMessageBox
 
 
 class EvalWrapper(object):
-    def __init__(self, variables, transformer, organ_name = None):
+    def __init__(self, variables, transformer, organ_name=None):
         self.variables = variables
         self.transformer = transformer
         self.function = None
@@ -117,7 +117,8 @@ class ModelTransformer(Transformer):
         self.visited[self.current_node] = node.s
         return self.generic_visit(node)
 
-def evaluate_functions(functions, variables, prerequisites = None):
+
+def evaluate_functions(functions, variables, prerequisites=None):
     """
     This function calculates the global outputs of the model
     :return: a dictionary containing the names of the outputs and their calculated values.
