@@ -49,7 +49,7 @@ class Organ(object):
 
     def get_defined_variables(self) -> dict:
         # Returns all variables defined for this organ and their values in a single dict
-        self.defined_variables = {**self.get_local_vals(), **self.global_params, **self.global_constants}
+        self.defined_variables = {**self.defined_variables, **self.get_local_vals(), **self.global_params, **self.global_constants}
         self.defined_variables.pop('__builtins__', None)
         return self.defined_variables
 

@@ -16,6 +16,7 @@ from ceteris_paribus.gui.visual_elements import FloatSlider
 class ContextPane(QWidget):
     def __init__(self, controller):
         super().__init__()
+        self.current_organ = None
         self.name_label = QLabel()
         self.local_outs = {}
         self.controller = controller
@@ -264,10 +265,9 @@ class ContextPane(QWidget):
         layout = QGridLayout()
         dialog.setWindowTitle("Outputs")
         if self.current_organ.get_funcs():
-            self.current_organ.evaluate()
             for index, func in enumerate(self.current_organ.get_funcs()):
                 layout.addWidget(QLabel(func + ":"), index, 0)
-                layout.addWidget(QLabel(str(round(self.current_organ.defined_variables[func], 2))), index, 1)
+                layout.addWidget(QLabel(str(round(self.current_organ.get_defined_variables()[func], 2))), index, 1)
         else:
             layout.addWidget(QLabel("No outputs can be displayed for this organ"))
         dialog.setLayout(layout)
