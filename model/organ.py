@@ -31,17 +31,18 @@ class Organ(object):
         :return: None
         """
         self.global_params = new_globals
-        self.get_defined_variables()
+        self.defined_variables = {**self.defined_variables, **self.global_params, **self.global_constants}
 
     def evaluate(self):
         unresolved_funcs = getattr(self, 'functions').copy()
-        self.defined_variables = evaluate_functions(unresolved_funcs, self.defined_variables)
+        self.defined_variables = {**self.defined_variables, **evaluate_functions(unresolved_funcs, self.defined_variables)}
 
     def get_name(self):
         return getattr(self, 'name', 'default_organ')
 
     def local_changed(self, name: str, new_value):
         # Set local value to the new one
+        self.defined_variables[name] = new_value
         self.get_local_ranges()[name][2] = new_value
 
     def get_pos(self):
@@ -49,7 +50,7 @@ class Organ(object):
 
     def get_defined_variables(self) -> dict:
         # Returns all variables defined for this organ and their values in a single dict
-        self.defined_variables = {**self.defined_variables, **self.get_local_vals(), **self.global_params, **self.global_constants}
+        self.evaluate()
         self.defined_variables.pop('__builtins__', None)
         return self.defined_variables
 

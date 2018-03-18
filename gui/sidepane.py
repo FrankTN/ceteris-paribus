@@ -156,7 +156,7 @@ class ContextPane(QWidget):
         if self.current_organ.get_funcs():
             for index, func in enumerate(self.current_organ.get_funcs()):
                 layout.addWidget(QLabel(func + ":"), index, 0)
-                layout.addWidget(QLabel(str(round(self.current_organ.get_funcs()[func],2))), index, 1)
+                layout.addWidget(QLabel(str(self.current_organ.get_funcs()[func])), index, 1)
         else:
             layout.addWidget(QLabel("No functions have been defined for this organ"))
         edit_button = QPushButton('Edit')
