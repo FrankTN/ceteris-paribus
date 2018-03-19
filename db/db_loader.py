@@ -71,7 +71,7 @@ systemic_organ_table.insert({"name": "Liver", "functions": {"VO2": f_VO2, "VCO2"
 systemic_organ_table.insert({"name": "Brain", "functions": {"VO2": f_VO2, "VCO2": f_VCO2, "SMRCO2": f_SMRCO2, "Venous Glucose": f_ven_glu, "Venous O2": f_ven_O2, "Venous CO2": f_ven_CO2, "Venous Lac": f_ven_lac},
                              "variables" : {"BF": [0, 2, 1], "SMRO2": [0, 5, 3.7], "Organ_Weight" : [1, 2, 1.3], "VO2": [14, 60, 48.1], "RQ": [0, 1, 1], "WQ": [0, 0, 0], "VCO2": [20, 70, 48.1], "SMRglu": [0, 0, 0], "SMRglu_prod": [0, 0, 0]}})
 systemic_organ_table.insert({"name": "Heart", "functions": {"VO2": f_VO2, "VCO2": f_VCO2, "SMRCO2": f_SMRCO2, "Venous Glucose": f_ven_glu, "Venous O2": f_ven_O2, "Venous CO2": f_ven_CO2, "Venous Lac": f_ven_lac},
-                             "variables" : {"BF": [0, 1, 0.125], "SMRO2": [0, 20, 11], "Organ_Weight" : [0.25, 0.45, 0.31], "VO2": [10, 50, 34.1], "RQ": [0, 1, 0.75], "WQ": [0, 0, 0], "VCO2": [10, 40, 25.575], "SMRglu": [0, 0, 0], "SMRglu_prod": [0, 0, 0]}})
+                             "variables" : {"BF": [0, 1, 0.125], "SMRO2": [0, 20, 1.7], "Organ_Weight" : [0.25, 0.45, 0.31], "VO2": [10, 50, 34.1], "RQ": [0, 1, 0.75], "WQ": [0, 0, 0], "VCO2": [10, 40, 25.575], "SMRglu": [0, 0, 0], "SMRglu_prod": [0, 0, 0]}})
 systemic_organ_table.insert({"name": "Diaphragm", "functions": {"VO2": f_VO2, "SMRCO2": f_SMRCO2, "Venous O2": f_ven_O2, "Venous CO2": f_ven_CO2, "Venous Lac": f_ven_lac},
                              "variables" : {"BF": [0, 0.02, 0.01], "SMRO2": [0, 10, 1], "Organ_Weight" : [0.2, 0.5, 0.31], "VO2": [1, 10, 3], "SMRglu": [0, 0, 0], "SMRglu_prod": [0, 0, 0], "RQ": [0, 1, 1]}})
 systemic_organ_table.insert({"name": "Kidneys", "functions": {"VO2": f_VO2, "VCO2": f_VCO2, "SMRCO2": f_SMRCO2, "Venous Glucose": f_ven_glu, "Venous O2": f_ven_O2, "Venous CO2": f_ven_CO2, "Venous Lac": f_ven_lac},
@@ -82,5 +82,7 @@ systemic_organ_table.insert({"name": "Pancreas", "functions": {},
                              "variables": {"Organ_Weight" : [0.05, 0.3, 0.1]}})
 systemic_organ_table.insert({"name": "Thyroid", "functions": {},
                              "variables": {"BF": [0, 0.003, 0.001], "Organ_Weight" : [0.009, 0.02, 0.015]}})
+systemic_organ_table.insert({"name": "Other", "functions": {},
+                             "variables": {}})
 
 #organ = Organ(systemic_organ_table.all()[0], global_param_table.all(), global_constant_table.all())

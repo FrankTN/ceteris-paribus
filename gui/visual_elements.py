@@ -177,7 +177,7 @@ class Edge(QGraphicsLineItem):
         return "Source: [" + self.source_node.name + "] Dest: [" + self.dest_node.name + "]"
 
 class FloatSlider(QSlider):
-    """ Custom QSlider subc;ass which performs a translation step between its value in a range from [0,100] to the
+    """ Custom QSlider subclass which performs a translation step between its value in a range from [0,100] to the
         variables arbitrary floating point range."""
     def __init__(self, min, max, val, target):
         super().__init__(Qt.Horizontal)
@@ -187,7 +187,6 @@ class FloatSlider(QSlider):
         self.target = target
         self.setRange(0,100)
         self.setSingleStep(1)
-        self.valueChanged.connect(self.value_handler)
 
         if self.diff == 0:
             # We have no range to map to, defaulting to 0
@@ -195,6 +194,7 @@ class FloatSlider(QSlider):
         else:
             scaled_init_val = val * 100/self.diff
         self.setValue(scaled_init_val)
+        self.valueChanged.connect(self.value_handler)
 
     def value_handler(self, value):
         if self.diff == 0:
