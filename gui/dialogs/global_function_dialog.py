@@ -227,4 +227,6 @@ class GlobalFunctionDialog(QDialog):
 
     def update_variables_in_combobox(self, newItem, organs, box):
         box.clear()
-        box.addItems(organs[newItem].get_local_vals())
+        # We can only add an item if it has a name, therefore we check whether the string is not empty
+        if newItem:
+            box.addItems(organs[newItem].get_local_vals())

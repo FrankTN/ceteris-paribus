@@ -100,6 +100,9 @@ class ViewController(object):
         self.ui.scene.load_from_model(new_model)
         self.ui.reload()
 
+    def add_global_input(self, name, min, val, max):
+        self.get_model().add_global_parameter(name, [min, max, val])
+
     def organ_local_changed(self, name, label, new_value):
         # If the user changes a local value in an organ, this function is called. We change the local value and update
         # the UI accordingly

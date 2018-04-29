@@ -8,6 +8,7 @@ class GlobalModel(object):
     """ This class represents the model in the Model-View-Controller architecture.
         To initialize, a JSON-database is loaded using the TinyDB framework.
     """
+
     def __init__(self, controller):
         super().__init__()
         self.organs = {}
@@ -26,11 +27,11 @@ class GlobalModel(object):
     def initialize_globals(self):
         """ This function retrieves all globally defined values from the database."""
         # From the database, get the global input parameters.
-        global_param_table =  self._database.table("GlobalParameters").all()
+        global_param_table = self._database.table("GlobalParameters").all()
         for param in global_param_table:
             self._global_params.update(param)
         # The globally defined constants are also retrieved from the database
-        global_const_table =  self._database.table("GlobalConstants").all()
+        global_const_table = self._database.table("GlobalConstants").all()
         for const in global_const_table:
             self._global_constants.update(const)
         # Finally, the global functions are retrieved
@@ -57,7 +58,6 @@ class GlobalModel(object):
             self.organs[organ_info['name']] = Organ(organ_info, rangeless_globals, self._global_constants, pos[:])
             self.count += 1
 
-
     def make_rangeless_params(self, params_with_range):
         """ This function removes redundant information from the global values"""
         rangeless_params = {}
@@ -82,7 +82,7 @@ class GlobalModel(object):
         return self._globals
 
     def get_global_param_values(self):
-        return {k : v[2] for k,v in self._global_params.items()}
+        return {k: v[2] for k, v in self._global_params.items()}
 
     def get_global_param_ranges(self):
         return self._global_params
@@ -106,7 +106,7 @@ class GlobalModel(object):
             self._global_constants[name] = val
 
     def add_global_parameter(self, name, val):
-        assert(len(val) == 3)
+        assert (len(val) == 3)
         if name in self._global_params:
             msg = QMessageBox()
             msg.setWindowTitle("Warning")

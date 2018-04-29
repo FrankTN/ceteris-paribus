@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QHBoxLayout
 from ceteris_paribus.gui.commands import DeleteCommand
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
 from ceteris_paribus.gui.dialogs.global_function_dialog import GlobalFunctionDialog, parse_function
+from ceteris_paribus.gui.dialogs.global_input_dialog import GlobalInputDialog
 from ceteris_paribus.gui.dialogs.var_dialog import VarDialog
 from ceteris_paribus.gui.visual_elements import FloatSlider
 
@@ -28,6 +29,19 @@ class ContextPane(QWidget):
 
         self.input_group = QGroupBox("Inputs")
         self.input_group.setFixedSize(300, (available_height / 2))
+        # We construct the input group layout here
+
+        self.input_group_layout = QVBoxLayout()
+        glob_button = QPushButton("View global inputs")
+        glob_button.clicked.connect(self.show_globals)
+        self.input_group_layout.addWidget(glob_button)
+
+        new_glob_in_button = QPushButton("New")
+        new_glob_in_button.clicked.connect(self.new_global_input)
+        self.input_group_layout.addWidget(new_glob_in_button)
+        self.in_slider_layout = QGridLayout()
+
+        self.input_group.setLayout(self.input_group_layout)
 
         self.context_group = QGroupBox("Context")
         self.context_group.setFixedSize(300, (available_height / 2))
@@ -61,28 +75,13 @@ class ContextPane(QWidget):
         self.initialize_output()
 
     def initialize_input(self):
-        layout = QVBoxLayout()
+        self.in_slider_layout.setRowStretch(2, 500)
+        # Now we loop over all the global inputs, adding them as sliders
+        self.fill_input_grid()
 
-        glob_button = QPushButton("View global inputs")
-        glob_button.clicked.connect(self.show_globals)
-        layout.addWidget(glob_button)
 
-        slider_layout = QGridLayout()
 
-        global_params = self.controller.get_global_param_ranges()
-        for index, param_name in enumerate(global_params):
-            slider_layout.addWidget(QLabel(param_name), index + 1, 0)
-            minimum = global_params[param_name][0]
-            maximum = global_params[param_name][1]
-            value = global_params[param_name][2]
-            value_label = QLabel(str(round(value, 2)))
-            target = partial(self.input_slider_changed, param_name, value_label)
-            slider = FloatSlider(minimum, maximum, value, target)
-            slider_layout.addWidget(slider, index + 1, 1)
-            slider_layout.addWidget(value_label, index + 1, 2)
-        slider_layout.setRowStretch(2, 500)
-        layout.addLayout(slider_layout)
-        self.input_group.setLayout(layout)
+        self.input_group_layout.addLayout(self.in_slider_layout)
 
     def initialize_context(self):
         layout = QVBoxLayout()
@@ -109,9 +108,31 @@ class ContextPane(QWidget):
 
         self.context_group.setLayout(layout)
 
+    def initialize_output(self):
+        output_layout = QVBoxLayout()
+
+        button_layout = QHBoxLayout()
+        global_outs = QPushButton("Global functions")
+        global_outs.clicked.connect(lambda: self.show_global_funcs())
+        button_layout.addWidget(global_outs)
+
+        self.fill_output_grid()
+
+        output_layout.addLayout(button_layout)
+        output_layout.addLayout(self.output_grid_layout)
+        self.output_group.setLayout(output_layout)
+
     def change_context_organ(self, organ):
         self.current_organ = organ
         self.name_label.setText(organ.get_name())
+
+    def new_global_input(self):
+        # This dialog constructs a new global input slider for use everywhere.
+
+        dialog = GlobalInputDialog(self.controller)
+        if dialog.exec():
+            self.controller.add_global_input(dialog.var_name.text(), dialog.min, dialog.val, dialog.max)
+            self.reload_input_layout()
 
     def show_locals(self):
         dialog = QDialog()
@@ -141,10 +162,10 @@ class ContextPane(QWidget):
         dialog = QDialog()
         dialog.setWindowTitle("Globals")
         layout = QGridLayout()
-        if self.current_organ and self.current_organ.get_globals():
-            for index, val in enumerate(self.current_organ.get_globals()):
+        if self.controller.get_global_param_ranges():
+            for index, val in enumerate(self.controller.get_global_param_ranges()):
                 layout.addWidget(QLabel(val), index, 0)
-                layout.addWidget(QLabel(str(round(self.current_organ.get_globals()[val], 2))), index, 1)
+                layout.addWidget(QLabel(str(round(self.controller.get_global_param_ranges()[val][2], 2))), index, 1)
         else:
             layout.addWidget(QLabel("No globals have been defined for this model"), 0, 0)
         dialog.setLayout(layout)
@@ -314,6 +335,15 @@ class ContextPane(QWidget):
             previous_dialog.accept()
             self.show_local_funcs()
 
+    def reload_layout(self, layout):
+        while not self.output_grid_layout.isEmpty():
+            # Our first item is always the button
+            item = self.output_grid_layout.takeAt(0)
+            self.output_grid_layout.removeItem(item)
+            if item.widget():
+                item.widget().deleteLater()
+        self.fill_output_grid()
+
     def reload_output_layout(self):
         while not self.output_grid_layout.isEmpty():
             # Our first item is always the button
@@ -334,19 +364,28 @@ class ContextPane(QWidget):
             self.output_grid_layout.addWidget(self.local_outs[out_name], index + 1, 1)
         self.output_group.update()
 
-    def initialize_output(self):
-        output_layout = QVBoxLayout()
+    def reload_input_layout(self):
+        while not self.in_slider_layout.isEmpty():
+            item = self.in_slider_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        self.fill_input_grid()
 
-        button_layout = QHBoxLayout()
-        global_outs = QPushButton("Global functions")
-        global_outs.clicked.connect(lambda: self.show_global_funcs())
-        button_layout.addWidget(global_outs)
+    def fill_input_grid(self):
 
-        self.fill_output_grid()
+        global_params = self.controller.get_global_param_ranges()
 
-        output_layout.addLayout(button_layout)
-        output_layout.addLayout(self.output_grid_layout)
-        self.output_group.setLayout(output_layout)
+        for index, param_name in enumerate(global_params):
+            self.in_slider_layout.addWidget(QLabel(param_name), index + 1, 0)
+            minimum = global_params[param_name][0]
+            maximum = global_params[param_name][1]
+            value = global_params[param_name][2]
+            value_label = QLabel(str(round(value, 2)))
+            target = partial(self.input_slider_changed, param_name, value_label)
+            slider = FloatSlider(minimum, maximum, value, target)
+            self.in_slider_layout.addWidget(slider, index + 1, 1)
+            self.in_slider_layout.addWidget(value_label, index + 1, 2)
+
 
     def update_output(self, target_label, new_out):
         if target_label is not None:

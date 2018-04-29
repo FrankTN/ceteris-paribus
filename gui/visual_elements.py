@@ -182,6 +182,7 @@ class FloatSlider(QSlider):
     def __init__(self, min, max, val, target):
         super().__init__(Qt.Horizontal)
         self.diff = float(max) - float(min)
+        self.min = float(min)
 
         # This is the function hook we will call once we have rescaled the value
         self.target = target
@@ -192,7 +193,7 @@ class FloatSlider(QSlider):
             # We have no range to map to, defaulting to 0
             scaled_init_val = 0
         else:
-            scaled_init_val = val * 100/self.diff
+            scaled_init_val = (float(val)-float(min)) * 100 / self.diff
         self.setValue(scaled_init_val)
         self.valueChanged.connect(self.value_handler)
 
@@ -201,7 +202,7 @@ class FloatSlider(QSlider):
             # We have no range to map to, defaulting to 0
             scaled_val = 0
         else:
-            scaled_val = (self.diff*float(value))/100
+            scaled_val = ((value/100)*self.diff) + self.min
         self.target(scaled_val)
 
 def print_warning(text):
