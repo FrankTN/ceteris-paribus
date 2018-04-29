@@ -10,28 +10,30 @@ class GlobalModel(object):
     """
     def __init__(self, controller):
         super().__init__()
+        self.organs = {}
+        self._global_funcs = {}
+        self._global_constants = {}
+        self._global_params = {}
         self.color_schemes = {}
         self.controller = controller
         # Since we only create a model after we know that the db has been loaded, we know that get_db() works
-        self._database = self.controller.get_db()
-        self.initialize_globals()
-        self.initialize_organs()
+        if self.controller.get_db() is not None:
+            self._database = self.controller.get_db()
+            self.initialize_globals()
+            self.initialize_organs()
         self.vars = {}
 
     def initialize_globals(self):
         """ This function retrieves all globally defined values from the database."""
         # From the database, get the global input parameters.
-        self._global_params = {}
         global_param_table =  self._database.table("GlobalParameters").all()
         for param in global_param_table:
             self._global_params.update(param)
         # The globally defined constants are also retrieved from the database
-        self._global_constants = {}
         global_const_table =  self._database.table("GlobalConstants").all()
         for const in global_const_table:
             self._global_constants.update(const)
         # Finally, the global functions are retrieved
-        self._global_funcs = {}
         global_func_table = self._database.table("GlobalFunctions").all()
         for func in global_func_table:
             self._global_funcs.update(func)
@@ -41,7 +43,6 @@ class GlobalModel(object):
     def initialize_organs(self):
         """ Using the database, this function creates all the organs and adds them to the list of organs maintained by
             the model."""
-        self.organs = {}
         pos = [0, 0]
         self.count = 0
         rangeless_globals = self.make_rangeless_params(self._global_params)

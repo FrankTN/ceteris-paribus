@@ -43,7 +43,7 @@ class ContextPane(QWidget):
         color_layout.addWidget(self.colorBar)
         color_group.setLayout(color_layout)
         self.colorBar.loadPreset('cyclic')
-        self.colorBar.sigGradientChangeFinished.connect(lambda : self.controller.update_colors())
+        self.colorBar.sigGradientChangeFinished.connect(lambda: self.controller.update_colors())
 
         layout = QGridLayout()
         layout.addWidget(self.input_group)
@@ -56,8 +56,6 @@ class ContextPane(QWidget):
     def reload(self):
         self.initialize_input()
 
-        # Initialize the current organ being displayed in the model to be the first organ encountered in the list
-        self.change_context_organ(list(self.controller.get_organs().values())[0])
         self.initialize_context()
 
         self.initialize_output()
@@ -73,15 +71,15 @@ class ContextPane(QWidget):
 
         global_params = self.controller.get_global_param_ranges()
         for index, param_name in enumerate(global_params):
-            slider_layout.addWidget(QLabel(param_name), index+1, 0)
+            slider_layout.addWidget(QLabel(param_name), index + 1, 0)
             minimum = global_params[param_name][0]
             maximum = global_params[param_name][1]
             value = global_params[param_name][2]
             value_label = QLabel(str(round(value, 2)))
             target = partial(self.input_slider_changed, param_name, value_label)
             slider = FloatSlider(minimum, maximum, value, target)
-            slider_layout.addWidget(slider, index+1, 1)
-            slider_layout.addWidget(value_label, index+1, 2)
+            slider_layout.addWidget(slider, index + 1, 1)
+            slider_layout.addWidget(value_label, index + 1, 2)
         slider_layout.setRowStretch(2, 500)
         layout.addLayout(slider_layout)
         self.input_group.setLayout(layout)
@@ -143,9 +141,12 @@ class ContextPane(QWidget):
         dialog = QDialog()
         dialog.setWindowTitle("Globals")
         layout = QGridLayout()
-        for index, val in enumerate(self.current_organ.get_globals()):
-            layout.addWidget(QLabel(val), index, 0)
-            layout.addWidget(QLabel(str(round(self.current_organ.get_globals()[val],2))), index, 1)
+        if self.current_organ and self.current_organ.get_globals():
+            for index, val in enumerate(self.current_organ.get_globals()):
+                layout.addWidget(QLabel(val), index, 0)
+                layout.addWidget(QLabel(str(round(self.current_organ.get_globals()[val], 2))), index, 1)
+        else:
+            layout.addWidget(QLabel("No globals have been defined for this model"), 0, 0)
         dialog.setLayout(layout)
         dialog.exec_()
 
@@ -220,7 +221,6 @@ class ContextPane(QWidget):
         line.setFrameShape(QFrame.VLine)
         line.setFrameShadow(QFrame.Sunken)
         layout.addWidget(line, 0, 1)
-
 
         func = parse_function(func_dict[name])
         str_label = QLabel(" ".join(func))
@@ -307,7 +307,8 @@ class ContextPane(QWidget):
             self.show_locals()
 
     def edit_functions(self, previous_dialog):
-        dialog = FunctionDialog(self.current_organ.get_defined_variables(), self.current_organ.get_name(), self.current_organ.get_funcs())
+        dialog = FunctionDialog(self.current_organ.get_defined_variables(), self.current_organ.get_name(),
+                                self.current_organ.get_funcs())
 
         if dialog.exec_():
             previous_dialog.accept()
@@ -327,10 +328,10 @@ class ContextPane(QWidget):
         for index, out_name in enumerate(outputs):
             out_button = QPushButton(out_name)
             out_button.clicked.connect(partial(self.controller.set_colors_for_global, out_name))
-            self.output_grid_layout.addWidget(out_button, index+1, 0)
+            self.output_grid_layout.addWidget(out_button, index + 1, 0)
             self.local_outs[out_name] = QLabel(str(round(outputs[out_name], 2)))
             self.local_outs[out_name].setStyleSheet("QLabel { background-color : white; color : blue; }")
-            self.output_grid_layout.addWidget(self.local_outs[out_name], index+1, 1)
+            self.output_grid_layout.addWidget(self.local_outs[out_name], index + 1, 1)
         self.output_group.update()
 
     def initialize_output(self):
@@ -338,7 +339,7 @@ class ContextPane(QWidget):
 
         button_layout = QHBoxLayout()
         global_outs = QPushButton("Global functions")
-        global_outs.clicked.connect(lambda : self.show_global_funcs())
+        global_outs.clicked.connect(lambda: self.show_global_funcs())
         button_layout.addWidget(global_outs)
 
         self.fill_output_grid()
@@ -349,10 +350,10 @@ class ContextPane(QWidget):
 
     def update_output(self, target_label, new_out):
         if target_label is not None:
-            target_label.setText(str(round(new_out,2)))
+            target_label.setText(str(round(new_out, 2)))
         outputs = self.controller.get_outputs()
         for local_out_val in self.local_outs:
-            self.local_outs[local_out_val].setText(str(round(outputs[local_out_val],2)))
+            self.local_outs[local_out_val].setText(str(round(outputs[local_out_val], 2)))
             if self.controller.current_global == local_out_val:
                 # If the output of the currently selected value is changed we update the color schemes
                 self.controller.set_colors_for_global(local_out_val)

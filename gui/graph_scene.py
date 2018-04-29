@@ -15,7 +15,6 @@ class GraphScene(QGraphicsScene):
 
         # Items is used as a dict to keep internal references to the items.
         self.items = {}
-        # self.items['Global Input'] = self.input_node
         self.edges = []
 
         self.setBackgroundBrush(QBrush(Qt.lightGray, Qt.CrossPattern))
@@ -28,6 +27,7 @@ class GraphScene(QGraphicsScene):
 
         self.input_node = InNode(-300, 0, self.controller)
         self.addItem(self.input_node)
+        self.items['Global Input'] = self.input_node
         self.output_node = OutNode(300, 0, self.controller)
         self.addItem(self.output_node)
 
@@ -50,6 +50,7 @@ class GraphScene(QGraphicsScene):
         out_edge = Edge(node, self.output_node)
         self.edges.append(out_edge)
         self.addItem(out_edge)
+
         # We need a copy because the original is being updated each time we create a new edge
         local_list = edge_src_list[:]
         for source in local_list:

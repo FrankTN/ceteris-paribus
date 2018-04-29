@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 """ The controller acts as a layer handling communication between the GUI, the model and the database. """
-import os.path
 import sys
 
 # Append the parent directory of this file to the global path. This ensures that we may always find the required modules
@@ -11,8 +10,6 @@ from PyQt5.QtGui import QFont
 from ceteris_paribus.control.model_control import ModelController
 from ceteris_paribus.control.view_control import ViewController
 from ceteris_paribus.gui.visual_elements import print_warning
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
@@ -25,9 +22,9 @@ class Controller(object):
 
     def __init__(self):
         # Create a view control object and a model control object, to be used by this controller
+        self.model_control = ModelController(None)
         self.view_control = ViewController(self)
         # Initialize the database and the model controller as empty objects, as we do not have a model to control yet
-        self.model_control = None
         self.db = None
 
     def open_new_db(self):

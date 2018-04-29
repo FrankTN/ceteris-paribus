@@ -8,7 +8,11 @@ from tinydb import TinyDB
 def dump_model(model, target = os.getcwd() + "/db/" +  "new_organ_db"):
     """Serialize a model as a JSON file in such a way that it can be reopened at any moment for later use."""
     # Create the db for dumping
-    target_db = TinyDB(target + ".json")
+    try:
+        target_db = TinyDB(target + ".json")
+    except OSError as err:
+            # If we encounter an error we raise it to the GUI
+            raise err
     target_db.purge_tables()
     global_const = target_db.table("GlobalConstants")
     print(model.get_global_constants())

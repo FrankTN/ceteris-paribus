@@ -1,13 +1,14 @@
 """This module contains the class for the main window of the application."""
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush
-from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget
+from PyQt5.QtWidgets import QMainWindow, QGraphicsView, QDockWidget, QMessageBox
 
 from ceteris_paribus.gui.graph_scene import GraphScene
 from ceteris_paribus.gui.sidepane import ContextPane
 
 from ceteris_paribus.db import db_dumper
 from ceteris_paribus.gui.dialogs.db_dialogs import save_db_dialog
+import errno
 
 
 class GraphWindow(QMainWindow):
@@ -63,6 +64,9 @@ class GraphWindow(QMainWindow):
     def reload(self):
         # This method is called by the view_controller after a successful update of the model
         self.setCentralWidget(QGraphicsView(self.scene))
+        self.reload_context()
+
+    def reload_context(self):
         self.context.reload()
         self.side_pane.setWidget(self.context)
 
@@ -86,6 +90,20 @@ class GraphWindow(QMainWindow):
         self.controller.open_new_db()
 
     def save_db(self):
-        target = save_db_dialog()
-        if hasattr(self.controller, "model"):
-            db_dumper.dump_model(self.controller.model, target)
+        # View controller
+        if len(self.controller.get_organs()) > 0:
+            target = save_db_dialog()
+            try:
+                db_dumper.dump_model(self.controller.get_model(), target)
+            except OSError as err:
+                if err.errno == errno.EACCES:
+                    msg = QMessageBox()
+                    msg.setWindowTitle("Error")
+                    msg.setText("Permission denied, please try another location")
+                    msg.exec_()
+                    self.save_db()
+        else:
+            msg = QMessageBox()
+            msg.setWindowTitle("Error")
+            msg.setText("A model has not yet been defined, please add at least one organ")
+            msg.exec_()

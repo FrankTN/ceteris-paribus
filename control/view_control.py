@@ -4,7 +4,7 @@ from ceteris_paribus.gui.graph_editor import GraphWindow
 
 
 class ViewController(object):
-    """ The ViewController is a class in the controller module, it contians those functions concerned with controlling
+    """ The ViewController is a class in the controller module, it contains those functions concerned with controlling
         the UI."""
 
     def __init__(self, global_control):
@@ -17,6 +17,7 @@ class ViewController(object):
         # The context pane remains empty for now
         self.context_pane = self.ui.context
         self.current_global = None
+        self.init_empty_model()
 
     def get_undo_stack(self):
         return self.undo_stack
@@ -32,6 +33,7 @@ class ViewController(object):
         added_organ = self.global_control.get_model().add(organ_info, position)
         self.ui.scene.add_organ_node(added_organ, edges)
         self.ui.scene.update()
+        self.ui.context.change_context_organ(added_organ)
         return added_organ
 
     def remove_organ(self, organ):
@@ -46,6 +48,9 @@ class ViewController(object):
 
     def get_global_param_ranges(self):
         return self.global_control.get_model().get_global_param_ranges()
+
+    def get_model(self):
+        return self.global_control.get_model()
 
     def get_global_funcs(self):
         return self.global_control.get_model().get_global_functions()
@@ -78,7 +83,6 @@ class ViewController(object):
                 self.ui.scene.items[organ.get_name()].set_gray()
         self.ui.scene.update()
 
-
     def change_context_organ(self, organ):
         # Change the organ being displayed in the context menu on the right dock
         self.context_pane.change_context_organ(organ)
@@ -90,6 +94,11 @@ class ViewController(object):
             self.ui.scene.load_from_model(new_model)
             # After changing the model and the database inside the controller, we ask the UI to update itself
             self.ui.reload()
+
+    def init_empty_model(self):
+        new_model = self.global_control.model_control.get_model()
+        self.ui.scene.load_from_model(new_model)
+        self.ui.reload()
 
     def organ_local_changed(self, name, label, new_value):
         # If the user changes a local value in an organ, this function is called. We change the local value and update

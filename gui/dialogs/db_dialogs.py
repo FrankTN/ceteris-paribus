@@ -4,6 +4,7 @@
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from tinydb import TinyDB
 
+
 def select_db_dialog():
     """ This function, which opens the database and connects it to the model is called before the UI can actually be
         used. """
@@ -20,9 +21,11 @@ def select_db_dialog():
         msg.setText("Unable to load database, the file might be corrupted\nPlease try again")
         msg.exec_()
 
+
 def save_db_dialog():
     """ This function creates a graphical interface to save a file. It returns the name of the target"""
-    return QFileDialog.getSaveFileName(None, "Save File", "/home","*.json")[0]
+    return QFileDialog.getSaveFileName(None, "Save File", "/home", "*.json")[0]
+
 
 def remove_selected(var_view, variables):
     # Removes the selected item from the specified widget and from the corresponding item:value dict
