@@ -36,9 +36,16 @@ class ContextPane(QWidget):
         glob_button.clicked.connect(self.show_globals)
         self.input_group_layout.addWidget(glob_button)
 
+        input_gr_button_layout = QHBoxLayout()
         new_glob_in_button = QPushButton("New")
         new_glob_in_button.clicked.connect(self.new_global_input)
-        self.input_group_layout.addWidget(new_glob_in_button)
+        input_gr_button_layout.addWidget(new_glob_in_button)
+
+        del_glob_in_button = QPushButton("Remove")
+        del_glob_in_button.clicked.connect(self.del_global_input)
+        input_gr_button_layout.addWidget(del_glob_in_button)
+        self.input_group_layout.addLayout(input_gr_button_layout)
+
         self.in_slider_layout = QGridLayout()
 
         self.input_group.setLayout(self.input_group_layout)
@@ -78,9 +85,6 @@ class ContextPane(QWidget):
         self.in_slider_layout.setRowStretch(2, 500)
         # Now we loop over all the global inputs, adding them as sliders
         self.fill_input_grid()
-
-
-
         self.input_group_layout.addLayout(self.in_slider_layout)
 
     def initialize_context(self):
@@ -132,6 +136,25 @@ class ContextPane(QWidget):
         dialog = GlobalInputDialog(self.controller)
         if dialog.exec():
             self.controller.add_global_input(dialog.var_name.text(), dialog.min, dialog.val, dialog.max)
+            self.reload_input_layout()
+
+    def del_global_input(self):
+        # The delete dialog is very simple, it consists of a combobox and a simple delete button
+        dialog = QDialog()
+
+        layout = QHBoxLayout()
+        input_names = self.controller.get_global_inputs()
+        selection = QComboBox()
+        selection.addItems(list(input_names.keys()))
+        layout.addWidget(selection)
+        rem_button = QPushButton("Remove")
+        rem_button.clicked.connect(lambda: dialog.accept())
+        layout.addWidget(rem_button)
+
+        dialog.setLayout(layout)
+
+        if dialog.exec():
+            self.controller.remove_global_input(selection.currentText())
             self.reload_input_layout()
 
     def show_locals(self):
@@ -385,7 +408,6 @@ class ContextPane(QWidget):
             slider = FloatSlider(minimum, maximum, value, target)
             self.in_slider_layout.addWidget(slider, index + 1, 1)
             self.in_slider_layout.addWidget(value_label, index + 1, 2)
-
 
     def update_output(self, target_label, new_out):
         if target_label is not None:

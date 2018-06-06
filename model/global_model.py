@@ -87,6 +87,9 @@ class GlobalModel(object):
     def get_global_param_ranges(self):
         return self._global_params
 
+    def remove_global_param(self, name):
+        del self._global_params[name]
+
     def get_global_constants(self):
         return self._global_constants
 

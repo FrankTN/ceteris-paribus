@@ -103,6 +103,12 @@ class ViewController(object):
     def add_global_input(self, name, min, val, max):
         self.get_model().add_global_parameter(name, [min, max, val])
 
+    def get_global_inputs(self):
+        return self.get_model().get_global_param_ranges()
+
+    def remove_global_input(self, input_name):
+        self.get_model().remove_global_param(input_name)
+
     def organ_local_changed(self, name, label, new_value):
         # If the user changes a local value in an organ, this function is called. We change the local value and update
         # the UI accordingly

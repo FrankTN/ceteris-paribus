@@ -146,7 +146,7 @@ class GlobalFunctionDialog(QDialog):
         add_val_button = QPushButton("Add")
         local_layout.addWidget(add_val_button, 0, 1)
         add_val_button.clicked.connect(
-            lambda: self.add_combobox_value(organ_selector.currentText(), organs, variable_selector))
+            lambda: self.add_combobox_value(organ_selector.currentText(), organs))
 
         rem_val_button = QPushButton("Remove")
         rem_val_button.clicked.connect(self.remove_word)

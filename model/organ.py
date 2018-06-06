@@ -6,12 +6,12 @@ from ceteris_paribus.db.function_parser import EvalWrapper, Transformer, evaluat
 class Organ(object):
     """The class which represents all organs"""
 
-    def __init__(self, organ_info, global_params, global_constants, pos):
+    def __init__(self, organ_info, input_params, input_constants, pos):
         """ This generic implementation of an organ in the model uses the __setattr__ method to add attributes.
             Adding attributes in this way is necessary since not all attributes are defined for each organ.
         """
-        self.global_params = global_params
-        self.global_constants = global_constants
+        self.input_params = input_params
+        self.input_constants = input_constants
         self.pos = pos
         if organ_info:
             for property in organ_info.keys():
@@ -19,7 +19,7 @@ class Organ(object):
 
         # The defined variables dict is a combination of all the variables and their values available to this organ
         # It will be used by the evaluator to resolve all functions and their values
-        self.defined_variables = {**self.get_local_vals(), **self.global_params, **self.global_constants}
+        self.defined_variables = {**self.get_local_vals(), **self.input_params, **self.input_constants}
 
         self.results = {}
         self.evaluate()
@@ -30,8 +30,8 @@ class Organ(object):
         :param new_globals: a dict containing the new global variables
         :return: None
         """
-        self.global_params = new_globals
-        self.defined_variables = {**self.defined_variables, **self.global_params, **self.global_constants}
+        self.input_params = new_globals
+        self.defined_variables = {**self.defined_variables, **self.input_params, **self.input_constants}
 
 
     def evaluate(self):
@@ -55,9 +55,9 @@ class Organ(object):
         self.defined_variables.pop('__builtins__', None)
         return self.defined_variables
 
-    def get_globals(self) -> dict:
+    def get_inputs(self) -> dict:
         # Returns the global values as known to this organ in a single dict
-        return self.global_params
+        return self.input_params
 
     def get_local_ranges(self) -> dict:
         # Returns only the locally defined variables
