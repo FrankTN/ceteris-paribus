@@ -1,8 +1,11 @@
 """ Module containing the definitions of the parts of the graph, including node types and edges. Currently, the Input
     and Output nodes are special, the other nodes should all contain Organ data."""
-from PyQt5.QtCore import Qt, QPointF, QRectF
+from PyQt5.QtCore import Qt, QPointF, QRectF, QTimer
 from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor, QPainterPath
-from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem, QSlider, QMessageBox
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem, QSlider, QMessageBox, QApplication, \
+    QDialog, QPushButton, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit
+
+from ceteris_paribus.gui.dialogs.name_dialog import NameDialog
 
 
 class GraphNode(QGraphicsRectItem):
@@ -132,6 +135,7 @@ class OrganNode(GraphNode):
     # Subclass for the organ nodes
     def __init__(self, organ, controller):
         super().__init__(controller, *organ.pos)
+        self.click = False
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.organ = organ
         self.controller = controller
@@ -140,6 +144,34 @@ class OrganNode(GraphNode):
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         self.controller.change_context_organ(self.organ)
         print("clicked: " + self.organ.get_name())
+        self.click = True
+
+    def mouseDoubleClickEvent(self, event):
+        dialog = NameDialog()
+
+        if dialog.exec():
+            self.controller.change_context_organ_name()
+        """
+        dialog = QDialog()
+        layout = QVBoxLayout()
+        dialog.setLayout(layout)
+
+        textbar = QLineEdit()
+        layout.addWidget(textbar)
+
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        accept_button = QPushButton("Accept")
+        accept_button.clicked.connect(dialog.accept)
+        button_layout.addWidget(accept_button)
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(dialog.reject)
+        button_layout.addWidget(cancel_button)
+
+        layout.addLayout(button_layout)
+
+        if dialog.exec():
+            pass """
 
 
 class Edge(QGraphicsLineItem):

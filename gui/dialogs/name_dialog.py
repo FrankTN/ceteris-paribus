@@ -11,7 +11,7 @@ class NameDialog(QDialog):
         self.next_button.setEnabled(False)
         cancel_button = QPushButton("Cancel")
 
-        self.setWindowTitle("Set new node name")
+        self.setWindowTitle("Set node name")
         name_layout = QHBoxLayout()
         name_label = QLabel("&Name:")
         self.name_field = QLineEdit()

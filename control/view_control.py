@@ -49,6 +49,9 @@ class ViewController(object):
     def get_global_param_ranges(self):
         return self.global_control.get_model().get_global_param_ranges()
 
+    def get_global_params(self):
+        return self.global_control.get_model().get_global_param_values()
+
     def get_model(self):
         return self.global_control.get_model()
 
@@ -71,7 +74,7 @@ class ViewController(object):
         # node is in their range with respect to this value
         color_scheme_names = self.global_control.get_model().color_schemes[name]
 
-        gradient = self.context_pane.colorBar.getLookupTable(100) # A lookup table giving RGB colors
+        gradient = self.context_pane.colorBar.getLookupTable(100)  # A lookup table giving RGB colors
 
         for organ in self.global_control.get_model().organs.values():
             if organ.get_name() in color_scheme_names:
@@ -86,6 +89,10 @@ class ViewController(object):
     def change_context_organ(self, organ):
         # Change the organ being displayed in the context menu on the right dock
         self.context_pane.change_context_organ(organ)
+
+    def change_context_organ_name(self, name):
+        # TODO add name changing facilities
+        pass
 
     def open_new_db(self):
         # This is called when the button to open a db is clicked in the menu
@@ -114,7 +121,7 @@ class ViewController(object):
         # the UI accordingly
         organ = self.context_pane.current_organ
         organ.local_changed(name, new_value)
-        label.setText(str(round(new_value,2)))
+        label.setText(str(round(new_value, 2)))
         self.context_pane.update_output(None, None)
 
     def add_global_function(self, f_name, f_str):

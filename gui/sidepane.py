@@ -162,23 +162,24 @@ class ContextPane(QWidget):
         dialog.setWindowTitle("Local values")
         layout = QGridLayout()
 
-        for index, name in enumerate(self.current_organ.get_local_ranges()):
-            assert '__builtins__' not in self.current_organ.get_local_ranges()
-            if name != '__builtins__':
-                layout.addWidget(QLabel(name), index, 0)
-                minimum = self.current_organ.get_local_ranges()[name][0]
-                maximum = self.current_organ.get_local_ranges()[name][1]
-                value = self.current_organ.get_local_ranges()[name][2]
-                value_label = QLabel(str(round(value, 2)))
-                target = partial(self.controller.organ_local_changed, name, value_label)
-                slider = FloatSlider(minimum, maximum, value, target)
-                layout.addWidget(slider, index, 1)
-                layout.addWidget(value_label, index, 2)
-        edit_button = QPushButton('Edit')
-        edit_button.clicked.connect(partial(self.edit_locals, dialog))
-        layout.addWidget(edit_button, len(self.current_organ.get_local_ranges()), 0)
-        dialog.setLayout(layout)
-        dialog.exec_()
+        if self.current_organ:
+            for index, name in enumerate(self.current_organ.get_local_ranges()):
+                assert '__builtins__' not in self.current_organ.get_local_ranges()
+                if name != '__builtins__':
+                    layout.addWidget(QLabel(name), index, 0)
+                    minimum = self.current_organ.get_local_ranges()[name][0]
+                    maximum = self.current_organ.get_local_ranges()[name][1]
+                    value = self.current_organ.get_local_ranges()[name][2]
+                    value_label = QLabel(str(round(value, 2)))
+                    target = partial(self.controller.organ_local_changed, name, value_label)
+                    slider = FloatSlider(minimum, maximum, value, target)
+                    layout.addWidget(slider, index, 1)
+                    layout.addWidget(value_label, index, 2)
+            edit_button = QPushButton('Edit')
+            edit_button.clicked.connect(partial(self.edit_locals, dialog))
+            layout.addWidget(edit_button, len(self.current_organ.get_local_ranges()), 0)
+            dialog.setLayout(layout)
+            dialog.exec_()
 
     def show_globals(self):
         print(self.controller.get_global_param_ranges())
@@ -357,15 +358,6 @@ class ContextPane(QWidget):
         if dialog.exec_():
             previous_dialog.accept()
             self.show_local_funcs()
-
-    def reload_layout(self, layout):
-        while not self.output_grid_layout.isEmpty():
-            # Our first item is always the button
-            item = self.output_grid_layout.takeAt(0)
-            self.output_grid_layout.removeItem(item)
-            if item.widget():
-                item.widget().deleteLater()
-        self.fill_output_grid()
 
     def reload_output_layout(self):
         while not self.output_grid_layout.isEmpty():

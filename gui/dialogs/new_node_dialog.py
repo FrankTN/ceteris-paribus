@@ -34,7 +34,7 @@ class NewNodeDialog(object):
                 if source == "Global Input":
                     self.variables = {**self.variables, **self.controller.get_global_param_ranges()}
                 else:
-                    locals_of_source = self.controller.get_organs()[source].get_local_ranges()
+                    locals_of_source = self.controller.get_organs()[source].get_local_param_ranges()
                     # Unroll source locals into general variables
                     self.variables = {**self.variables, **locals_of_source}
 

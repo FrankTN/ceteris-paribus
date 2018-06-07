@@ -61,7 +61,14 @@ class FunctionDialog(QDialog):
 
         edit_layout.addWidget(self.f_name)
         edit_layout.addWidget(self.f_form)
-        self.f_form.setValidator(LocalFunctionValidator(variables, organ_name))
+        try:
+            variable_values = {}
+            for k, v in variables.items():
+                variable_values[k] = v[2]
+        except TypeError:
+            # Encountering a type error means that we dont have a range
+            variable_values = variables
+        self.f_form.setValidator(LocalFunctionValidator(variable_values, organ_name))
         self.function_list_widget.itemDoubleClicked.connect(self.fill_edits)
         edits.setLayout(edit_layout)
 

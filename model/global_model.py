@@ -88,7 +88,8 @@ class GlobalModel(object):
         return self._global_params
 
     def remove_global_param(self, name):
-        del self._global_params[name]
+        if name in self._global_params:
+            del self._global_params[name]
 
     def get_global_constants(self):
         return self._global_constants
