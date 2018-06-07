@@ -91,6 +91,8 @@ class ViewController(object):
         self.context_pane.change_context_organ(organ)
 
     def change_context_organ_name(self, name):
+
+
         # TODO add name changing facilities
         pass
 

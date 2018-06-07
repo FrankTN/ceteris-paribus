@@ -35,6 +35,9 @@ class NameDialog(QDialog):
         self.next_button.clicked.connect(self.accept)
         cancel_button.clicked.connect(self.reject)
 
+    def get_name(self):
+        return self.name_field.text()
+
     def validate_text_field(self):
         # Right now, all nonempty strings are considered to be valid, this might change later.
         if not self.isEmpty(self.name_field.text()):

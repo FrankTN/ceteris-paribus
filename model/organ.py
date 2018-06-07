@@ -41,6 +41,9 @@ class Organ(object):
     def get_name(self):
         return getattr(self, 'name', 'default_organ')
 
+    def set_name(self, name):
+        setattr(self, 'name', name)
+
     def local_changed(self, name: str, new_value):
         # Set local value to the new one
         self.defined_variables[name] = new_value

@@ -150,28 +150,11 @@ class OrganNode(GraphNode):
         dialog = NameDialog()
 
         if dialog.exec():
-            self.controller.change_context_organ_name()
-        """
-        dialog = QDialog()
-        layout = QVBoxLayout()
-        dialog.setLayout(layout)
-
-        textbar = QLineEdit()
-        layout.addWidget(textbar)
-
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()
-        accept_button = QPushButton("Accept")
-        accept_button.clicked.connect(dialog.accept)
-        button_layout.addWidget(accept_button)
-        cancel_button = QPushButton("Cancel")
-        cancel_button.clicked.connect(dialog.reject)
-        button_layout.addWidget(cancel_button)
-
-        layout.addLayout(button_layout)
-
-        if dialog.exec():
-            pass """
+            name = dialog.get_name()
+            self.organ.set_name(name)
+            self.name = name
+            self.controller.change_context_organ(self.organ)
+            self.controller.ui.reload()
 
 
 class Edge(QGraphicsLineItem):
