@@ -1,9 +1,8 @@
 """ Module containing the definitions of the parts of the graph, including node types and edges. Currently, the Input
     and Output nodes are special, the other nodes should all contain Organ data."""
-from PyQt5.QtCore import Qt, QPointF, QRectF, QTimer
+from PyQt5.QtCore import Qt, QPointF, QRectF
 from PyQt5.QtGui import QLinearGradient, QFont, QFontMetrics, QColor, QPainterPath
-from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem, QSlider, QMessageBox, QApplication, \
-    QDialog, QPushButton, QHBoxLayout, QVBoxLayout, QTextEdit, QLineEdit
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItem, QGraphicsLineItem, QSlider, QMessageBox
 
 from ceteris_paribus.gui.dialogs.name_dialog import NameDialog
 
@@ -54,7 +53,7 @@ class GraphNode(QGraphicsRectItem):
 
     def boundingRect(self):
         # Reimplementation of the boundingRect function, to resize the node based on the length of its title
-        fm = QFontMetrics(QFont("Arial", 13))
+        fm = QFontMetrics(QFont("Arial", 15))
         text_size = fm.boundingRect(self.name + self.color_val_text)
         rect = self.rect()
         new_width = max(text_size.width(), rect.width())
@@ -63,7 +62,7 @@ class GraphNode(QGraphicsRectItem):
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         # The basic paint method, draws a box with a gradient and fills it with the title
-        QPainter.setFont(QFont("Arial", 13))
+        QPainter.setFont(QFont("Arial", 15))
         rect = self.boundingRect()
         QPainter.drawRect(rect)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
@@ -87,9 +86,9 @@ class GraphNode(QGraphicsRectItem):
         range_max = range[1]
         val = range[2]
         normalized_val = (val - range_min) / (range_max - range_min)
-        index = int(normalized_val*len(gradient_table))
+        index = int(normalized_val * len(gradient_table))
 
-        self.color_val_text = str(round(val,2))
+        self.color_val_text = str(round(val, 2))
         # Here, we use the index to find the closest color in the gradient table.
         self.color = QColor(*gradient_table[index])
 
@@ -123,6 +122,7 @@ class InNode(GraphNode):
         self.name = "Input"
         self.controller = controller
 
+
 class OutNode(GraphNode):
     # TODO expand functionality
     def __init__(self, x, y, controller):
@@ -151,10 +151,15 @@ class OrganNode(GraphNode):
 
         if dialog.exec():
             name = dialog.get_name()
-            self.organ.set_name(name)
-            self.name = name
-            self.controller.change_context_organ(self.organ)
-            self.controller.ui.reload()
+            if name not in self.controller.get_organ_names():
+                self.organ.set_name(name)
+                self.name = name
+                self.controller.change_context_organ(self.organ)
+                self.controller.ui.reload()
+            else:
+                msg = QMessageBox()
+                msg.setText("Warning: name already in use")
+                msg.exec()
 
 
 class Edge(QGraphicsLineItem):
@@ -191,9 +196,11 @@ class Edge(QGraphicsLineItem):
     def __str__(self):
         return "Source: [" + self.source_node.name + "] Dest: [" + self.dest_node.name + "]"
 
+
 class FloatSlider(QSlider):
     """ Custom QSlider subclass which performs a translation step between its value in a range from [0,100] to the
         variables arbitrary floating point range."""
+
     def __init__(self, min, max, val, target):
         super().__init__(Qt.Horizontal)
         self.diff = float(max) - float(min)
@@ -201,14 +208,14 @@ class FloatSlider(QSlider):
 
         # This is the function hook we will call once we have rescaled the value
         self.target = target
-        self.setRange(0,100)
+        self.setRange(0, 100)
         self.setSingleStep(1)
 
         if self.diff == 0:
             # We have no range to map to, defaulting to 0
             scaled_init_val = 0
         else:
-            scaled_init_val = (float(val)-float(min)) * 100 / self.diff
+            scaled_init_val = (float(val) - float(min)) * 100 / self.diff
         self.setValue(scaled_init_val)
         self.valueChanged.connect(self.value_handler)
 
@@ -217,8 +224,9 @@ class FloatSlider(QSlider):
             # We have no range to map to, defaulting to 0
             scaled_val = 0
         else:
-            scaled_val = ((value/100)*self.diff) + self.min
+            scaled_val = ((value / 100) * self.diff) + self.min
         self.target(scaled_val)
+
 
 def print_warning(text):
     msg = QMessageBox()

@@ -17,8 +17,6 @@ class GraphScene(QGraphicsScene):
         self.items = {}
         self.edges = []
 
-        self.setBackgroundBrush(QBrush(Qt.lightGray, Qt.CrossPattern))
-
     def get_edges_for_organ(self, organ):
         return self.items[organ.get_name()].get_edges()
         # Creates a scene based on a model object

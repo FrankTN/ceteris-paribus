@@ -1,5 +1,7 @@
 """This module contains the class for creating a new node. This dialog invokes the other sub-dialogs when required and
     orchestrates the entire process."""
+from PyQt5.QtWidgets import QMessageBox
+
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
 from ceteris_paribus.gui.dialogs.name_dialog import NameDialog
 from ceteris_paribus.gui.dialogs.source_dialog import SourceDialog
@@ -21,7 +23,14 @@ class NewNodeDialog(object):
         name_dialog = NameDialog()
         if name_dialog.exec_():
             # handle name
-            self.name = name_dialog.name_field.text()
+            name = name_dialog.get_name()
+            if name not in self.controller.get_organ_names():
+                self.name = name_dialog.get_name()
+            else:
+                msg = QMessageBox()
+                msg.setText("Warning: name already in use")
+                msg.exec()
+                return False
         else:
             # If we reject during naming return false
             return False
@@ -34,7 +43,7 @@ class NewNodeDialog(object):
                 if source == "Global Input":
                     self.variables = {**self.variables, **self.controller.get_global_param_ranges()}
                 else:
-                    locals_of_source = self.controller.get_organs()[source].get_local_param_ranges()
+                    locals_of_source = self.controller.get_organs()[source].get_local_ranges()
                     # Unroll source locals into general variables
                     self.variables = {**self.variables, **locals_of_source}
 

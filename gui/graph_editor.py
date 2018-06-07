@@ -20,7 +20,7 @@ class GraphWindow(QMainWindow):
         self.controller = view_controller
 
         # A grid foreground
-        self.grid = True
+        self.grid = False
 
         # Create upper toolbar with menu options
         menubar = self.menuBar()
@@ -44,6 +44,11 @@ class GraphWindow(QMainWindow):
         redo_action = edit_menu.addAction('Redo')
         redo_action.setStatusTip('Redo previous action')
         redo_action.triggered.connect(self.undo_stack.redo)
+
+        view_menu = menubar.addMenu('View')
+        grid_action = view_menu.addAction('Toggle grid')
+        grid_action.setStatusTip('Show or hide the grid background')
+        grid_action.triggered.connect(self.toggleGrid)
 
         self.statusBar().showMessage("Ready")
 

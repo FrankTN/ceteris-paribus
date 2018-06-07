@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QUndoStack, QGraphicsView
+from PyQt5.QtWidgets import QUndoStack
 
 from ceteris_paribus.gui.graph_editor import GraphWindow
 
@@ -89,12 +89,6 @@ class ViewController(object):
     def change_context_organ(self, organ):
         # Change the organ being displayed in the context menu on the right dock
         self.context_pane.change_context_organ(organ)
-
-    def change_context_organ_name(self, name):
-
-
-        # TODO add name changing facilities
-        pass
 
     def open_new_db(self):
         # This is called when the button to open a db is clicked in the menu
