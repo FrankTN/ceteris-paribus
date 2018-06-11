@@ -88,8 +88,20 @@ class ContextPane(QWidget):
         self.input_group_layout.addLayout(self.in_slider_layout)
 
     def initialize_context(self):
-        layout = QVBoxLayout()
-        layout.addWidget(self.name_label)
+
+        reloading_layout = self.context_group.layout()
+
+        if reloading_layout is None:
+            reloading_layout = QVBoxLayout()
+            self.context_group.setLayout(reloading_layout)
+        else:
+            while not reloading_layout.isEmpty():
+                # Our first item is always the button
+                item = reloading_layout.takeAt(0)
+                self.output_grid_layout.removeItem(item)
+                if item.widget():
+                    item.widget().deleteLater()
+                self.name_label = QLabel()
 
         button_layout = QGridLayout()
 
@@ -108,9 +120,8 @@ class ContextPane(QWidget):
         del_button = QPushButton("Delete")
         del_button.clicked.connect(self.delete_organ)
         button_layout.addWidget(del_button, 1, 1)
-        layout.addLayout(button_layout)
-
-        self.context_group.setLayout(layout)
+        reloading_layout.addWidget(self.name_label)
+        reloading_layout.addLayout(button_layout)
 
     def initialize_output(self):
         output_layout = QVBoxLayout()
