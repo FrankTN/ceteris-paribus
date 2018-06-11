@@ -4,7 +4,7 @@ from functools import partial
 
 from PyQt5.QtCore import QStringListModel
 from PyQt5.QtWidgets import QDialog, QCompleter, QPushButton, QHBoxLayout, QListWidget, QListWidgetItem, QLineEdit, \
-    QGroupBox, QGridLayout, QMessageBox
+    QGroupBox, QGridLayout, QMessageBox, QComboBox
 
 from ceteris_paribus.gui.dialogs.db_dialogs import remove_selected
 from ceteris_paribus.gui.validator import LocalFunctionValidator
@@ -52,12 +52,24 @@ class FunctionDialog(QDialog):
                 self.function_list_widget.addItem(function_item)
 
         # Create the edit fields to hold the variable names and functions
-        edits = QGroupBox()
+        function_group = QGroupBox()
+        group_layout = QGridLayout()
         edit_layout = QHBoxLayout()
+        group_layout.addItem(edit_layout)
+        horizontal_bar = QHBoxLayout()
+        horizontal_bar.addStretch()
+        group_layout.addItem(horizontal_bar)
         self.f_name = QLineEdit()
         self.f_form = QLineEdit()
         self.f_form.setCompleter(autocompleter)
         self.f_form.setMinimumWidth(400)
+
+        add_var_button = QPushButton("Add var")
+        add_var_button.clicked.connect(self.add_var)
+        horizontal_bar.addWidget(add_var_button)
+        self.var_list = QComboBox()
+        self.var_list.addItems(variables.keys())
+        horizontal_bar.addWidget(self.var_list)
 
         edit_layout.addWidget(self.f_name)
         edit_layout.addWidget(self.f_form)
@@ -70,7 +82,7 @@ class FunctionDialog(QDialog):
             variable_values = variables
         self.f_form.setValidator(LocalFunctionValidator(variable_values, organ_name))
         self.function_list_widget.itemDoubleClicked.connect(self.fill_edits)
-        edits.setLayout(edit_layout)
+        function_group.setLayout(group_layout)
 
         # Add buttons for adding and removing functions and connect them
         modify_layout = QHBoxLayout()
@@ -84,7 +96,7 @@ class FunctionDialog(QDialog):
         # Create the layout for the entire dialogs
         layout = QGridLayout()
         layout.addLayout(flexible_grid, 0, 0)
-        layout.addWidget(edits, 1, 0)
+        layout.addWidget(function_group, 1, 0)
         layout.addLayout(modify_layout, 2, 0)
         layout.addLayout(button_layout, 3, 0)
 
@@ -128,6 +140,7 @@ class FunctionDialog(QDialog):
         else:
             # Either the name, the function or both are invalid. We respond accordingly by creating a messagebox and
             # filling it with a message
+            self.f_form.validator().confirmed = False
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             if not valid_name and not valid_function:
@@ -140,6 +153,11 @@ class FunctionDialog(QDialog):
             msg.setWindowTitle("Unable to create function")
             if msg.exec():
                 return
+
+    def add_var(self):
+        append_text = self.var_list.currentText()
+        base_text = self.f_form.text()
+        self.f_form.setText(base_text + append_text)
 
     def fill_edits(self):
         # Filling the edits mean we obtain the selected value from the selected items and enter its values in their

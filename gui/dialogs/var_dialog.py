@@ -95,7 +95,7 @@ class VarDialog(QDialog):
             value = float(self.var_val.text())
 
             # A name is valid if it is not empty after stripping all the whitespace
-            valid_name = not self.var_name.text().strip() == ""
+            valid_name = self.var_name.text().isidentifier()
             # If we have a valid name and the value is between the minimum and the maximum, we add the item
             if valid_name and minimum <= value <= maximum:
                 self.var_list_widget.addItem(QListWidgetItem(self.var_name.text() + "\t => [min: " + str(minimum) + ", max: " +

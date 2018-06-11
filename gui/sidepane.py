@@ -163,23 +163,27 @@ class ContextPane(QWidget):
         layout = QGridLayout()
 
         if self.current_organ:
-            for index, name in enumerate(self.current_organ.get_local_ranges()):
-                assert '__builtins__' not in self.current_organ.get_local_ranges()
-                if name != '__builtins__':
-                    layout.addWidget(QLabel(name), index, 0)
-                    minimum = self.current_organ.get_local_ranges()[name][0]
-                    maximum = self.current_organ.get_local_ranges()[name][1]
-                    value = self.current_organ.get_local_ranges()[name][2]
-                    value_label = QLabel(str(round(value, 2)))
-                    target = partial(self.controller.organ_local_changed, name, value_label)
-                    slider = FloatSlider(minimum, maximum, value, target)
-                    layout.addWidget(slider, index, 1)
-                    layout.addWidget(value_label, index, 2)
+            if self.current_organ.get_local_ranges():
+                for index, name in enumerate(self.current_organ.get_local_ranges()):
+                    assert '__builtins__' not in self.current_organ.get_local_ranges()
+                    if name != '__builtins__':
+                        layout.addWidget(QLabel(name), index, 0)
+                        minimum = self.current_organ.get_local_ranges()[name][0]
+                        maximum = self.current_organ.get_local_ranges()[name][1]
+                        value = self.current_organ.get_local_ranges()[name][2]
+                        value_label = QLabel(str(round(value, 2)))
+                        target = partial(self.controller.organ_local_changed, name, value_label)
+                        slider = FloatSlider(minimum, maximum, value, target)
+                        layout.addWidget(slider, index, 1)
+                        layout.addWidget(value_label, index, 2)
+            else:
+                layout.addWidget(QLabel("No local values have been defined for this organ"), 0, 0)
             edit_button = QPushButton('Edit')
             edit_button.clicked.connect(partial(self.edit_locals, dialog))
-            layout.addWidget(edit_button, len(self.current_organ.get_local_ranges()), 0)
+            layout.addWidget(edit_button)
             dialog.setLayout(layout)
             dialog.exec_()
+
 
     def show_globals(self):
         print(self.controller.get_global_param_ranges())
@@ -199,7 +203,7 @@ class ContextPane(QWidget):
         dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Functions")
-        if self.current_organ.get_funcs():
+        if self.current_organ is not None and self.current_organ.get_funcs():
             for index, func in enumerate(self.current_organ.get_funcs()):
                 layout.addWidget(QLabel(func + ":"), index, 0)
                 layout.addWidget(QLabel(str(self.current_organ.get_funcs()[func])), index, 1)
@@ -309,7 +313,7 @@ class ContextPane(QWidget):
         dialog = QDialog()
         layout = QGridLayout()
         dialog.setWindowTitle("Outputs")
-        if self.current_organ.get_funcs():
+        if self.current_organ is not None and self.current_organ.get_funcs():
             for index, func in enumerate(self.current_organ.get_funcs()):
                 layout.addWidget(QLabel(func + ":"), index, 0)
                 layout.addWidget(QLabel(str(round(self.current_organ.get_defined_variables()[func], 2))), index, 1)

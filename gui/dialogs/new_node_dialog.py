@@ -19,13 +19,15 @@ class NewNodeDialog(object):
         self.functions = {}
         self.variables = {}
 
-    def run(self):
+    # define the function blocks
+    def name_function(self):
         name_dialog = NameDialog()
         if name_dialog.exec_():
             # handle name
             name = name_dialog.get_name()
             if name not in self.controller.get_organ_names():
                 self.name = name_dialog.get_name()
+                return True
             else:
                 msg = QMessageBox()
                 msg.setText("Warning: name already in use")
@@ -34,6 +36,8 @@ class NewNodeDialog(object):
         else:
             # If we reject during naming return false
             return False
+
+    def sources_function(self):
         source_dialog = SourceDialog(self.controller)
         if source_dialog.exec_():
             # handle source, which represents the organ we are receiving information from
@@ -50,11 +54,17 @@ class NewNodeDialog(object):
                     funcs_of_source = self.controller.get_organs()[source].get_funcs()
                     # Unroll source functions into the functions defined here
                     self.functions = {**self.functions, **funcs_of_source}
+                return True
         else:
             # If we reject during source selection return false
-            return False
+            return self.select(0)
+
+    def vars_function(self):
         var_dialog = VarDialog(self.variables)
-        var_dialog.exec_()
+
+        return var_dialog.exec_()
+
+    def funcs_function(self):
         # self.variables has been updated, we can now write functions
         function_dialog = FunctionDialog(self.variables, self.name, self.functions)
         if function_dialog.exec_():
@@ -62,8 +72,30 @@ class NewNodeDialog(object):
             self.functions = function_dialog.get_functions()
         else:
             # If we reject during naming return false
-            return False
+            return self.select(2)
         return True
+
+    def select(self, number):
+        if number == 0:
+            if self.name_function():
+                return self.select(1)
+            else:
+                return False
+        elif number == 1:
+            if self.sources_function():
+                return self.select(2)
+            else:
+                return False
+        elif number == 2:
+            if self.vars_function():
+                return self.select(3)
+            else:
+                return False
+        elif number == 3:
+            return self.funcs_function()
+
+    def run(self):
+        return self.select(0)
 
     def get_variables(self):
         return self.variables

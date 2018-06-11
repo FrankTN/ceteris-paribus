@@ -33,15 +33,8 @@ class EvalWrapper(object):
                 return eval(clause, self.variables)
             except SyntaxError:
                 # On division by zero we will simply return 0 as an answer
-                msg = QMessageBox()
-                msg.setWindowTitle("Error")
-                msg.setText("Invalid Syntax")
-                msg.exec_()
                 return None
-            except NameError:
-                return None
-            except TypeError:
-                # We are missing an operand because it is undefined, this is the same as having a NameError in the eval
+            except (NameError, TypeError):
                 return None
             except ZeroDivisionError:
                 # On division by zero we will simply return 0 as an answer
@@ -82,7 +75,7 @@ class Transformer(ast.NodeTransformer):
         'Name',  # an identifier...
         'Load',  # loads a value of a variable with given identifier
         'Str',  # a string literal
-
+        'Power',  # a string literal
         'Num',  # allow numbers too
         'Subscript',
         'Attribute',
