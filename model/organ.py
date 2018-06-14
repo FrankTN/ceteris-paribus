@@ -33,10 +33,10 @@ class Organ(object):
         self.input_params = new_globals
         self.defined_variables = {**self.defined_variables, **self.input_params, **self.input_constants}
 
-
     def evaluate(self):
         unresolved_funcs = getattr(self, 'functions').copy()
-        self.defined_variables = {**self.defined_variables, **evaluate_functions(unresolved_funcs, self.defined_variables)}
+        self.defined_variables = {**self.defined_variables,
+                                  **evaluate_functions(unresolved_funcs, self.defined_variables)}
 
     def get_name(self):
         return getattr(self, 'name', 'default_organ')

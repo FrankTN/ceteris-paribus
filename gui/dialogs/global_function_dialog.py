@@ -12,7 +12,7 @@ operators = ['+', '-', '*', '/']
 def translate_arrow_word(word):
     # Translates a word of the form Organ->Variable to Organ
     organ_name, var_name = word.split('->')
-    processed_word = organ_name + '.get_local_vals()' + '[\'' + var_name + '\']'
+    processed_word = organ_name + '.get_defined_variables()' + '[\'' + var_name + '\']'
     return processed_word
 
 
@@ -51,9 +51,9 @@ def parse_function(func):
             # We have reached an operator
             representation.append(token)
 
-        elif '.get_local_vals()' in token:
-            # We have reached a statement of the form {Organ name}.get_local_vals()['{Variable name}']
-            breakdown = token.split('.get_local_vals()')
+        elif '.get_defined_variables()' in token:
+            # We have reached a statement of the form {Organ name}.get_defined_variables()['{Variable name}']
+            breakdown = token.split('.get_defined_variables()')
             pretty_string = to_pretty_string(breakdown[0], breakdown[1])
             representation.append(pretty_string)
         else:
@@ -126,7 +126,7 @@ class GlobalFunctionDialog(QDialog):
         operator_box.setLayout(operator_layout)
         lower_layout.addWidget(operator_box)
 
-        local_box = QGroupBox('Local vars')
+        local_box = QGroupBox('Local outs')
         local_layout = QGridLayout()
 
         organs = self.controller.get_organs()
@@ -232,4 +232,4 @@ class GlobalFunctionDialog(QDialog):
         box.clear()
         # We can only add an item if it has a name, therefore we check whether the string is not empty
         if newItem:
-            box.addItems(organs[newItem].get_local_vals())
+            box.addItems(organs[newItem].get_funcs())
