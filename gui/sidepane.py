@@ -4,7 +4,7 @@ from functools import partial
 
 import pyqtgraph as pg
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QLabel, QHBoxLayout, QVBoxLayout, \
-    QPushButton, QDialog, QLineEdit, QComboBox, QFrame
+    QPushButton, QDialog, QLineEdit, QComboBox, QFrame, QMessageBox
 
 from ceteris_paribus.gui.commands import DeleteCommand
 from ceteris_paribus.gui.dialogs.function_dialog import FunctionDialog
@@ -230,7 +230,7 @@ class ContextPane(QWidget):
         # This function creates a dialog for viewing and editing the global functions
         dialog = QDialog()
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         dialog.setWindowTitle("Global functions")
 
         functions_dict = self.controller.get_global_functions()
@@ -238,37 +238,33 @@ class ContextPane(QWidget):
         function_selector.addItems(functions_dict)
         layout.addWidget(function_selector)
 
-        buttons = QHBoxLayout()
-
-        view_button = QPushButton('View')
-        view_button.clicked.connect(partial(self.view_global_function, function_selector, functions_dict))
-        buttons.addWidget(view_button)
+        new_button = QPushButton('New')
+        new_button.clicked.connect(self.new_global_function)
+        layout.addWidget(new_button)
 
         edit_button = QPushButton('Edit')
         edit_button.clicked.connect(partial(self.edit_global_function, function_selector))
-        buttons.addWidget(edit_button)
+        layout.addWidget(edit_button)
 
-        layout.addItem(buttons)
-
-        new_remove_layout = QHBoxLayout()
-        new_button = QPushButton('New')
-        new_button.clicked.connect(self.new_global_function)
-        new_remove_layout.addWidget(new_button)
         remove_button = QPushButton('Remove')
         remove_button.clicked.connect(partial(self.remove_global_function, function_selector))
         remove_button.clicked.connect(dialog.accept)
-        new_remove_layout.addWidget(remove_button)
-
-        layout.addItem(new_remove_layout)
+        layout.addWidget(remove_button)
 
         dialog.setLayout(layout)
         dialog.exec()
 
     def edit_global_function(self, func_combobox):
-        dialog = GlobalFunctionDialog(self.controller, func_combobox.currentText())
-        if dialog.exec():
-            self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
-            print(dialog.reconstruction)
+        if func_combobox.currentText():
+            dialog = GlobalFunctionDialog(self.controller, func_combobox.currentText())
+            if dialog.exec():
+                self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
+                self.fill_output_grid()
+                print(dialog.reconstruction)
+        else:
+            msg = QMessageBox()
+            msg.setText('Warning: no functions to edit')
+            msg.exec_()
 
     def view_global_function(self, func_combobox, func_dict):
         dialog = QDialog()
@@ -292,6 +288,7 @@ class ContextPane(QWidget):
         dialog = GlobalFunctionDialog(self.controller)
         if dialog.exec():
             self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
+            self.reload_output_layout()
 
     def remove_global_function(self, selector):
         removable_func = selector.currentText()

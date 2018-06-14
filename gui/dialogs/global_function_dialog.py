@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import QDialog, QLineEdit, QComboBox, QPushButton, QGridLay
 from ceteris_paribus.db.function_parser import EvalWrapper, ModelTransformer
 
 
+operators = ['+', '-', '*', '/']
+
 def translate_arrow_word(word):
     # Translates a word of the form Organ->Variable to Organ
     organ_name, var_name = word.split('->')
@@ -17,7 +19,7 @@ def translate_arrow_word(word):
 def reconstruct_function(representation):
     result = ''
     for token in representation:
-        if token in ['+', '-', '*', '/']:
+        if token in operators:
             # token is an operator
             result += token
         elif '->' in token:
@@ -45,7 +47,7 @@ def parse_function(func):
             # Once we count 4 tokens we append a newline and reset the counter
             representation.append('\n')
             count = 0
-        if token in ['+', '-', '*', '/']:
+        if token in operators:
             # We have reached an operator
             representation.append(token)
 
@@ -63,6 +65,8 @@ def parse_function(func):
 
 
 class GlobalFunctionDialog(QDialog):
+    """ Dialog for interacting with the global functions. Precondition: all global functions defined so far are
+        well-defined."""
 
     def __init__(self, controller, func_name='New_function', **kwargs):
         super().__init__(**kwargs)
@@ -91,7 +95,6 @@ class GlobalFunctionDialog(QDialog):
         function_layout.addWidget(self.name_label)
 
         self.function_edit = QLineEdit()
-        self.function_edit.setReadOnly(True)
         self.function_edit.setText(' '.join(self.list_representation))
         function_layout.addWidget(self.function_edit)
 
@@ -100,36 +103,25 @@ class GlobalFunctionDialog(QDialog):
         lower_layout = QHBoxLayout()
         lower_layout.addStretch()
 
-        number_box = QGroupBox('Numbers')
-        number_layout = QGridLayout()
-        number_edit = QLineEdit()
-        number_edit.setValidator(QDoubleValidator())
-        number_layout.addWidget(number_edit, 0, 0)
-        add_num_button = QPushButton("Add")
-        add_num_button.clicked.connect(lambda: self.add_word(number_edit.text()))
-        number_layout.addWidget(add_num_button, 1, 0)
-        number_box.setLayout(number_layout)
-        lower_layout.addWidget(number_box)
-
         operator_layout = QGridLayout()
         operator_box = QGroupBox('Operators')
         add = QPushButton('+')
-        add.clicked.connect(partial(self.add_word, '+'))
+        add.clicked.connect(partial(self.add_word, ' + '))
         operator_layout.addWidget(add, 0, 0)
         min = QPushButton('-')
-        min.clicked.connect(partial(self.add_word, '-'))
+        min.clicked.connect(partial(self.add_word, ' - '))
         operator_layout.addWidget(min, 0, 1)
         mul = QPushButton('*')
-        mul.clicked.connect(partial(self.add_word, '*'))
+        mul.clicked.connect(partial(self.add_word, ' * '))
         operator_layout.addWidget(mul, 1, 0)
         div = QPushButton('/')
-        div.clicked.connect(partial(self.add_word, '/'))
+        div.clicked.connect(partial(self.add_word, ' / '))
         operator_layout.addWidget(div, 1, 1)
         lpar = QPushButton('(')
-        lpar.clicked.connect(partial(self.add_word, '('))
+        lpar.clicked.connect(partial(self.add_word, ' ( '))
         operator_layout.addWidget(lpar)
         rpar = QPushButton(')')
-        rpar.clicked.connect(partial(self.add_word, ')'))
+        rpar.clicked.connect(partial(self.add_word, ' ) '))
         operator_layout.addWidget(rpar)
         operator_box.setLayout(operator_layout)
         lower_layout.addWidget(operator_box)
@@ -150,13 +142,10 @@ class GlobalFunctionDialog(QDialog):
         organ_selector.currentIndexChanged.emit(0)
 
         add_val_button = QPushButton("Add")
-        local_layout.addWidget(add_val_button, 0, 1)
+        local_layout.addWidget(add_val_button, 2, 0)
         add_val_button.clicked.connect(
             lambda: self.add_combobox_value(organ_selector.currentText(), variable_selector))
 
-        rem_val_button = QPushButton("Remove")
-        rem_val_button.clicked.connect(self.remove_word)
-        local_layout.addWidget(rem_val_button, 1, 1)
         local_box.setLayout(local_layout)
 
         lower_layout.addWidget(local_box)
@@ -174,6 +163,10 @@ class GlobalFunctionDialog(QDialog):
         lower_layout.addWidget(global_box)
 
         layout.addItem(lower_layout)
+
+        rem_val_button = QPushButton("Remove")
+        rem_val_button.clicked.connect(self.remove_word)
+        #.addWidget(rem_val_button, 1, 1)
 
         accept_or_cancel_layout = QHBoxLayout()
         accept_or_cancel_layout.addStretch()
@@ -219,14 +212,18 @@ class GlobalFunctionDialog(QDialog):
         self.add_word(new_str)
 
     def remove_word(self):
-        self.list_representation.pop()
+
+        self.list_representation = self.function_edit.text().split()
+        if self.list_representation:
+            self.list_representation.pop()
         self.function_edit.setText(' '.join(self.list_representation))
 
     def add_word(self, word):
-        self.list_representation.append(word)
-        self.function_edit.setText(' '.join(self.list_representation))
+        self.function_edit.setText(self.function_edit.text() + word)
+        self.list_representation = self.function_edit.text().split()
 
     def check_if_done(self):
+        self.list_representation = self.function_edit.text().split()
         self.reconstruction = reconstruct_function(self.list_representation)
         if self.controller.verify_function(self.reconstruction):
             self.accept()
