@@ -245,7 +245,7 @@ class ContextPane(QWidget):
         buttons.addWidget(view_button)
 
         edit_button = QPushButton('Edit')
-        edit_button.clicked.connect(partial(self.edit_global_function, function_selector, functions_dict))
+        edit_button.clicked.connect(partial(self.edit_global_function, function_selector))
         buttons.addWidget(edit_button)
 
         layout.addItem(buttons)

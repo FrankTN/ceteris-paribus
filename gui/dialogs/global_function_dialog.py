@@ -17,7 +17,7 @@ def translate_arrow_word(word):
 def reconstruct_function(representation):
     result = ''
     for token in representation:
-        if token in ['+','-','*','/']:
+        if token in ['+', '-', '*', '/']:
             # token is an operator
             result += token
         elif '->' in token:
@@ -39,8 +39,13 @@ def parse_function(func):
     # and a list of organs.
     tokens = func.split()
     representation = []
+    count = 0
     for token in tokens:
-        if token in ['+','-','*','/']:
+        if count == 4:
+            # Once we count 4 tokens we append a newline and reset the counter
+            representation.append('\n')
+            count = 0
+        if token in ['+', '-', '*', '/']:
             # We have reached an operator
             representation.append(token)
 
@@ -52,13 +57,14 @@ def parse_function(func):
         else:
             # We are dealing with a global variable
             representation.append(token)
+        count += 1
 
     return representation
 
 
 class GlobalFunctionDialog(QDialog):
 
-    def __init__(self, controller, func_name = 'New_function', **kwargs):
+    def __init__(self, controller, func_name='New_function', **kwargs):
         super().__init__(**kwargs)
         self.controller = controller
         functions = self.controller.get_global_functions().copy()
@@ -69,7 +75,7 @@ class GlobalFunctionDialog(QDialog):
             current_function = self.controller.get_global_functions()[func_name]
             functions.pop(self.func_name, None)
 
-        accessible_vars = {**self.controller.get_organs(),**functions}
+        accessible_vars = {**self.controller.get_organs(), **functions}
         self.evaluator = EvalWrapper(accessible_vars, ModelTransformer(accessible_vars))
         self.evaluator.set_function_name(func_name)
 
@@ -98,10 +104,10 @@ class GlobalFunctionDialog(QDialog):
         number_layout = QGridLayout()
         number_edit = QLineEdit()
         number_edit.setValidator(QDoubleValidator())
-        number_layout.addWidget(number_edit,0,0)
+        number_layout.addWidget(number_edit, 0, 0)
         add_num_button = QPushButton("Add")
-        add_num_button.clicked.connect(lambda : self.add_word(number_edit.text()))
-        number_layout.addWidget(add_num_button,1,0)
+        add_num_button.clicked.connect(lambda: self.add_word(number_edit.text()))
+        number_layout.addWidget(add_num_button, 1, 0)
         number_box.setLayout(number_layout)
         lower_layout.addWidget(number_box)
 
@@ -146,7 +152,7 @@ class GlobalFunctionDialog(QDialog):
         add_val_button = QPushButton("Add")
         local_layout.addWidget(add_val_button, 0, 1)
         add_val_button.clicked.connect(
-            lambda: self.add_combobox_value(organ_selector.currentText(), organs))
+            lambda: self.add_combobox_value(organ_selector.currentText(), variable_selector))
 
         rem_val_button = QPushButton("Remove")
         rem_val_button.clicked.connect(self.remove_word)
@@ -161,7 +167,7 @@ class GlobalFunctionDialog(QDialog):
         global_selector.addItems(functions)
         global_layout.addWidget(global_selector)
         global_add_button = QPushButton('Add')
-        global_add_button.clicked.connect(lambda : self.add_word(global_selector.currentText()))
+        global_add_button.clicked.connect(lambda: self.add_word(global_selector.currentText()))
         global_layout.addWidget(global_add_button)
         global_box.setLayout(global_layout)
 
