@@ -15,7 +15,13 @@ class Organ(object):
         self.pos = pos
         if organ_info:
             for property in organ_info.keys():
-                self.__setattr__(property, organ_info[property])
+                if isinstance(property, str):
+                    if property.isidentifier():
+                        self.__setattr__(property, organ_info[property])
+                elif isinstance(property, dict):
+                    for k,v in organ_info[property].items():
+                        if k.isidentifier():
+                            self.__setattr__(property, organ_info[property])
 
         # The defined variables dict is a combination of all the variables and their values available to this organ
         # It will be used by the evaluator to resolve all functions and their values

@@ -110,7 +110,7 @@ class FunctionDialog(QDialog):
         self.f_form.validator().set_confirmed(True)
         valid_function = self.f_form.hasAcceptableInput()
         # A name is valid as long as its not empty
-        valid_name = not self.f_name.text().strip() == ""
+        valid_name = self.f_name.text().isidentifier()
         if valid_name and valid_function:
             if self.f_name.text() in self.functions:
                 # Function already exists

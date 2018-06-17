@@ -28,16 +28,35 @@ class GlobalModel(object):
         """ This function retrieves all globally defined values from the database."""
         # From the database, get the global input parameters.
         global_param_table = self._database.table("GlobalParameters").all()
+        invalid_name_flag = False
         for param in global_param_table:
-            self._global_params.update(param)
+            name = list(param.keys())[0]
+            if name.isidentifier():
+                self._global_params.update(param)
+            else:
+                invalid_name_flag = True
         # The globally defined constants are also retrieved from the database
         global_const_table = self._database.table("GlobalConstants").all()
         for const in global_const_table:
-            self._global_constants.update(const)
+            name = list(const.keys())[0]
+            if name.isidentifier():
+                self._global_constants.update(const)
+            else:
+                invalid_name_flag = True
         # Finally, the global functions are retrieved
         global_func_table = self._database.table("GlobalFunctions").all()
         for func in global_func_table:
-            self._global_funcs.update(func)
+            name = list(func.keys())[0]
+            if name.isidentifier():
+                self._global_funcs.update(func)
+            else:
+                invalid_name_flag = True
+        # If, during the initialization we encountered an invalid identifier we can display a warning
+        if invalid_name_flag:
+            msg = QMessageBox()
+            msg.setText("Warning: at least one global value has an invalid name in the database, it was not included"
+                        "in the model.")
+            msg.exec_()
         # _globals is defined as the dictionary containing all globally accessible values, constant or variable
         self._globals = {**self._global_params, **self._global_constants}
 
