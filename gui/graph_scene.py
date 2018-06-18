@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTransform, QBrush
 from PyQt5.QtWidgets import QGraphicsScene
 
-from ceteris_paribus.gui.commands import MoveCommand
+from ceteris_paribus.gui.commands import MoveCommand, NewCommand
 from ceteris_paribus.gui.dialogs.new_node_dialog import NewNodeDialog
 from ceteris_paribus.gui.visual_elements import OrganNode, InNode, OutNode, Edge
 
@@ -19,7 +19,6 @@ class GraphScene(QGraphicsScene):
 
     def get_edges_for_organ(self, organ):
         return self.items[organ.get_name()].get_edges()
-        # Creates a scene based on a model object
 
     def load_from_model(self, model):
 
@@ -82,9 +81,9 @@ class GraphScene(QGraphicsScene):
         return QGraphicsScene.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        foundItem = self.itemAt(event.scenePos().x(), event.scenePos().y(), QTransform())
-        if foundItem:
-            move = MoveCommand(self.controller, foundItem, self.dragPos)
+        found_item = self.itemAt(event.scenePos().x(), event.scenePos().y(), QTransform())
+        if found_item:
+            move = MoveCommand(self.controller, found_item, self.dragPos)
             self.controller.get_undo_stack().push(move)
             # handle drag and drop
         return QGraphicsScene.mouseReleaseEvent(self, event)
@@ -98,4 +97,5 @@ class GraphScene(QGraphicsScene):
             for source_name in sources:
                 corresponding_node = self.items[source_name]
                 source_nodes.append(corresponding_node)
-            self.controller.add_organ(pos, dialog.get_name(), dialog.get_variables(), dialog.get_funcs(), source_nodes)
+            new_node_command = NewCommand(self.controller, pos, dialog, source_nodes)
+            self.controller.get_undo_stack().push(new_node_command)

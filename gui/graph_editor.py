@@ -27,11 +27,15 @@ class GraphWindow(QMainWindow):
 
         file_menu = menubar.addMenu('File')
 
-        db_open_action = file_menu.addAction('Open file')
+        new_project_action = file_menu.addAction('New project')
+        new_project_action.setStatusTip('Initialize a new project')
+        new_project_action.triggered.connect(self.new_project)
+
+        db_open_action = file_menu.addAction('Open project')
         db_open_action.setStatusTip('Select a file to use as a database')
         db_open_action.triggered.connect(self.open_new_db)
 
-        db_save_action = file_menu.addAction('Save file')
+        db_save_action = file_menu.addAction('Save project')
         db_save_action.setStatusTip('Save file as a database for future usage')
         db_save_action.triggered.connect(self.save_db)
 
@@ -93,6 +97,23 @@ class GraphWindow(QMainWindow):
 
     def open_new_db(self):
         self.controller.open_new_db()
+
+    def new_project(self):
+        organs = self.controller.global_control.model_control.get_model().get_organs()
+        if organs:
+            msg = QMessageBox()
+            msg.setText("Save current model first?")
+            msg.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            ret = msg.exec_()
+            if ret == QMessageBox.Cancel:
+                return
+            elif ret == QMessageBox.Save:
+                self.save_db()
+            # Reload the UI
+            global_control = self.controller.global_control
+            self.controller = global_control.new_view()
+            self.scene = GraphScene(self.controller)
+            self.reload()
 
     def save_db(self):
         # View controller

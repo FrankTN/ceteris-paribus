@@ -27,11 +27,18 @@ class Controller(object):
         # Initialize the database and the model controller as empty objects, as we do not have a model to control yet
         self.db = None
 
+    def new_model(self, db):
+        self.model_control = ModelController(db)
+
+    def new_view(self):
+        self.view_control = ViewController(self)
+        return self.view_control
+
     def open_new_db(self):
         # Change to a new database, opens a UI dialog
         self.db = select_db_dialog()
         if self.verify_db(self.db):
-            self.model_control = ModelController(self.db)
+            self.new_model(self.db)
             return True
         else:
             return False
@@ -58,6 +65,7 @@ class Controller(object):
 
     def get_model(self):
         return self.model_control.model
+
 
 if __name__ == "__main__":
     # The starting point for the entire program, creates a QApplication object.
