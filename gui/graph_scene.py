@@ -16,18 +16,16 @@ class GraphScene(QGraphicsScene):
         # Items is used as a dict to keep internal references to the items.
         self.items = {}
         self.edges = []
-
-    def get_edges_for_organ(self, organ):
-        return self.items[organ.get_name()].get_edges()
-
-    def load_from_model(self, model):
-
         self.input_node = InNode(-300, 0, self.controller)
         self.addItem(self.input_node)
         self.items['Global Input'] = self.input_node
         self.output_node = OutNode(300, 0, self.controller)
         self.addItem(self.output_node)
 
+    def get_edges_for_organ(self, organ):
+        return self.items[organ.get_name()].get_edges()
+
+    def load_from_model(self, model):
         for organ in model.organs.values():
             node = OrganNode(organ, self.controller)
             self.items[organ.get_name()] = node

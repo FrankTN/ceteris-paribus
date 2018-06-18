@@ -109,10 +109,11 @@ class GraphWindow(QMainWindow):
                 return
             elif ret == QMessageBox.Save:
                 self.save_db()
-            # Reload the UI
-            global_control = self.controller.global_control
-            self.controller = global_control.new_view()
+            self.controller.global_control.new_model(None)
+            # Reset the main Scene
             self.scene = GraphScene(self.controller)
+            # Reset the context pane
+            self.context = ContextPane(self.controller)
             self.reload()
 
     def save_db(self):

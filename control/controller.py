@@ -30,10 +30,6 @@ class Controller(object):
     def new_model(self, db):
         self.model_control = ModelController(db)
 
-    def new_view(self):
-        self.view_control = ViewController(self)
-        return self.view_control
-
     def open_new_db(self):
         # Change to a new database, opens a UI dialog
         self.db = select_db_dialog()
