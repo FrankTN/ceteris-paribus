@@ -207,12 +207,11 @@ class GlobalFunctionDialog(QDialog):
             self.name_label.setText(' ' + self.func_name + ' ')
 
     def add_combobox_value(self, organ_name, var_box):
-        new_str = to_pretty_string(organ_name, var_box.currentText())
-
-        self.add_word(new_str)
+        if var_box.currentText():
+            new_str = to_pretty_string(organ_name, var_box.currentText())
+            self.add_word(new_str)
 
     def remove_word(self):
-
         self.list_representation = self.function_edit.text().split()
         if self.list_representation:
             self.list_representation.pop()
@@ -225,7 +224,7 @@ class GlobalFunctionDialog(QDialog):
     def check_if_done(self):
         self.list_representation = self.function_edit.text().split()
         self.reconstruction = reconstruct_function(self.list_representation)
-        if self.controller.verify_function(self.reconstruction):
+        if self.reconstruction and self.controller.verify_function(self.reconstruction):
             self.accept()
 
     def update_variables_in_combobox(self, newItem, organs, box):

@@ -48,6 +48,11 @@ class GraphNode(QGraphicsRectItem):
         # Add edge to the local list of edges
         self.edge_list.append((edge, isSource))
 
+    def remove_output_edge(self):
+        for edge, isSource in self.edge_list:
+            if not isSource:
+                self.edge_list.remove((edge, isSource))
+
     def get_edges(self):
         return self.edge_list
 

@@ -239,7 +239,7 @@ class ContextPane(QWidget):
         layout.addWidget(function_selector)
 
         new_button = QPushButton('New')
-        new_button.clicked.connect(self.new_global_function)
+        new_button.clicked.connect(partial(self.new_global_function, function_selector))
         layout.addWidget(new_button)
 
         edit_button = QPushButton('Edit')
@@ -284,10 +284,11 @@ class ContextPane(QWidget):
         dialog.setLayout(layout)
         dialog.exec()
 
-    def new_global_function(self):
+    def new_global_function(self, selector):
         dialog = GlobalFunctionDialog(self.controller)
         if dialog.exec():
             self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
+            selector.addItem(dialog.func_name)
             self.reload_output_layout()
 
     def remove_global_function(self, selector):
