@@ -91,7 +91,7 @@ class GraphNode(QGraphicsRectItem):
         range_max = range[1]
         val = range[2]
         normalized_val = (val - range_min) / (range_max - range_min)
-        index = int(normalized_val * len(gradient_table))
+        index = int(normalized_val * (len(gradient_table)-1))
 
         self.color_val_text = str(round(val, 2))
         # Here, we use the index to find the closest color in the gradient table.
