@@ -49,6 +49,8 @@ class GraphScene(QGraphicsScene):
         # We need a copy because the original is being updated each time we create a new edge
         local_list = edge_src_list[:]
         for source in local_list:
+            # We start by removing the edge to the output
+            source.remove_output_edge()
             # We only add source edges for now
             in_edge = Edge(source, node)
             self.edges.append(in_edge)

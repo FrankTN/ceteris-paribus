@@ -70,6 +70,7 @@ class ViewController(object):
 
     def set_colors_for_global(self, name):
         self.current_global = name
+        self.context_pane.change_color_global(name)
         # If we select a global value to visualize, this function updates the nodes involved so we can see how far each
         # node is in their range with respect to this value
         color_scheme_names = self.global_control.get_model().color_schemes[name]

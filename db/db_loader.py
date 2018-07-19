@@ -2,7 +2,7 @@
 import os
 from tinydb import TinyDB, Query
 
-organ_db = TinyDB(os.getcwd() + "/new_organ_db.json")
+organ_db = TinyDB(os.getcwd() + "/standard_db.json")
 
 organ_db.purge_table("GlobalParameters")
 global_param_table = organ_db.table("GlobalParameters")

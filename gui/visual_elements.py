@@ -48,6 +48,11 @@ class GraphNode(QGraphicsRectItem):
         # Add edge to the local list of edges
         self.edge_list.append((edge, isSource))
 
+    def remove_output_edge(self):
+        for edge, isSource in self.edge_list:
+            if not isSource:
+                self.edge_list.remove((edge, isSource))
+
     def get_edges(self):
         return self.edge_list
 
@@ -86,7 +91,7 @@ class GraphNode(QGraphicsRectItem):
         range_max = range[1]
         val = range[2]
         normalized_val = (val - range_min) / (range_max - range_min)
-        index = int(normalized_val * len(gradient_table))
+        index = int(normalized_val * (len(gradient_table)-1))
 
         self.color_val_text = str(round(val, 2))
         # Here, we use the index to find the closest color in the gradient table.

@@ -58,9 +58,11 @@ class ContextPane(QWidget):
         self.output_grid_layout = QGridLayout()
 
         color_group = QGroupBox("Color")
-        color_group.setFixedSize(300, (available_height / 6))
+        color_group.setFixedSize(300, (available_height / 5))
+        self.color_global = QLabel("")
         self.colorBar = pg.GradientWidget()
         color_layout = QGridLayout()
+        color_layout.addWidget(self.color_global)
         color_layout.addWidget(self.colorBar)
         color_group.setLayout(color_layout)
         self.colorBar.loadPreset('cyclic')
@@ -187,13 +189,13 @@ class ContextPane(QWidget):
                         slider = FloatSlider(minimum, maximum, value, target)
                         layout.addWidget(slider, index, 1)
                         layout.addWidget(value_label, index, 2)
-            else:
-                layout.addWidget(QLabel("No local values have been defined for this organ"), 0, 0)
-            edit_button = QPushButton('Edit')
-            edit_button.clicked.connect(partial(self.edit_locals, dialog))
-            layout.addWidget(edit_button)
-            dialog.setLayout(layout)
-            dialog.exec_()
+        else:
+            layout.addWidget(QLabel("No local values have been defined for this organ"), 0, 0)
+        edit_button = QPushButton('Edit')
+        edit_button.clicked.connect(partial(self.edit_locals, dialog))
+        layout.addWidget(edit_button)
+        dialog.setLayout(layout)
+        dialog.exec_()
 
 
     def show_globals(self):
@@ -239,7 +241,7 @@ class ContextPane(QWidget):
         layout.addWidget(function_selector)
 
         new_button = QPushButton('New')
-        new_button.clicked.connect(self.new_global_function)
+        new_button.clicked.connect(partial(self.new_global_function, function_selector))
         layout.addWidget(new_button)
 
         edit_button = QPushButton('Edit')
@@ -284,10 +286,11 @@ class ContextPane(QWidget):
         dialog.setLayout(layout)
         dialog.exec()
 
-    def new_global_function(self):
+    def new_global_function(self, selector):
         dialog = GlobalFunctionDialog(self.controller)
         if dialog.exec():
             self.controller.add_global_function(dialog.func_name, dialog.reconstruction)
+            selector.addItem(dialog.func_name)
             self.reload_output_layout()
 
     def remove_global_function(self, selector):
@@ -356,20 +359,22 @@ class ContextPane(QWidget):
             self.controller.get_undo_stack().push(command)
 
     def edit_locals(self, previous_dialog):
-        dialog = VarDialog(self.current_organ.get_local_ranges())
+        if self.current_organ:
+            dialog = VarDialog(self.current_organ.get_local_ranges())
 
-        if dialog.exec_():
-            # Close the previous dialogs and start a new one, showing the updated locals
-            previous_dialog.accept()
-            self.show_locals()
+            if dialog.exec_():
+                # Close the previous dialogs and start a new one, showing the updated locals
+                previous_dialog.accept()
+                self.show_locals()
 
     def edit_functions(self, previous_dialog):
-        dialog = FunctionDialog(self.current_organ.get_defined_variables(), self.current_organ.get_name(),
-                                self.current_organ.get_funcs())
+        if self.current_organ:
+            dialog = FunctionDialog(self.current_organ.get_defined_variables(), self.current_organ.get_name(),
+                                    self.current_organ.get_funcs())
 
-        if dialog.exec_():
-            previous_dialog.accept()
-            self.show_local_funcs()
+            if dialog.exec_():
+                previous_dialog.accept()
+                self.show_local_funcs()
 
     def reload_output_layout(self):
         while not self.output_grid_layout.isEmpty():
@@ -427,3 +432,6 @@ class ContextPane(QWidget):
         # Change global parameter, call global param changed
         label.setText(str(round(value, 2)))
         self.controller.input_slider_changed(name, value)
+
+    def change_color_global(self, name):
+        self.color_global.setText(name)

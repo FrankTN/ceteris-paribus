@@ -14,6 +14,7 @@ import errno
 class GraphWindow(QMainWindow):
     """This class represents the MainWindow as a whole. The main window contains a graph editor windw and a sidepanel,
         which contains buttons to interact with the system."""
+
     def __init__(self, view_controller, *__args):
         super().__init__(*__args)
         self.scene = GraphScene(view_controller)
